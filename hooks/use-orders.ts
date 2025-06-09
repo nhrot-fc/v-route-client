@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { ordersApi, type Order } from '@/lib/api-client'
 import { useToast } from '@/components/ui/use-toast'
 
-export function useOrders() {
+export function useOrders(filter?: string) {
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -12,7 +12,25 @@ export function useOrders() {
     try {
       setLoading(true)
       setError(null)
-      const response = await ordersApi.getAllOrders()
+
+      let response
+      const statusMap: Record<string, string> = {
+        'pendiente': 'PENDING',
+        'en-ruta': 'IN_TRANSIT',
+        'entregado': 'DELIVERED',
+      }
+
+      if (filter) {
+        const apiStatus = statusMap[filter]
+        if (apiStatus) {
+          response = await ordersApi.getOrdersByStatus(apiStatus as any)
+        } else {
+          response = await ordersApi.getAllOrders()
+        }
+      } else {
+        response = await ordersApi.getAllOrders()
+      }
+
       setOrders(Array.isArray(response.data) ? response.data : [response.data].filter(Boolean))
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al cargar órdenes'
@@ -25,7 +43,7 @@ export function useOrders() {
     } finally {
       setLoading(false)
     }
-  }, [toast])
+  }, [filter, toast]) // Aquí está la clave: filter en dependencias
 
   useEffect(() => {
     fetchOrders()
