@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrdersTable } from "@/components/orders/orders-table";
 import { OrderUploadForm } from "@/components/orders/order-upload-form";
-import { OrderForm } from "@/components/orders/order-form";
+import  OrderForm  from "@/components/orders/order-form";
 import { Plus, Upload } from "lucide-react";
 import { useState } from "react";
 

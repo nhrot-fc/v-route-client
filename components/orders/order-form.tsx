@@ -5,240 +5,141 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
-import { Calendar } from "@/components/ui/calendar"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
-import { CalendarIcon, Clock } from "lucide-react"
-import { useOrders } from "@/hooks/use-orders"
-import { Order } from "@/lib/api-client"
 
-export function OrderForm() {
-  const [date, setDate] = useState<Date>()
-  const [deliveryTimeType, setDeliveryTimeType] = useState<"specificTime" | "timeLimit">("specificTime")
-  const [time, setTime] = useState<string>("12:00")
-  const [timeLimit, setTimeLimit] = useState<string>("24")
-  
-  const [formData, setFormData] = useState({
-    posicionX: "",
-    posicionY: "",
-    volumen: "",
-    prioridad: "normal",
-    observaciones: ""
-  })
+export default function OrderForm() {
   const { toast } = useToast()
-  const { createOrder } = useOrders()
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  const [x, setX] = useState<number>(0)
+  const [y, setY] = useState<number>(0)
+  const [volumen, setVolumen] = useState<number>(0)
+  const [fechaLimite, setFechaLimite] = useState<string>("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Validación básica
-    if (!formData.posicionX || !formData.posicionY || !formData.volumen || !date) {
+    if (x < 0 || x > 70) {
       toast({
-        title: "Error",
-        description: "Por favor completa todos los campos requeridos",
+        title: "Coordenada X inválida",
+        description: "El valor de X debe estar entre 0 y 70.",
         variant: "destructive",
       })
       return
     }
 
-    // Validar coordenadas
-    const x = parseInt(formData.posicionX)
-    const y = parseInt(formData.posicionY)
-    
-    if (isNaN(x) || isNaN(y) || x < 0 || y < 0 || x > 100 || y > 100) {
+    if (y < 0 || y > 50) {
       toast({
-        title: "Error",
-        description: "Las coordenadas deben ser números entre 0 y 100",
+        title: "Coordenada Y inválida",
+        description: "El valor de Y debe estar entre 0 y 50.",
         variant: "destructive",
       })
       return
     }
 
-    const volume = parseFloat(formData.volumen)
-    if (isNaN(volume) || volume <= 0) {
+    if (!fechaLimite) {
       toast({
-        title: "Error",
-        description: "El volumen debe ser un número mayor a 0",
+        title: "Fecha límite requerida",
+        description: "Debes ingresar una fecha y hora válidas.",
         variant: "destructive",
       })
       return
+    }
+
+    const due = new Date(fechaLimite)
+    const now = new Date()
+
+    if (isNaN(due.getTime())) {
+      toast({
+        title: "Fecha límite inválida",
+        description: "Por favor, ingresa una fecha válida.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const data = {
+      id: "",
+      position: { x, y },
+      arriveDate: now.toISOString(),
+      dueDate: due.toISOString(),
+      deliveryDate: due.toISOString(),
+      status: "PENDING",
+      remainingVolume: volumen,
+      glpRequest: volumen,
+      remainingGLP: volumen
     }
 
     try {
-      // Calculate due date based on delivery type
-      let dueDate = new Date(date)
-      if (deliveryTimeType === "specificTime") {
-        const [hours, minutes] = time.split(":").map(Number)
-        dueDate.setHours(hours, minutes, 0, 0)
-      } else {
-        dueDate.setHours(dueDate.getHours() + parseInt(timeLimit))
-      }
-
-      const orderData: Partial<Order> = {
-        position: { x, y },
-        arriveDate: new Date().toISOString(),
-        dueDate: dueDate.toISOString(),
-        glpRequest: volume,
-        remainingGLP: volume,
-        remainingVolume: volume
-      }
-
-      await createOrder(orderData)
-
-      // Limpiar formulario
-      setFormData({
-        posicionX: "",
-        posicionY: "",
-        volumen: "",
-        prioridad: "normal",
-        observaciones: ""
+      const response = await fetch("http://localhost:8080/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
       })
-      setDate(undefined)
-      setTime("12:00")
-      setTimeLimit("24")
+
+      if (!response.ok) throw new Error("Error al crear el pedido")
+
+      toast({
+        title: "Pedido creado",
+        description: "El pedido fue registrado correctamente.",
+      })
+
+      setX(0)
+      setY(0)
+      setVolumen(0)
+      setFechaLimite("")
     } catch (error) {
-      // Error handling is done in the hook
+      console.error("Error:", error)
+      toast({
+        title: "Error al crear el pedido",
+        description: "Ocurrió un problema al registrar el pedido.",
+        variant: "destructive",
+      })
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="volumen">Volumen (L)</Label>
-          <Input 
-            id="volumen" 
-            name="volumen" 
-            type="number" 
-            value={formData.volumen} 
-            onChange={handleChange} 
-            placeholder="Volumen en litros" 
-            required 
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label>Fecha de entrega</Label>
-          <div className="flex gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={cn(
-                    "flex-1 justify-start text-left font-normal",
-                    !date && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? format(date, "PPP", { locale: es }) : "Seleccionar fecha"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0">
-                <Calendar
-                  mode="single"
-                  selected={date}
-                  onSelect={setDate}
-                  initialFocus
-                  locale={es}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label>Tipo de entrega</Label>
-          <RadioGroup 
-            value={deliveryTimeType} 
-            onValueChange={(v) => setDeliveryTimeType(v as "specificTime" | "timeLimit")}
-            className="flex gap-4"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="specificTime" id="specificTime" />
-              <Label htmlFor="specificTime" className="cursor-pointer">Hora específica</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="timeLimit" id="timeLimit" />
-              <Label htmlFor="timeLimit" className="cursor-pointer">Límite de horas</Label>
-            </div>
-          </RadioGroup>
-        </div>
-
-        <div className="space-y-2">
-          {deliveryTimeType === "specificTime" ? (
-            <>
-              <Label htmlFor="time">Hora de entrega</Label>
-              <div className="flex items-center">
-                <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="time"
-                  type="time"
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  required
-                />
-              </div>
-            </>
-          ) : (
-            <>
-              <Label htmlFor="timeLimit">Límite de horas</Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="timeLimit"
-                  type="number"
-                  min="4"
-                  value={timeLimit}
-                  onChange={(e) => setTimeLimit(e.target.value)}
-                  required
-                />
-                <span className="text-muted-foreground">horas</span>
-              </div>
-            </>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="posicionX">Posición X</Label>
-          <Input 
-            id="posicionX" 
-            name="posicionX" 
-            value={formData.posicionX} 
-            onChange={handleChange} 
-            placeholder="0-70" 
-            type="number"
-            min="0"
-            max="70"
-            required 
-          />
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="posicionY">Posición Y</Label>
-          <Input 
-            id="posicionY" 
-            name="posicionY" 
-            value={formData.posicionY} 
-            onChange={handleChange} 
-            placeholder="0-50" 
-            type="number"
-            min="0"
-            max="50"
-            required 
-          />
-        </div>
+      <div>
+        <Label htmlFor="x">Coordenada X (máx 70)</Label>
+        <Input
+          type="number"
+          id="x"
+          value={x}
+          onChange={(e) => setX(Number(e.target.value))}
+          max={70}
+          min={0}
+        />
       </div>
-
-      <Button type="submit" className="w-full md:w-auto">
-        Registrar Pedido
-      </Button>
+      <div>
+        <Label htmlFor="y">Coordenada Y (máx 50)</Label>
+        <Input
+          type="number"
+          id="y"
+          value={y}
+          onChange={(e) => setY(Number(e.target.value))}
+          max={50}
+          min={0}
+        />
+      </div>
+      <div>
+        <Label htmlFor="volumen">Volumen de GLP (m³)</Label>
+        <Input
+          type="number"
+          id="volumen"
+          value={volumen}
+          onChange={(e) => setVolumen(Number(e.target.value))}
+        />
+      </div>
+      <div>
+        <Label htmlFor="fechaLimite">Fecha límite</Label>
+        <Input
+          type="datetime-local"
+          id="fechaLimite"
+          value={fechaLimite}
+          onChange={(e) => setFechaLimite(e.target.value)}
+        />
+      </div>
+      <Button type="submit">Registrar Pedido</Button>
     </form>
   )
-} 
+}

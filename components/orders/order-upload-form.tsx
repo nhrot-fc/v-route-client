@@ -22,8 +22,9 @@ export function OrderUploadForm() {
     }
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
     if (!file) {
       toast({
         title: "Error",
@@ -33,23 +34,49 @@ export function OrderUploadForm() {
       return
     }
 
-    // Simulación de carga
-    setUploading(true)
-    let currentProgress = 0
-    const interval = setInterval(() => {
-      currentProgress += 10
-      setProgress(currentProgress)
+    const formData = new FormData()
+    formData.append("file", file)
 
-      if (currentProgress >= 100) {
-        clearInterval(interval)
-        setUploading(false)
-        toast({
-          title: "Carga completada",
-          description: `Se ha procesado el archivo ${file.name} correctamente`,
-        })
-        setFile(null)
+    try {
+      setUploading(true)
+      setProgress(0)
+
+      // Simula progreso visual hasta el 90%
+      let currentProgress = 0
+      const interval = setInterval(() => {
+        currentProgress += 15
+        if (currentProgress >= 90) clearInterval(interval)
+        setProgress(Math.min(currentProgress, 90))
+      }, 200)
+
+      const response = await fetch("http://localhost:8080/api/orders/import-csv", {
+        method: "POST",
+        body: formData,
+      })
+
+      clearInterval(interval)
+      setProgress(100)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(errorText || "Error desconocido")
       }
-    }, 500)
+
+      toast({
+        title: "Carga completada",
+        description: `Se ha procesado el archivo ${file.name} correctamente`,
+      })
+
+      setFile(null)
+    } catch (err) {
+      toast({
+        title: "Error durante la carga",
+        description: err instanceof Error ? err.message : "Ocurrió un error",
+        variant: "destructive",
+      })
+    } finally {
+      setUploading(false)
+    }
   }
 
   return (
@@ -63,6 +90,13 @@ export function OrderUploadForm() {
             Cargar
           </Button>
         </div>
+        <a
+          href="/plantilla-ejemplo.csv"
+          download
+          className="text-xs text-blue-500 underline mt-1"
+        >
+          Descargar plantilla CSV
+        </a>
       </div>
 
       {file && (
