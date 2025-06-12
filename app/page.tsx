@@ -1,16 +1,37 @@
-"use client"
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Activity, AlertTriangle, CheckCircle2, Clock, Fuel, TrendingDown, TrendingUp, Truck } from "lucide-react"
-import { DeliveryStatusChart } from "@/components/dashboard/delivery-status-chart"
-import { FuelConsumptionChart } from "@/components/dashboard/fuel-consumption-chart"
-import { RecentOrders } from "@/components/dashboard/recent-orders"
-import { VehicleStatusList } from "@/components/dashboard/vehicle-status-list"
-import { useDashboardMetrics } from "@/hooks/use-dashboard"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Activity,
+  AlertTriangle,
+  CheckCircle2,
+  Clock,
+  Fuel,
+  TrendingDown,
+  TrendingUp,
+  Truck,
+} from "lucide-react";
+import { DeliveryStatusChart } from "@/components/dashboard/delivery-status-chart";
+import { FuelConsumptionChart } from "@/components/dashboard/fuel-consumption-chart";
+import { RecentOrders } from "@/components/dashboard/recent-orders";
+import { VehicleStatusList } from "@/components/dashboard/vehicle-status-list";
+import { useDashboardMetrics } from "@/hooks/use-dashboard";
+import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
   const { metrics, loading, error } = useDashboardMetrics();
+  const [currentTime, setCurrentTime] = useState("");
+
+  useEffect(() => {
+    setCurrentTime(new Date().toLocaleString("es-ES"));
+  }, []);
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -18,7 +39,9 @@ export default function DashboardPage() {
         <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <div className="flex items-center space-x-2">
           <Clock className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm text-muted-foreground">Actualizado: {new Date().toLocaleString("es-ES")}</span>
+          <span className="text-sm text-muted-foreground">
+            Actualizado: {currentTime}
+          </span>
         </div>
       </div>
 
@@ -33,25 +56,34 @@ export default function DashboardPage() {
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Pedidos Pendientes</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Pedidos Pendientes
+                </CardTitle>
                 <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 {loading ? (
                   <div className="animate-pulse bg-gray-200 h-8 w-16 rounded mb-2"></div>
                 ) : (
-                  <div className="text-2xl font-bold">{metrics.pendingOrders.count}</div>
+                  <div className="text-2xl font-bold">
+                    {metrics.pendingOrders.count}
+                  </div>
                 )}
                 <p className="text-xs text-muted-foreground">
                   {metrics.pendingOrders.changePercent < 0 ? (
                     <>
                       <TrendingDown className="mr-1 h-4 w-4 text-green-600 inline" />
-                      <span>{Math.abs(metrics.pendingOrders.changePercent)}% menos que ayer</span>
+                      <span>
+                        {Math.abs(metrics.pendingOrders.changePercent)}% menos
+                        que ayer
+                      </span>
                     </>
                   ) : (
                     <>
                       <TrendingUp className="mr-1 h-4 w-4 text-amber-500 inline" />
-                      <span>{metrics.pendingOrders.changePercent}% más que ayer</span>
+                      <span>
+                        {metrics.pendingOrders.changePercent}% más que ayer
+                      </span>
                     </>
                   )}
                 </p>
@@ -60,25 +92,34 @@ export default function DashboardPage() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Entregas Completadas</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Entregas Completadas
+                </CardTitle>
                 <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 {loading ? (
                   <div className="animate-pulse bg-gray-200 h-8 w-16 rounded mb-2"></div>
                 ) : (
-                  <div className="text-2xl font-bold">{metrics.completedOrders.count}</div>
+                  <div className="text-2xl font-bold">
+                    {metrics.completedOrders.count}
+                  </div>
                 )}
                 <p className="text-xs text-muted-foreground">
                   {metrics.completedOrders.changePercent > 0 ? (
                     <>
                       <TrendingUp className="mr-1 h-4 w-4 text-green-600 inline" />
-                      <span>{metrics.completedOrders.changePercent}% más que ayer</span>
+                      <span>
+                        {metrics.completedOrders.changePercent}% más que ayer
+                      </span>
                     </>
                   ) : (
                     <>
                       <TrendingDown className="mr-1 h-4 w-4 text-amber-500 inline" />
-                      <span>{Math.abs(metrics.completedOrders.changePercent)}% menos que ayer</span>
+                      <span>
+                        {Math.abs(metrics.completedOrders.changePercent)}% menos
+                        que ayer
+                      </span>
                     </>
                   )}
                 </p>
@@ -87,43 +128,59 @@ export default function DashboardPage() {
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Vehículos Activos</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Vehículos Activos
+                </CardTitle>
                 <Truck className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 {loading ? (
                   <div className="animate-pulse bg-gray-200 h-8 w-16 rounded mb-2"></div>
                 ) : (
-                  <div className="text-2xl font-bold">{metrics.activeVehicles.active}/{metrics.activeVehicles.total}</div>
+                  <div className="text-2xl font-bold">
+                    {metrics.activeVehicles.active}/
+                    {metrics.activeVehicles.total}
+                  </div>
                 )}
                 <p className="text-xs text-muted-foreground">
                   <AlertTriangle className="mr-1 h-4 w-4 text-amber-500 inline" />
-                  <span>{metrics.activeVehicles.inMaintenance} en mantenimiento</span>
+                  <span>
+                    {metrics.activeVehicles.inMaintenance} en mantenimiento
+                  </span>
                 </p>
               </CardContent>
             </Card>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Consumo de Combustible</CardTitle>
+                <CardTitle className="text-sm font-medium">
+                  Consumo de Combustible
+                </CardTitle>
                 <Fuel className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 {loading ? (
                   <div className="animate-pulse bg-gray-200 h-8 w-16 rounded mb-2"></div>
                 ) : (
-                  <div className="text-2xl font-bold">{metrics.fuelConsumption.total} L</div>
+                  <div className="text-2xl font-bold">
+                    {metrics.fuelConsumption.total} L
+                  </div>
                 )}
                 <p className="text-xs text-muted-foreground">
                   {metrics.fuelConsumption.changePercent < 0 ? (
                     <>
                       <TrendingDown className="mr-1 h-4 w-4 text-green-600 inline" />
-                      <span>{Math.abs(metrics.fuelConsumption.changePercent)}% menos que ayer</span>
+                      <span>
+                        {Math.abs(metrics.fuelConsumption.changePercent)}% menos
+                        que ayer
+                      </span>
                     </>
                   ) : (
                     <>
                       <TrendingUp className="mr-1 h-4 w-4 text-amber-500 inline" />
-                      <span>{metrics.fuelConsumption.changePercent}% más que ayer</span>
+                      <span>
+                        {metrics.fuelConsumption.changePercent}% más que ayer
+                      </span>
                     </>
                   )}
                 </p>
@@ -135,7 +192,9 @@ export default function DashboardPage() {
             <Card className="col-span-4">
               <CardHeader>
                 <CardTitle>Estado de Entregas</CardTitle>
-                <CardDescription>Distribución de entregas por estado en las últimas 24 horas</CardDescription>
+                <CardDescription>
+                  Distribución de entregas por estado en las últimas 24 horas
+                </CardDescription>
               </CardHeader>
               <CardContent className="pl-2">
                 <DeliveryStatusChart />
@@ -145,7 +204,9 @@ export default function DashboardPage() {
             <Card className="col-span-3">
               <CardHeader>
                 <CardTitle>Consumo de Combustible</CardTitle>
-                <CardDescription>Consumo diario de combustible en la última semana</CardDescription>
+                <CardDescription>
+                  Consumo diario de combustible en la última semana
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <FuelConsumptionChart />
@@ -157,7 +218,9 @@ export default function DashboardPage() {
             <Card className="col-span-4">
               <CardHeader>
                 <CardTitle>Pedidos Recientes</CardTitle>
-                <CardDescription>Últimos pedidos registrados en el sistema</CardDescription>
+                <CardDescription>
+                  Últimos pedidos registrados en el sistema
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <RecentOrders />
@@ -167,7 +230,9 @@ export default function DashboardPage() {
             <Card className="col-span-3">
               <CardHeader>
                 <CardTitle>Estado de Vehículos</CardTitle>
-                <CardDescription>Listado de vehículos y su estado actual</CardDescription>
+                <CardDescription>
+                  Listado de vehículos y su estado actual
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <VehicleStatusList />
@@ -180,12 +245,16 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>Análisis de Rendimiento</CardTitle>
-              <CardDescription>Métricas detalladas de rendimiento operativo</CardDescription>
+              <CardDescription>
+                Métricas detalladas de rendimiento operativo
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-center h-40">
                 <Activity className="h-16 w-16 text-muted-foreground" />
-                <p className="ml-4 text-muted-foreground">Seleccione parámetros para visualizar análisis</p>
+                <p className="ml-4 text-muted-foreground">
+                  Seleccione parámetros para visualizar análisis
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -195,17 +264,21 @@ export default function DashboardPage() {
           <Card>
             <CardHeader>
               <CardTitle>Reportes</CardTitle>
-              <CardDescription>Generación de reportes personalizados</CardDescription>
+              <CardDescription>
+                Generación de reportes personalizados
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-center h-40">
                 <Activity className="h-16 w-16 text-muted-foreground" />
-                <p className="ml-4 text-muted-foreground">Seleccione parámetros para generar reportes</p>
+                <p className="ml-4 text-muted-foreground">
+                  Seleccione parámetros para generar reportes
+                </p>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }
