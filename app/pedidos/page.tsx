@@ -12,17 +12,34 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrdersTable } from "@/components/orders/orders-table";
 import { OrderUploadForm } from "@/components/orders/order-upload-form";
-import  OrderForm  from "@/components/orders/order-form";
+import OrderForm from "@/components/orders/order-form";
 import { Plus, Upload } from "lucide-react";
 import { useState } from "react";
 
 export default function PedidosPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  // Key to trigger re-fetching/re-rendering of OrdersTable
+  const [ordersUpdateKey, setOrdersUpdateKey] = useState(0);
+  // Key to reset OrderForm instance
+  const [orderFormInstanceKey, setOrderFormInstanceKey] = useState(0);
 
   const handleSearch = () => {
-    // Al hacer clic, fijamos la consulta de búsqueda
     setSearchQuery(searchTerm.trim());
+  };
+
+  // This function should be called by OrderForm after a new order is successfully created.
+  // OrderForm will need to be modified to accept and call an onOrderAdded prop.
+  const handleOrderAdded = () => {
+    setOrdersUpdateKey((prevKey) => prevKey + 1); // Refresh the orders table
+    // Optionally, reset the form to its initial state after successful submission
+    // setOrderFormInstanceKey((prevKey) => prevKey + 1);
+  };
+
+  const handleNewPedidoClick = () => {
+    // Explicitly reset the OrderForm by changing its key, forcing a re-mount
+    setOrderFormInstanceKey((prevKey) => prevKey + 1);
+    // You could add other logic here, like scrolling to the form
   };
 
   return (
@@ -36,7 +53,9 @@ export default function PedidosPage() {
             <Upload className="mr-2 h-4 w-4" />
             Importar
           </Button>
-          <Button>
+          <Button onClick={handleNewPedidoClick}>
+            {" "}
+            {/* Attach handler */}
             <Plus className="mr-2 h-4 w-4" />
             Nuevo Pedido
           </Button>
@@ -97,7 +116,15 @@ export default function PedidosPage() {
                 <CardDescription>{desc}</CardDescription>
               </CardHeader>
               <CardContent>
-                <OrdersTable filter={filter} search={searchQuery} />
+                {/* Add ordersUpdateKey as a React key to OrdersTable.
+                    This will cause OrdersTable to re-mount and re-fetch its data when the key changes.
+                    Ensure OrdersTable fetches data on mount or when its props (like this key) change.
+                */}
+                <OrdersTable
+                  key={ordersUpdateKey}
+                  filter={filter}
+                  search={searchQuery}
+                />
               </CardContent>
             </Card>
           </TabsContent>
@@ -111,19 +138,25 @@ export default function PedidosPage() {
             <CardDescription>Añade un nuevo pedido al sistema</CardDescription>
           </CardHeader>
           <CardContent>
-            <OrderForm />
+            {/* Pass the key to reset the form and the callback for when an order is added.
+                OrderForm must be adapted to accept and call onOrderAdded.
+            */}
+            <OrderForm
+              key={orderFormInstanceKey}
+              onOrderAdded={handleOrderAdded}
+            />
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Carga Masiva de Pedidos</CardTitle>
+            <CardTitle>Carga Masiva</CardTitle>
             <CardDescription>
-              Sube un archivo con múltiples pedidos en formato CSV
+              Importa múltiples pedidos desde un archivo CSV
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <OrderUploadForm />
+            <OrderUploadForm onOrdersUploaded={handleOrderAdded} />
           </CardContent>
         </Card>
       </div>

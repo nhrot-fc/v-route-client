@@ -2,7 +2,8 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, AlertTriangle } from "lucide-react"
+import { useToast } from "@/components/ui/use-toast";
+import { Loader2, AlertTriangle } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,7 +31,9 @@ interface OrdersTableProps {
 }
 
 export function OrdersTable({ filter, search }: OrdersTableProps) {
-  const { orders, loading, error, deleteOrder, recordDelivery } = useOrders(filter);
+  const { orders, loading, error, deleteOrder, recordDelivery } =
+    useOrders(filter);
+  const { toast } = useToast();
   const q = search?.trim().toLowerCase() ?? "";
 
   const filtered = useMemo(() => {
@@ -57,7 +60,19 @@ export function OrdersTable({ filter, search }: OrdersTableProps) {
 
   const handleDelete = async (id: string) => {
     if (confirm("¿Estás seguro de que quieres eliminar esta orden?")) {
-      await deleteOrder(id);
+      try {
+        await deleteOrder(id);
+        toast({
+          title: "Orden eliminada",
+          description: "La orden ha sido eliminada exitosamente.",
+        });
+      } catch (error) {
+        toast({
+          title: "Error al eliminar",
+          description: "No se pudo eliminar la orden. Inténtalo de nuevo.",
+          variant: "destructive",
+        });
+      }
     }
   };
 

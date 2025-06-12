@@ -1,2 +1,5 @@
-ignoredBuiltDependencies:
+packages:
+  - '.' # el proyecto actual
+
+ignoredBuildDependencies:
   - sharp
