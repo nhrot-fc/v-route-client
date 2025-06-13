@@ -77,9 +77,12 @@ export function useOrders(filter?: string) {
 
   const deleteOrder = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/orders/${id}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `http://ec2-54-208-138-5.compute-1.amazonaws.com:8082/api/orders/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Error al eliminar la orden");

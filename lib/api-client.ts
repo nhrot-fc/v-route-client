@@ -2,7 +2,7 @@ import { Configuration, BlockagesApi, DashboardApi, DepotsApi, IncidentsApi, Mai
 import axios from 'axios'
 
 // Configure axios with base URL and default settings
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080'
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://ec2-54-208-138-5.compute-1.amazonaws.com:8082'
 
 // Create axios instance with common configuration
 const axiosInstance = axios.create({
