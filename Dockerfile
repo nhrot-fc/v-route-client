@@ -1,43 +1,44 @@
 ############################################################
-# Stage 1 – BUILD                                           #
+# Stage 1 – BUILD
 ############################################################
 FROM node:20-alpine AS builder
 
-# 1. Install pnpm globally
+# Instala pnpm mediante corepack
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# 2. Prepare work directory
 WORKDIR /app
 
-# 3. Copy lockfile & package manifests first (better cache)
-COPY pnpm-lock.yaml package.json ./
-COPY apps/*/package.json ./apps/*/
-# If you use a monorepo/workspaces, copy other manifest files here
+# 1. Copia únicamente los archivos de dependencia para aprovechar caché
+COPY package.json pnpm-lock.yaml ./
+#  ─ Si tuviera workspaces, añada también:  COPY pnpm-workspace.yaml ./
 
-# 4. Install dependencies (no dev layout yet)
+# 2. Instala dependencias en modo producción + build-support
 RUN pnpm install --frozen-lockfile
 
-# 5. Copy the rest of the source and build
+# 3. Copia el resto del código fuente
 COPY . .
-RUN pnpm run build          # --> .next/standalone + .next/static
+
+# 4. Compila el artefacto de producción
+RUN pnpm run build          # genera .next/
 
 ############################################################
-# Stage 2 – RUNTIME                                         #
+# Stage 2 – RUNTIME ligero
 ############################################################
 FROM node:20-alpine AS runner
 
-# Smaller image: only node_modules needed at runtime
 ENV NODE_ENV=production
+
 WORKDIR /app
 
-# 1. Copy production node_modules & built output
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
+# Copia únicamente lo necesario para ejecutar la app
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/public ./public
-# If your app needs .env files, copy or mount them separately
+COPY --from=builder /app/next.config.* ./         # mjs / js
+COPY --from=builder /app/package.json ./package.json
 
-# 2. Port where Next.js will listen
+# Puerto donde escucha Next.js
 EXPOSE 3000
 
-# 3. Start the server
-CMD ["pnpm", "run", "start"]
+# Comando de arranque
+CMD ["pnpm","run","start"]
