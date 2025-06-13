@@ -21,24 +21,16 @@ COPY . .
 # 4. Compila el artefacto de producción
 RUN pnpm run build          # genera .next/
 
-############################################################
-# Stage 2 – RUNTIME ligero
-############################################################
+# Stage 2 – Runtime
+############################
 FROM node:20-alpine AS runner
-
+WORKDIR /app
 ENV NODE_ENV=production
 
-WORKDIR /app
+# Copiamos únicamente el bundle standalone
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public        ./public
 
-# Copia únicamente lo necesario para ejecutar la app
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/next.config.* ./
-COPY --from=builder /app/package.json ./package.json
-
-# Puerto donde escucha Next.js
 EXPOSE 3000
-
-# Comando de arranque
-CMD ["pnpm","run","start"]
+CMD ["node", "server.js"]
