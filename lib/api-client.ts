@@ -12,7 +12,7 @@ import axios from "axios";
 
 // Configure axios with base URL and default settings
 const BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://52.87.156.154:8081";
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://200.16.7.170/api";
 
 // Create axios instance with common configuration
 const axiosInstance = axios.create({

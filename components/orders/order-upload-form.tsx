@@ -90,7 +90,7 @@ export function OrderUploadForm({ onOrdersUploaded }: OrderUploadFormProps) {
       }, 200);
 
       const response = await fetch(
-        "http://ec2-54-208-138-5.compute-1.amazonaws.com:8082/api/orders/import-csv",
+        "http://200.16.7.170/api/api/orders/import-csv",
         {
           method: "POST",
           body: formData,

@@ -72,16 +72,13 @@ export default function OrderForm({ onOrderAdded }: OrderFormProps) {
     };
 
     try {
-      const response = await fetch(
-        "http://ec2-54-208-138-5.compute-1.amazonaws.com:8082/api/orders",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(data),
-        }
-      );
+      const response = await fetch("http://200.16.7.170/api/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
