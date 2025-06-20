@@ -1,0 +1,14 @@
+# Salidas de build y dependencias locales
+.next
+node_modules
+.pnpm
+.idea
+.vscode
+
+# Archivos de sistema / OS
+.DS_Store
+Thumbs.db
+
+# Control de versiones
+.git
+.gitignore

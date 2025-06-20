@@ -4033,439 +4033,608 @@ export type ScheduleMaintenanceTypeEnum = typeof ScheduleMaintenanceTypeEnum[key
  */
 export const OrdersApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
-        /**
-         * Registra una nueva orden en el sistema
-         * @summary Crear nueva orden
-         * @param {Order} order 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        createOrder: async (order: Order, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'order' is not null or undefined
-            assertParamExists('createOrder', 'order', order)
-            const localVarPath = `/api/orders`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+      /**
+       * Registra una nueva orden en el sistema
+       * @summary Crear nueva orden
+       * @param {Order} order
+       * @param {*} [options] Override http request option.
+       * @throws {RequiredError}
+       */
+      createOrder: async (
+        order: Order,
+        options: RawAxiosRequestConfig = {}
+      ): Promise<RequestArgs> => {
+        // verify required parameter 'order' is not null or undefined
+        assertParamExists("createOrder", "order", order);
+        const localVarPath = `/api/orders`;
+        // use dummy base URL string because the URL constructor only accepts absolute URLs.
+        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+        let baseOptions;
+        if (configuration) {
+          baseOptions = configuration.baseOptions;
+        }
 
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+        const localVarRequestOptions = {
+          method: "POST",
+          ...baseOptions,
+          ...options,
+        };
+        const localVarHeaderParameter = {} as any;
+        const localVarQueryParameter = {} as any;
 
+        localVarHeaderParameter["Content-Type"] = "application/json";
 
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
+        setSearchParams(localVarUrlObj, localVarQueryParameter);
+        let headersFromBaseOptions =
+          baseOptions && baseOptions.headers ? baseOptions.headers : {};
+        localVarRequestOptions.headers = {
+          ...localVarHeaderParameter,
+          ...headersFromBaseOptions,
+          ...options.headers,
+        };
+        localVarRequestOptions.data = serializeDataIfNeeded(
+          order,
+          localVarRequestOptions,
+          configuration
+        );
 
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(order, localVarRequestOptions, configuration)
+        return {
+          url: toPathString(localVarUrlObj),
+          options: localVarRequestOptions,
+        };
+      },
+      /**
+       * Elimina una orden del sistema
+       * @summary Eliminar orden
+       * @param {string} id ID de la orden a eliminar
+       * @param {*} [options] Override http request option.
+       * @throws {RequiredError}
+       */
+      deleteOrder: async (
+        id: string,
+        options: RawAxiosRequestConfig = {}
+      ): Promise<RequestArgs> => {
+        // verify required parameter 'id' is not null or undefined
+        assertParamExists("deleteOrder", "id", id);
+        const localVarPath = `/api/orders/{id}`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(id))
+        );
+        // use dummy base URL string because the URL constructor only accepts absolute URLs.
+        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+        let baseOptions;
+        if (configuration) {
+          baseOptions = configuration.baseOptions;
+        }
 
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Elimina una orden del sistema
-         * @summary Eliminar orden
-         * @param {string} id ID de la orden a eliminar
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        deleteOrder: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('deleteOrder', 'id', id)
-            const localVarPath = `/api/orders/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+        const localVarRequestOptions = {
+          method: "DELETE",
+          ...baseOptions,
+          ...options,
+        };
+        const localVarHeaderParameter = {} as any;
+        const localVarQueryParameter = {} as any;
 
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+        setSearchParams(localVarUrlObj, localVarQueryParameter);
+        let headersFromBaseOptions =
+          baseOptions && baseOptions.headers ? baseOptions.headers : {};
+        localVarRequestOptions.headers = {
+          ...localVarHeaderParameter,
+          ...headersFromBaseOptions,
+          ...options.headers,
+        };
 
+        return {
+          url: toPathString(localVarUrlObj),
+          options: localVarRequestOptions,
+        };
+      },
+      /**
+       * Retorna la lista completa de órdenes registradas
+       * @summary Obtener todas las órdenes
+       * @param {*} [options] Override http request option.
+       * @throws {RequiredError}
+       */
+      getAllOrders: async (
+        options: RawAxiosRequestConfig = {}
+      ): Promise<RequestArgs> => {
+        const localVarPath = `/api/orders`;
+        // use dummy base URL string because the URL constructor only accepts absolute URLs.
+        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+        let baseOptions;
+        if (configuration) {
+          baseOptions = configuration.baseOptions;
+        }
 
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+        const localVarRequestOptions = {
+          method: "GET",
+          ...baseOptions,
+          ...options,
+        };
+        const localVarHeaderParameter = {} as any;
+        const localVarQueryParameter = {} as any;
 
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna la lista completa de órdenes registradas
-         * @summary Obtener todas las órdenes
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getAllOrders: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/orders`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+        setSearchParams(localVarUrlObj, localVarQueryParameter);
+        let headersFromBaseOptions =
+          baseOptions && baseOptions.headers ? baseOptions.headers : {};
+        localVarRequestOptions.headers = {
+          ...localVarHeaderParameter,
+          ...headersFromBaseOptions,
+          ...options.headers,
+        };
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+        return {
+          url: toPathString(localVarUrlObj),
+          options: localVarRequestOptions,
+        };
+      },
+      /**
+       * Retorna todas las órdenes que han sido completadas
+       * @summary Obtener órdenes completadas
+       * @param {*} [options] Override http request option.
+       * @throws {RequiredError}
+       */
+      getCompletedOrders: async (
+        options: RawAxiosRequestConfig = {}
+      ): Promise<RequestArgs> => {
+        const localVarPath = `/api/orders/completed`;
+        // use dummy base URL string because the URL constructor only accepts absolute URLs.
+        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+        let baseOptions;
+        if (configuration) {
+          baseOptions = configuration.baseOptions;
+        }
 
+        const localVarRequestOptions = {
+          method: "GET",
+          ...baseOptions,
+          ...options,
+        };
+        const localVarHeaderParameter = {} as any;
+        const localVarQueryParameter = {} as any;
 
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+        setSearchParams(localVarUrlObj, localVarQueryParameter);
+        let headersFromBaseOptions =
+          baseOptions && baseOptions.headers ? baseOptions.headers : {};
+        localVarRequestOptions.headers = {
+          ...localVarHeaderParameter,
+          ...headersFromBaseOptions,
+          ...options.headers,
+        };
 
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna todas las órdenes que han sido completadas
-         * @summary Obtener órdenes completadas
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getCompletedOrders: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/orders/completed`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+        return {
+          url: toPathString(localVarUrlObj),
+          options: localVarRequestOptions,
+        };
+      },
+      /**
+       * Retorna una orden específica
+       * @summary Obtener orden por ID
+       * @param {string} id ID de la orden
+       * @param {*} [options] Override http request option.
+       * @throws {RequiredError}
+       */
+      getOrderById: async (
+        id: string,
+        options: RawAxiosRequestConfig = {}
+      ): Promise<RequestArgs> => {
+        // verify required parameter 'id' is not null or undefined
+        assertParamExists("getOrderById", "id", id);
+        const localVarPath = `/api/orders/{id}`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(id))
+        );
+        // use dummy base URL string because the URL constructor only accepts absolute URLs.
+        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+        let baseOptions;
+        if (configuration) {
+          baseOptions = configuration.baseOptions;
+        }
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+        const localVarRequestOptions = {
+          method: "GET",
+          ...baseOptions,
+          ...options,
+        };
+        const localVarHeaderParameter = {} as any;
+        const localVarQueryParameter = {} as any;
 
+        setSearchParams(localVarUrlObj, localVarQueryParameter);
+        let headersFromBaseOptions =
+          baseOptions && baseOptions.headers ? baseOptions.headers : {};
+        localVarRequestOptions.headers = {
+          ...localVarHeaderParameter,
+          ...headersFromBaseOptions,
+          ...options.headers,
+        };
 
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+        return {
+          url: toPathString(localVarUrlObj),
+          options: localVarRequestOptions,
+        };
+      },
+      /**
+       * Retorna órdenes en un rango de fechas específico
+       * @summary Obtener órdenes por rango de fechas
+       * @param {string} startDate Fecha de inicio (ISO 8601)
+       * @param {string} endDate Fecha de fin (ISO 8601)
+       * @param {*} [options] Override http request option.
+       * @throws {RequiredError}
+       */
+      getOrdersByDateRange: async (
+        startDate: string,
+        endDate: string,
+        options: RawAxiosRequestConfig = {}
+      ): Promise<RequestArgs> => {
+        // verify required parameter 'startDate' is not null or undefined
+        assertParamExists("getOrdersByDateRange", "startDate", startDate);
+        // verify required parameter 'endDate' is not null or undefined
+        assertParamExists("getOrdersByDateRange", "endDate", endDate);
+        const localVarPath = `/api/orders/date-range`;
+        // use dummy base URL string because the URL constructor only accepts absolute URLs.
+        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+        let baseOptions;
+        if (configuration) {
+          baseOptions = configuration.baseOptions;
+        }
 
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna una orden específica
-         * @summary Obtener orden por ID
-         * @param {string} id ID de la orden
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getOrderById: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('getOrderById', 'id', id)
-            const localVarPath = `/api/orders/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+        const localVarRequestOptions = {
+          method: "GET",
+          ...baseOptions,
+          ...options,
+        };
+        const localVarHeaderParameter = {} as any;
+        const localVarQueryParameter = {} as any;
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+        if (startDate !== undefined) {
+          localVarQueryParameter["startDate"] = startDate;
+        }
 
+        if (endDate !== undefined) {
+          localVarQueryParameter["endDate"] = endDate;
+        }
 
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+        setSearchParams(localVarUrlObj, localVarQueryParameter);
+        let headersFromBaseOptions =
+          baseOptions && baseOptions.headers ? baseOptions.headers : {};
+        localVarRequestOptions.headers = {
+          ...localVarHeaderParameter,
+          ...headersFromBaseOptions,
+          ...options.headers,
+        };
 
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna órdenes en un rango de fechas específico
-         * @summary Obtener órdenes por rango de fechas
-         * @param {string} startDate Fecha de inicio (ISO 8601)
-         * @param {string} endDate Fecha de fin (ISO 8601)
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getOrdersByDateRange: async (startDate: string, endDate: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'startDate' is not null or undefined
-            assertParamExists('getOrdersByDateRange', 'startDate', startDate)
-            // verify required parameter 'endDate' is not null or undefined
-            assertParamExists('getOrdersByDateRange', 'endDate', endDate)
-            const localVarPath = `/api/orders/date-range`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+        return {
+          url: toPathString(localVarUrlObj),
+          options: localVarRequestOptions,
+        };
+      },
+      /**
+       * Retorna órdenes que deben ser entregadas antes de una fecha específica
+       * @summary Obtener órdenes por fecha límite
+       * @param {string} time Fecha límite (ISO 8601)
+       * @param {*} [options] Override http request option.
+       * @throws {RequiredError}
+       */
+      getOrdersByDueTime: async (
+        time: string,
+        options: RawAxiosRequestConfig = {}
+      ): Promise<RequestArgs> => {
+        // verify required parameter 'time' is not null or undefined
+        assertParamExists("getOrdersByDueTime", "time", time);
+        const localVarPath = `/api/orders/due-by`;
+        // use dummy base URL string because the URL constructor only accepts absolute URLs.
+        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+        let baseOptions;
+        if (configuration) {
+          baseOptions = configuration.baseOptions;
+        }
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+        const localVarRequestOptions = {
+          method: "GET",
+          ...baseOptions,
+          ...options,
+        };
+        const localVarHeaderParameter = {} as any;
+        const localVarQueryParameter = {} as any;
 
-            if (startDate !== undefined) {
-                localVarQueryParameter['startDate'] = startDate;
-            }
+        if (time !== undefined) {
+          localVarQueryParameter["time"] = time;
+        }
 
-            if (endDate !== undefined) {
-                localVarQueryParameter['endDate'] = endDate;
-            }
+        setSearchParams(localVarUrlObj, localVarQueryParameter);
+        let headersFromBaseOptions =
+          baseOptions && baseOptions.headers ? baseOptions.headers : {};
+        localVarRequestOptions.headers = {
+          ...localVarHeaderParameter,
+          ...headersFromBaseOptions,
+          ...options.headers,
+        };
 
+        return {
+          url: toPathString(localVarUrlObj),
+          options: localVarRequestOptions,
+        };
+      },
+      /**
+       * Retorna órdenes dentro de un radio específico desde una posición
+       * @summary Obtener órdenes por radio
+       * @param {number} x Coordenada X del centro
+       * @param {number} y Coordenada Y del centro
+       * @param {number} radius Radio de búsqueda
+       * @param {*} [options] Override http request option.
+       * @throws {RequiredError}
+       */
+      getOrdersByRadius: async (
+        x: number,
+        y: number,
+        radius: number,
+        options: RawAxiosRequestConfig = {}
+      ): Promise<RequestArgs> => {
+        // verify required parameter 'x' is not null or undefined
+        assertParamExists("getOrdersByRadius", "x", x);
+        // verify required parameter 'y' is not null or undefined
+        assertParamExists("getOrdersByRadius", "y", y);
+        // verify required parameter 'radius' is not null or undefined
+        assertParamExists("getOrdersByRadius", "radius", radius);
+        const localVarPath = `/api/orders/radius`;
+        // use dummy base URL string because the URL constructor only accepts absolute URLs.
+        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+        let baseOptions;
+        if (configuration) {
+          baseOptions = configuration.baseOptions;
+        }
 
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+        const localVarRequestOptions = {
+          method: "GET",
+          ...baseOptions,
+          ...options,
+        };
+        const localVarHeaderParameter = {} as any;
+        const localVarQueryParameter = {} as any;
 
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna órdenes que deben ser entregadas antes de una fecha específica
-         * @summary Obtener órdenes por fecha límite
-         * @param {string} time Fecha límite (ISO 8601)
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getOrdersByDueTime: async (time: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'time' is not null or undefined
-            assertParamExists('getOrdersByDueTime', 'time', time)
-            const localVarPath = `/api/orders/due-by`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+        if (x !== undefined) {
+          localVarQueryParameter["x"] = x;
+        }
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+        if (y !== undefined) {
+          localVarQueryParameter["y"] = y;
+        }
 
-            if (time !== undefined) {
-                localVarQueryParameter['time'] = time;
-            }
+        if (radius !== undefined) {
+          localVarQueryParameter["radius"] = radius;
+        }
 
+        setSearchParams(localVarUrlObj, localVarQueryParameter);
+        let headersFromBaseOptions =
+          baseOptions && baseOptions.headers ? baseOptions.headers : {};
+        localVarRequestOptions.headers = {
+          ...localVarHeaderParameter,
+          ...headersFromBaseOptions,
+          ...options.headers,
+        };
 
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+        return {
+          url: toPathString(localVarUrlObj),
+          options: localVarRequestOptions,
+        };
+      },
+      /**
+       * Retorna todas las órdenes que han superado su fecha límite
+       * @summary Obtener órdenes vencidas
+       * @param {*} [options] Override http request option.
+       * @throws {RequiredError}
+       */
+      getOverdueOrders: async (
+        options: RawAxiosRequestConfig = {}
+      ): Promise<RequestArgs> => {
+        const localVarPath = `/api/orders/overdue`;
+        // use dummy base URL string because the URL constructor only accepts absolute URLs.
+        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+        let baseOptions;
+        if (configuration) {
+          baseOptions = configuration.baseOptions;
+        }
 
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna órdenes dentro de un radio específico desde una posición
-         * @summary Obtener órdenes por radio
-         * @param {number} x Coordenada X del centro
-         * @param {number} y Coordenada Y del centro
-         * @param {number} radius Radio de búsqueda
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getOrdersByRadius: async (x: number, y: number, radius: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'x' is not null or undefined
-            assertParamExists('getOrdersByRadius', 'x', x)
-            // verify required parameter 'y' is not null or undefined
-            assertParamExists('getOrdersByRadius', 'y', y)
-            // verify required parameter 'radius' is not null or undefined
-            assertParamExists('getOrdersByRadius', 'radius', radius)
-            const localVarPath = `/api/orders/radius`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+        const localVarRequestOptions = {
+          method: "GET",
+          ...baseOptions,
+          ...options,
+        };
+        const localVarHeaderParameter = {} as any;
+        const localVarQueryParameter = {} as any;
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+        setSearchParams(localVarUrlObj, localVarQueryParameter);
+        let headersFromBaseOptions =
+          baseOptions && baseOptions.headers ? baseOptions.headers : {};
+        localVarRequestOptions.headers = {
+          ...localVarHeaderParameter,
+          ...headersFromBaseOptions,
+          ...options.headers,
+        };
 
-            if (x !== undefined) {
-                localVarQueryParameter['x'] = x;
-            }
+        return {
+          url: toPathString(localVarUrlObj),
+          options: localVarRequestOptions,
+        };
+      },
+      /**
+       * Retorna todas las órdenes que están pendientes de entrega
+       * @summary Obtener órdenes pendientes
+       * @param {*} [options] Override http request option.
+       * @throws {RequiredError}
+       */
+      getPendingOrders: async (
+        options: RawAxiosRequestConfig = {}
+      ): Promise<RequestArgs> => {
+        const localVarPath = `/api/orders/pending`;
+        // use dummy base URL string because the URL constructor only accepts absolute URLs.
+        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+        let baseOptions;
+        if (configuration) {
+          baseOptions = configuration.baseOptions;
+        }
 
-            if (y !== undefined) {
-                localVarQueryParameter['y'] = y;
-            }
+        const localVarRequestOptions = {
+          method: "GET",
+          ...baseOptions,
+          ...options,
+        };
+        const localVarHeaderParameter = {} as any;
+        const localVarQueryParameter = {} as any;
 
-            if (radius !== undefined) {
-                localVarQueryParameter['radius'] = radius;
-            }
+        setSearchParams(localVarUrlObj, localVarQueryParameter);
+        let headersFromBaseOptions =
+          baseOptions && baseOptions.headers ? baseOptions.headers : {};
+        localVarRequestOptions.headers = {
+          ...localVarHeaderParameter,
+          ...headersFromBaseOptions,
+          ...options.headers,
+        };
 
+        return {
+          url: toPathString(localVarUrlObj),
+          options: localVarRequestOptions,
+        };
+      },
+      /**
+       * Retorna órdenes que deben ser entregadas en las próximas horas
+       * @summary Obtener órdenes urgentes
+       * @param {number} [hoursAhead] Horas hacia adelante para considerar urgente
+       * @param {*} [options] Override http request option.
+       * @throws {RequiredError}
+       */
+      getUrgentOrders: async (
+        hoursAhead?: number,
+        options: RawAxiosRequestConfig = {}
+      ): Promise<RequestArgs> => {
+        const localVarPath = `/api/orders/urgent`;
+        // use dummy base URL string because the URL constructor only accepts absolute URLs.
+        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+        let baseOptions;
+        if (configuration) {
+          baseOptions = configuration.baseOptions;
+        }
 
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+        const localVarRequestOptions = {
+          method: "GET",
+          ...baseOptions,
+          ...options,
+        };
+        const localVarHeaderParameter = {} as any;
+        const localVarQueryParameter = {} as any;
 
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna todas las órdenes que han superado su fecha límite
-         * @summary Obtener órdenes vencidas
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getOverdueOrders: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/orders/overdue`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+        if (hoursAhead !== undefined) {
+          localVarQueryParameter["hoursAhead"] = hoursAhead;
+        }
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+        setSearchParams(localVarUrlObj, localVarQueryParameter);
+        let headersFromBaseOptions =
+          baseOptions && baseOptions.headers ? baseOptions.headers : {};
+        localVarRequestOptions.headers = {
+          ...localVarHeaderParameter,
+          ...headersFromBaseOptions,
+          ...options.headers,
+        };
 
+        return {
+          url: toPathString(localVarUrlObj),
+          options: localVarRequestOptions,
+        };
+      },
+      /**
+       * Registra la entrega de una cantidad específica de GLP para una orden
+       * @summary Registrar entrega
+       * @param {string} id ID de la orden
+       * @param {number} amount Volumen entregado
+       * @param {*} [options] Override http request option.
+       * @throws {RequiredError}
+       */
+      recordDelivery: async (
+        id: string,
+        amount: number,
+        options: RawAxiosRequestConfig = {}
+      ): Promise<RequestArgs> => {
+        // verify required parameter 'id' is not null or undefined
+        assertParamExists("recordDelivery", "id", id);
+        // verify required parameter 'amount' is not null or undefined
+        assertParamExists("recordDelivery", "amount", amount);
+        const localVarPath = `/api/orders/{id}/deliver`.replace(
+          `{${"id"}}`,
+          encodeURIComponent(String(id))
+        );
+        // use dummy base URL string because the URL constructor only accepts absolute URLs.
+        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+        let baseOptions;
+        if (configuration) {
+          baseOptions = configuration.baseOptions;
+        }
 
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+        const localVarRequestOptions = {
+          method: "PUT",
+          ...baseOptions,
+          ...options,
+        };
+        const localVarHeaderParameter = {} as any;
+        const localVarQueryParameter = {} as any;
 
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna todas las órdenes que están pendientes de entrega
-         * @summary Obtener órdenes pendientes
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getPendingOrders: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/orders/pending`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+        if (amount !== undefined) {
+          localVarQueryParameter["amount"] = amount;
+        }
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+        setSearchParams(localVarUrlObj, localVarQueryParameter);
+        let headersFromBaseOptions =
+          baseOptions && baseOptions.headers ? baseOptions.headers : {};
+        localVarRequestOptions.headers = {
+          ...localVarHeaderParameter,
+          ...headersFromBaseOptions,
+          ...options.headers,
+        };
 
+        return {
+          url: toPathString(localVarUrlObj),
+          options: localVarRequestOptions,
+        };
+      },
+      getOrdersByStatus: async (
+        status: GetOrdersByStatusStatusEnum,
+        options: RawAxiosRequestConfig = {}
+      ): Promise<RequestArgs> => {
+        // verify required parameter 'status' is not null or undefined
+        assertParamExists("getOrdersByStatus", "status", status);
+        const localVarPath = `/api/orders/status/{status}`.replace(
+          `{${"status"}}`,
+          encodeURIComponent(String(status))
+        );
+        // use dummy base URL string because the URL constructor only accepts absolute URLs.
+        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+        let baseOptions;
+        if (configuration) {
+          baseOptions = configuration.baseOptions;
+        }
 
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+        const localVarRequestOptions = {
+          method: "GET",
+          ...baseOptions,
+          ...options,
+        };
+        const localVarHeaderParameter = {} as any;
+        const localVarQueryParameter = {} as any;
 
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna órdenes que deben ser entregadas en las próximas horas
-         * @summary Obtener órdenes urgentes
-         * @param {number} [hoursAhead] Horas hacia adelante para considerar urgente
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getUrgentOrders: async (hoursAhead?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/orders/urgent`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
+        setSearchParams(localVarUrlObj, localVarQueryParameter);
+        let headersFromBaseOptions =
+          baseOptions && baseOptions.headers ? baseOptions.headers : {};
+        localVarRequestOptions.headers = {
+          ...localVarHeaderParameter,
+          ...headersFromBaseOptions,
+          ...options.headers,
+        };
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (hoursAhead !== undefined) {
-                localVarQueryParameter['hoursAhead'] = hoursAhead;
-            }
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Registra la entrega de una cantidad específica de GLP para una orden
-         * @summary Registrar entrega
-         * @param {string} id ID de la orden
-         * @param {number} amount Volumen entregado
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        recordDelivery: async (id: string, amount: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('recordDelivery', 'id', id)
-            // verify required parameter 'amount' is not null or undefined
-            assertParamExists('recordDelivery', 'amount', amount)
-            const localVarPath = `/api/orders/{id}/deliver`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (amount !== undefined) {
-                localVarQueryParameter['amount'] = amount;
-            }
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-    }
+        return {
+          url: toPathString(localVarUrlObj),
+          options: localVarRequestOptions,
+        };
+      },
+    };
 };
 
 /**
@@ -4631,6 +4800,13 @@ export const OrdersApiFp = function(configuration?: Configuration) {
             const localVarOperationServerBasePath = operationServerMap['OrdersApi.recordDelivery']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
+        async getOrdersByStatus(status: GetOrdersByStatusStatusEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Order>>> {
+    const localVarAxiosArgs = await localVarAxiosParamCreator.getOrdersByStatus(status, options);
+    const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+    const localVarOperationServerBasePath = operationServerMap['OrdersApi.getOrdersByStatus']?.[localVarOperationServerIndex]?.url;
+    return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+},
+
     }
 };
 
@@ -4750,17 +4926,9 @@ export const OrdersApiFactory = function (configuration?: Configuration, basePat
         getUrgentOrders(hoursAhead?: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<Order>> {
             return localVarFp.getUrgentOrders(hoursAhead, options).then((request) => request(axios, basePath));
         },
-        /**
-         * Registra la entrega de una cantidad específica de GLP para una orden
-         * @summary Registrar entrega
-         * @param {string} id ID de la orden
-         * @param {number} amount Volumen entregado
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        recordDelivery(id: string, amount: number, options?: RawAxiosRequestConfig): AxiosPromise<Order> {
-            return localVarFp.recordDelivery(id, amount, options).then((request) => request(axios, basePath));
-        },
+      
+
+
     };
 };
 
@@ -4914,6 +5082,19 @@ export class OrdersApi extends BaseAPI {
     public recordDelivery(id: string, amount: number, options?: RawAxiosRequestConfig) {
         return OrdersApiFp(this.configuration).recordDelivery(id, amount, options).then((request) => request(this.axios, this.basePath));
     }
+
+    /**
+ * Retorna órdenes filtradas por estado
+ * @summary Obtener órdenes por estado
+ * @param {GetOrdersByStatusStatusEnum} status Estado de la orden
+ * @param {*} [options] Override http request option.
+ * @throws {RequiredError}
+ * @memberof OrdersApi
+ */
+public getOrdersByStatus(status: GetOrdersByStatusStatusEnum, options?: RawAxiosRequestConfig) {
+    return OrdersApiFp(this.configuration).getOrdersByStatus(status, options).then((request) => request(this.axios, this.basePath));
+}
+
 }
 
 
@@ -5909,4 +6090,12 @@ export const UpdateVehicleStatusStatusEnum = {
 } as const;
 export type UpdateVehicleStatusStatusEnum = typeof UpdateVehicleStatusStatusEnum[keyof typeof UpdateVehicleStatusStatusEnum];
 
+export const GetOrdersByStatusStatusEnum = {
+  Pending: 'PENDING',
+  InTransit: 'IN_TRANSIT',
+  Delivered: 'DELIVERED',
+  Cancelled: 'CANCELLED',
+} as const;
+
+export type GetOrdersByStatusStatusEnum = typeof GetOrdersByStatusStatusEnum[keyof typeof GetOrdersByStatusStatusEnum];
 
