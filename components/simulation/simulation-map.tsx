@@ -1,6 +1,7 @@
 "use client"
 
 import type React from "react"
+import { Maximize, Minimize } from "lucide-react"
 
 import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -164,7 +165,8 @@ export function SimulationMap({ onTimeUpdate }: SimulationMapProps) {
   const [breakdownError, setBreakdownError] = useState<string | null>(null)
   const [repairError, setRepairError] = useState<string | null>(null)
   const [operationSuccess, setOperationSuccess] = useState<string | null>(null)
-
+  const [slideMinimized, setSlideMinimized] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   // Function to toggle simulation
   const toggleSimulation = async (forceState?: boolean) => {
     try {
@@ -185,7 +187,23 @@ export function SimulationMap({ onTimeUpdate }: SimulationMapProps) {
       setDataError('Error al cambiar el estado de la simulación');
     }
   };
-
+  useEffect(() => {
+    // Escuchar cambios de full screen para controlar el estado
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFsChange);
+    return () => document.removeEventListener("fullscreenchange", handleFsChange);
+  }, []);
+  const handleToggleFullscreen = () => {
+    if (!document.fullscreenElement && containerRef.current) {
+      containerRef.current.requestFullscreen();
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen();
+      setIsFullscreen(false);
+    }
+  };
   // Fetch environment data
   useEffect(() => {
     const fetchEnvironmentData = async () => {
@@ -195,7 +213,7 @@ export function SimulationMap({ onTimeUpdate }: SimulationMapProps) {
 
         // Assuming simulationApi.getEnvironment() returns EnvironmentData
         const data = await simulationApi.getEnvironment();
-
+        console.log(data)
         setEnvironmentData(data);
         setSimulationTime(data.simulationTime);
         setSimulationRunning(data.simulationRunning);
@@ -232,6 +250,69 @@ export function SimulationMap({ onTimeUpdate }: SimulationMapProps) {
     // Clean up interval on component unmount
     return () => clearInterval(intervalId);
   }, [onTimeUpdate]);
+  // Transforma los datos de vehículos para la barra lateral (slide)
+  
+  
+  
+type SlideVehicleInfo = {
+  id: string;
+  type: string;
+  status: string;
+  fuel: ResourceLevel;
+  glp: ResourceLevel;
+  position: Position;
+  label: string;
+  statusLabel: string;
+  color: string;
+  assignedOrders: Order[];
+};
+
+
+  const [slideVehicles, setSlideVehicles] = useState<SlideVehicleInfo[]>([]);
+
+  // Transforma los datos de la API para el slide de vehículos
+  const transformDataToSlideElements = (data: EnvironmentData) => {
+    const vehicles: SlideVehicleInfo[] = data.vehicles.map((vehicle) => {
+      // Color por tipo de vehículo
+      let color = "#10b981"; // Verde por defecto
+      if (vehicle.type === "TA") color = "#ef4444";
+      else if (vehicle.type === "TB") color = "#3b82f6";
+      else if (vehicle.type === "TC") color = "#f59e0b";
+      else if (vehicle.type === "TD") color = "#8b5cf6";
+
+      // Estado legible
+      let statusLabel = "En ruta";
+      if (vehicle.status !== "AVAILABLE") statusLabel = "Averiado";
+      // Buscar los pedidos que está atendiendo este vehículo
+      const assignedOrders = data.orders.filter(
+        (order) => order.assignedVehicleId === vehicle.id
+      );
+      return {
+        id: vehicle.id,
+        type: vehicle.type,
+        status: vehicle.status,
+        fuel: vehicle.fuel,
+        glp: vehicle.glp,
+        position: vehicle.position,
+        label: `${vehicle.id} (${vehicle.type})`,
+        statusLabel,
+        color,
+        assignedOrders, // ¡Aquí!
+
+      };
+    });
+    setSlideVehicles(vehicles);
+  };
+
+  // Llama a la función de slide cada vez que se actualiza el entorno
+  useEffect(() => {
+    if (environmentData) {
+      transformDataToSlideElements(environmentData);
+    }
+  }, [environmentData]);
+
+
+
 
   // Transform API data to map elements
   const transformDataToMapElements = (data: EnvironmentData) => {
@@ -1352,6 +1433,7 @@ export function SimulationMap({ onTimeUpdate }: SimulationMapProps) {
     setIsDragging(false)
   }
 
+  
   // Handle vehicle breakdown
   const handleBreakdownVehicle = async () => {
     if (!selectedElement || selectedElement.type !== "vehicle") return;
@@ -1435,9 +1517,17 @@ export function SimulationMap({ onTimeUpdate }: SimulationMapProps) {
       setIsRepairLoading(false);
     }
   }
+  const [maximized, setMaximized] = useState(false);
 
   return (
-    <div ref={containerRef} className="relative border rounded-md overflow-hidden bg-white h-full w-full">
+<div
+  ref={containerRef}
+  className={`relative border rounded-md overflow-hidden bg-white transition-all duration-300 ${
+    maximized
+      ? "fixed inset-0 z-[100] h-screen w-screen rounded-none border-none"
+      : "h-full w-full"
+  }`}
+>
       <canvas
         ref={canvasRef}
         width={canvasSize.width}
@@ -1454,7 +1544,7 @@ export function SimulationMap({ onTimeUpdate }: SimulationMapProps) {
       />
 
       {/* Controles del mapa */}
-      <div className="absolute bottom-4 right-4 flex flex-col gap-2 bg-white/90 p-2 rounded-md shadow-sm backdrop-blur-sm">
+      <div className="absolute bottom-4 right-24 flex flex-col gap-2 bg-white/90 p-2 rounded-md shadow-sm backdrop-blur-sm">
         <Button variant="outline" size="icon" onClick={handleZoomIn} title="Acercar">
           <Plus className="h-4 w-4" />
         </Button>
@@ -1470,6 +1560,15 @@ export function SimulationMap({ onTimeUpdate }: SimulationMapProps) {
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
+<button
+  className="absolute top-4 right-16 z-50 w-10 h-10 bg-white border border-gray-300 rounded-full shadow flex items-center justify-center hover:bg-blue-50 transition"
+  onClick={handleToggleFullscreen}
+  title={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
+>
+  {isFullscreen
+    ? <Minimize className="w-5 h-5 text-blue-500" />
+    : <Maximize className="w-5 h-5 text-blue-500" />}
+</button>
 
       {/* Tiempo de simulación */}
       {simulationTime && (
@@ -1633,7 +1732,7 @@ export function SimulationMap({ onTimeUpdate }: SimulationMapProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
+      
       {/* Operation success message */}
       {operationSuccess && (
         <div className="absolute top-20 left-4 bg-green-50 text-green-700 p-3 rounded-md shadow-sm border border-green-200 flex items-center justify-between">
@@ -1800,6 +1899,122 @@ export function SimulationMap({ onTimeUpdate }: SimulationMapProps) {
           )}
         </div>
       )}
+  
+<div
+  className={`
+    absolute top-0 right-0 h-full bg-white/95 border-l shadow-lg flex flex-col z-20
+    transition-all duration-300
+    ${slideMinimized ? "w-12" : "w-72"}
+  `}
+  style={{
+    minWidth: slideMinimized ? "3rem" : "18rem",
+    maxWidth: slideMinimized ? "3rem" : "18rem",
+  }}
+>
+  {/* Botón de minimizar para slide ABIERTO */}
+  {!slideMinimized && (
+    <button
+      className="absolute -left-4 top-4 w-8 h-8 rounded-full shadow bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 z-30 transition"
+      onClick={() => setSlideMinimized(true)}
+      tabIndex={0}
+      aria-label="Minimizar slide"
+    >
+      <Minus className="h-5 w-5 text-blue-500" />
+    </button>
+  )}
+
+  {/* CONTENIDO DEL SLIDE */}
+  {!slideMinimized ? (
+    <>
+      <div className="p-4 border-b">
+        <h2 className="font-bold text-lg flex items-center gap-2">
+          <Truck className="h-5 w-5" /> Vehículos
+        </h2>
+      </div>
+      <div className="flex-1 overflow-y-auto p-2 space-y-2">
+        {slideVehicles.length === 0 && (
+          <div className="text-center text-muted-foreground text-sm mt-8">
+            No hay vehículos disponibles.
+          </div>
+        )}
+        {slideVehicles
+          .filter(vehicle => vehicle.assignedOrders && vehicle.assignedOrders.length > 0)
+          .map(vehicle => (
+            <div
+              key={vehicle.id}
+              className={`rounded-md p-3 border flex flex-col gap-2 cursor-pointer transition hover:bg-blue-50 ${
+                selectedElement?.id === vehicle.id
+                  ? "border-blue-500 bg-blue-50"
+                  : "border-gray-200 bg-white"
+              }`}
+              onClick={() =>
+                setSelectedElement(mapElements.find(e => e.id === vehicle.id) || null)
+              }
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-3 h-3 rounded-full"
+                  style={{ background: vehicle.color }}
+                />
+                <div className="flex-1">
+                  <div className="font-medium text-sm">{vehicle.label}</div>
+                  <div className="text-xs text-muted-foreground">{vehicle.statusLabel}</div>
+                  <div className="text-xs mt-1">
+                    <span>
+                      Comb: {vehicle.fuel.current.toFixed(1)}/{vehicle.fuel.capacity.toFixed(1)}L
+                    </span>
+                    <span className="ml-2">
+                      GLP: {vehicle.glp.current}/{vehicle.glp.capacity}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {/* Listado de pedidos asignados */}
+              {vehicle.assignedOrders && vehicle.assignedOrders.length > 0 ? (
+                <div className="mt-2 pl-6">
+                  <div className="text-xs font-semibold text-blue-700 mb-1">
+                    Pedidos atendiendo:
+                  </div>
+                  <ul className="space-y-1">
+                    {vehicle.assignedOrders.map(order => (
+                      <li
+                        key={order.id}
+                        className="text-xs bg-blue-50 border border-blue-100 rounded px-2 py-1"
+                      >
+                        Pedido: <b>{order.id}</b>
+                        {/* Puedes mostrar más datos si quieres */}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <div className="text-xs text-gray-400 pl-6">Sin pedidos asignados</div>
+              )}
+            </div>
+          ))}
+      </div>
+    </>
+  ) : (
+    // Slide minimizado: "+" y camión juntos, centrados vertical y horizontalmente
+    <div className="flex flex-col items-center justify-center flex-1 h-full w-full pt-2">
+      <div className="flex flex-col items-center gap-1">
+      <Truck className="h-8 w-8 text-blue-400" />
+      <button
+        className="w-8 h-8 rounded-full shadow bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50"
+        onClick={() => setSlideMinimized(false)}
+        tabIndex={0}
+        aria-label="Mostrar vehículos"
+      >
+        <Plus className="h-5 w-5 text-blue-500" />
+      </button>
+      </div>
     </div>
+  )}
+</div>
+
+  
+    </div>
+    
   )
+  
 }
