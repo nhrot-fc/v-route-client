@@ -18,32 +18,35 @@ export default function SimulacionPage() {
   const [scenario, setScenario] = useState("tiempo-real")
   const [apiStatus, setApiStatus] = useState<"loading" | "connected" | "error">("loading")
   
-  // Fecha actual para operaciones en tiempo real
   const currentDate = new Date()
   const formattedDate = `${currentDate.getDate().toString().padStart(2, '0')}/${(currentDate.getMonth() + 1).toString().padStart(2, '0')}/${currentDate.getFullYear()}`
   const currentRealTime = `${currentDate.getHours().toString().padStart(2, '0')}:${currentDate.getMinutes().toString().padStart(2, '0')}`
-  
-  // Manejar actualización de tiempo desde el componente de mapa
+
   const handleTimeUpdate = (time: string, running: boolean) => {
-    setCurrentTime(time);
-    setIsRunning(running);
-    setApiStatus("connected");
+    setCurrentTime(time)
+    setIsRunning(running)
+    setApiStatus("connected")
   }
-  
-  // Manejar cambios en la simulación
+
   const handleSimulationChange = (running: boolean) => {
-    setIsRunning(running);
+    setIsRunning(running)
   }
-  
-  // Manejar errores de conexión
+
   const handleApiError = () => {
-    setApiStatus("error");
+    setApiStatus("error")
   }
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Visualizador</h2>
+      {/* Título centrado */}
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+        <h2 className="text-3xl font-bold tracking-tight text-center  w-full">
+          Visualizador
+        </h2>
+        {/* Aquí podrías colocar botones a la derecha si fuera necesario */}
+        {/* <div className="flex items-center justify-center md:justify-end w-full space-x-2">
+          <Button>Ejemplo</Button>
+        </div> */}
       </div>
 
       <Tabs defaultValue="mapa" className="space-y-4">
@@ -55,9 +58,7 @@ export default function SimulacionPage() {
 
         <TabsContent value="mapa" className="space-y-4">
           <div className="flex flex-col space-y-4">
-            {/* Tarjeta principal que contiene tanto el mapa como los controles compactos */}
             <Card>
-              {/* Cabecera con título y selección de modo */}
               <CardHeader className="py-3 border-b">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div className="flex items-center">
@@ -72,7 +73,7 @@ export default function SimulacionPage() {
                       </Badge>
                     )}
                   </div>
-                  
+
                   <div className="flex items-center gap-2">
                     <Select value={scenario} onValueChange={(value) => setScenario(value)}>
                       <SelectTrigger className="w-[180px] h-8 text-sm">
@@ -84,7 +85,7 @@ export default function SimulacionPage() {
                         <SelectItem value="simulacion-continua">Simulación continua</SelectItem>
                       </SelectContent>
                     </Select>
-                    
+
                     {scenario !== "tiempo-real" && (
                       <div className="flex items-center bg-slate-50 px-2 py-1 rounded-md">
                         <Clock className="h-3 w-3 mr-1 text-slate-500" />
@@ -94,11 +95,9 @@ export default function SimulacionPage() {
                   </div>
                 </div>
               </CardHeader>
-              
-              {/* Contenido con el mapa y los controles horizontales */}
+
               <CardContent className="p-0">
                 <div className="flex flex-col">
-                  {/* Panel de controles horizontales */}
                   <div className="p-2 bg-slate-50 border-b">
                     <div className="w-full">
                       <SimulationController 
@@ -107,8 +106,7 @@ export default function SimulacionPage() {
                       />
                     </div>
                   </div>
-                  
-                  {/* Mapa de simulación a pantalla completa */}
+
                   <div className="h-[calc(100vh-300px)] min-h-[500px]">
                     <SimulationMap onTimeUpdate={handleTimeUpdate} />
                   </div>
