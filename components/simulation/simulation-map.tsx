@@ -49,7 +49,39 @@ import {
 
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+type SlideVehicleInfo = {
+  id: string;
+  type: string;
+  status: string;
+  fuel: ResourceLevel;
+  glp: ResourceLevel;
+  position: Position;
+  label: string;
+  statusLabel: string;
+  color: string;
+  assignedOrders: Order[];
+};
 
+// Tipos específicos para PanelDetail
+type PanelDetailProps = {
+  selectedElement: MapElement | null;
+  setSelectedElement: (el: MapElement | null) => void;
+  handleBreakdownVehicle: () => void;
+  handleRepairVehicle: () => void;
+  isBreakdownLoading: boolean;
+  isRepairLoading: boolean;
+  environmentData: EnvironmentData | null;
+};
+
+type VehicleSlideProps = {
+  slideMinimized: boolean;
+  setSlideMinimized: (val: boolean) => void;
+  slideVehicles: SlideVehicleInfo[];
+  mapElements: MapElement[];
+  selectedElement: MapElement | null;
+  setSelectedElement: (el: MapElement | null) => void;
+  
+};
 // Tipos para los elementos del mapa
 type MapElement = {
   id: string
@@ -133,10 +165,54 @@ type BlockedRoad = {
   label: string
   details: string
 }
+type BreakdownDialogProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  selectedElement: MapElement | null;
+  breakdownReason: string;
+  setBreakdownReason: (val: string) => void;
+  repairHours: number;
+  setRepairHours: (val: number) => void;
+  breakdownError: string | null;
+  isBreakdownLoading: boolean;
+  onSubmit: () => void;
+};
+
+type FloatingErrorProps = {
+  error: string | null
+  onClose: () => void
+  className?: string
+}
+
+type FloatingLoaderProps = {
+  loading: boolean
+  message?: string
+  className?: string
+}
+type FloatingSimulationTimeProps = {
+  simulationTime: string | null
+  simulationRunning: boolean
+  onToggle: () => void
+  className?: string
+}
+
+
+type FloatingMapControlsProps = {
+  onZoomIn: () => void
+  onZoomOut: () => void
+  onReset: () => void
+  className?: string
+}
+type FloatingFullscreenButtonProps = {
+  isFullscreen: boolean
+  onToggle: () => void
+  className?: string
+}
 
 interface SimulationMapProps {
   onTimeUpdate?: (time: string, isRunning: boolean) => void;
 }
+
 
 export function SimulationMap({ onTimeUpdate }: SimulationMapProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -253,20 +329,6 @@ export function SimulationMap({ onTimeUpdate }: SimulationMapProps) {
   // Transforma los datos de vehículos para la barra lateral (slide)
   
   
-  
-type SlideVehicleInfo = {
-  id: string;
-  type: string;
-  status: string;
-  fuel: ResourceLevel;
-  glp: ResourceLevel;
-  position: Position;
-  label: string;
-  statusLabel: string;
-  color: string;
-  assignedOrders: Order[];
-};
-
 
   const [slideVehicles, setSlideVehicles] = useState<SlideVehicleInfo[]>([]);
 
@@ -479,23 +541,24 @@ type SlideVehicleInfo = {
     const hash = vehicle.id.charCodeAt(vehicle.id.length - 1) % directions.length;
     return directions[hash];
   };
+  const [maximized, setMaximized] = useState(false);
 
   // Asegurar que el canvas ocupe el 100% del contenedor
   useEffect(() => {
     const updateCanvasSize = () => {
       if (containerRef.current) {
-        const { width, height } = containerRef.current.getBoundingClientRect()
-        setCanvasSize({ width, height })
+        const { width, height } = containerRef.current.getBoundingClientRect();
+        setCanvasSize({ width: Math.floor(width), height: Math.floor(height) });
       }
-    }
+    };
 
-    // Actualizar tamaño inicial
-    updateCanvasSize()
+    updateCanvasSize();
 
-    // Actualizar cuando cambie el tamaño de la ventana
-    window.addEventListener("resize", updateCanvasSize)
-    return () => window.removeEventListener("resize", updateCanvasSize)
-  }, [])
+    window.addEventListener("resize", updateCanvasSize);
+
+    // Asegúrate de que cada vez que maximices, vuelvas a calcular el tamaño
+    return () => window.removeEventListener("resize", updateCanvasSize);
+  }, [maximized, isFullscreen]);
 
   // Precargar imágenes para iconos
   const [iconsLoaded, setIconsLoaded] = useState(false)
@@ -1517,22 +1580,20 @@ type SlideVehicleInfo = {
       setIsRepairLoading(false);
     }
   }
-  const [maximized, setMaximized] = useState(false);
 
   return (
-<div
-  ref={containerRef}
-  className={`relative border rounded-md overflow-hidden bg-white transition-all duration-300 ${
-    maximized
-      ? "fixed inset-0 z-[100] h-screen w-screen rounded-none border-none"
-      : "h-full w-full"
-  }`}
->
+      <div
+        ref={containerRef}
+        className={`relative overflow-hidden bg-white transition-all duration-300 ${
+          maximized ? "fixed inset-0 z-[100] h-screen w-screen rounded-none border-none" : "h-full w-full"
+        }`}
+      >
+      {/* Contenedor del canvas */}
       <canvas
         ref={canvasRef}
         width={canvasSize.width}
         height={canvasSize.height}
-        className="w-full h-full"
+        className="w-full h-full block m-0 p-0 border-0"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -1544,104 +1605,224 @@ type SlideVehicleInfo = {
       />
 
       {/* Controles del mapa */}
-      <div className="absolute bottom-4 right-24 flex flex-col gap-2 bg-white/90 p-2 rounded-md shadow-sm backdrop-blur-sm">
-        <Button variant="outline" size="icon" onClick={handleZoomIn} title="Acercar">
-          <Plus className="h-4 w-4" />
-        </Button>
-        <Button variant="outline" size="icon" onClick={handleZoomOut} title="Alejar">
-          <Minus className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setPan({ x: 0, y: 0 })}
-          title="Restablecer vista"
-        >
-          <RefreshCw className="h-4 w-4" />
-        </Button>
-      </div>
-<button
-  className="absolute top-4 right-16 z-50 w-10 h-10 bg-white border border-gray-300 rounded-full shadow flex items-center justify-center hover:bg-blue-50 transition"
-  onClick={handleToggleFullscreen}
-  title={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
->
-  {isFullscreen
-    ? <Minimize className="w-5 h-5 text-blue-500" />
-    : <Maximize className="w-5 h-5 text-blue-500" />}
-</button>
+      <FloatingMapControls
+        onZoomIn={handleZoomIn}
+        onZoomOut={handleZoomOut}
+        onReset={() => setPan({ x: 0, y: 0 })}
+      />
+
+
+      {/* Botón de pantalla completa */}
+      <FloatingFullscreenButton
+        isFullscreen={isFullscreen}
+        onToggle={handleToggleFullscreen}
+      />
+
 
       {/* Tiempo de simulación */}
-      {simulationTime && (
-        <div className="absolute top-4 left-4 bg-white/90 p-2 rounded-md shadow-sm backdrop-blur-sm">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="text-xs text-muted-foreground">Tiempo de simulación</p>
-              <p className="text-xl font-bold">{simulationTime}</p>
-            </div>
-            <Button
-              variant={simulationRunning ? "secondary" : "default"}
-              size="sm"
-              className="h-8"
-              onClick={() => toggleSimulation()}
-            >
-              {simulationRunning ? (
-                <>
-                  <Pause className="mr-1 h-3 w-3" />
-                  Pausar
-                </>
-              ) : (
-                <>
-                  <Play className="mr-1 h-3 w-3" />
-                  Iniciar
-                </>
-              )}
-            </Button>
-          </div>
-          <p className="text-xs mt-1 flex items-center">
-            {simulationRunning ? (
-              <>
-                <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></span>
-                Simulación en ejecución
-              </>
-            ) : (
-              <>
-                <span className="inline-block w-2 h-2 bg-amber-500 rounded-full mr-1"></span>
-                Simulación detenida
-              </>
-            )}
-          </p>
-        </div>
-      )}
+      <FloatingSimulationTime
+        simulationTime={simulationTime}
+        simulationRunning={simulationRunning}
+        onToggle={toggleSimulation}
+      />
+
 
       {/* Estado de carga */}
-      {isLoading && !simulationTime && (
-        <div className="absolute top-4 left-4 bg-white/90 p-3 rounded-md shadow-sm backdrop-blur-sm">
-          <div className="flex items-center">
-            <div className="animate-spin mr-2 h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
-            <p className="text-sm">Cargando datos del entorno...</p>
-          </div>
-        </div>
-      )}
+      <FloatingLoader 
+        loading={isLoading && !simulationTime} 
+        message="Cargando información..." 
+      />
+
 
       {/* Error de carga */}
-      {dataError && (
-        <div className="absolute top-20 left-4 bg-red-50 text-red-700 p-3 rounded-md shadow-sm border border-red-200">
-          <div className="flex items-center">
-            <AlertTriangle className="mr-2 h-4 w-4" />
-            <p className="text-sm">{dataError}</p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="ml-2 text-xs border-red-300 hover:bg-red-100"
-              onClick={() => setDataError(null)}
-            >
-              Cerrar
-            </Button>
-          </div>
-        </div>
-      )}
+      <FloatingError 
+        error={dataError} 
+        onClose={() => setDataError(null)} 
+      />
+
 
       {/* Leyenda del mapa */}
+      <Leyenda/>
+
+      {/* Vehicle breakdown dialog */}
+      <BreakdownDialog
+        open={breakdownDialogOpen}
+        onOpenChange={setBreakdownDialogOpen}
+        selectedElement={selectedElement}
+        breakdownReason={breakdownReason}
+        setBreakdownReason={setBreakdownReason}
+        repairHours={repairHours}
+        setRepairHours={setRepairHours}
+        breakdownError={breakdownError}
+        isBreakdownLoading={isBreakdownLoading}
+        onSubmit={submitBreakdownVehicle}
+      />
+
+      
+      {/* Operation success message */}
+      <FloatingToast
+        message={operationSuccess}
+        color="green"
+        onClose={() => setOperationSuccess(null)}
+      />
+
+      {/* Repair error message */}
+      <ErrorToast
+        message={repairError}
+        onClose={() => setRepairError(null)}
+      />
+
+      {/* Panel de detalles para elementos seleccionados */}
+      <PanelDetail
+        selectedElement={selectedElement}
+        setSelectedElement={setSelectedElement}
+        handleBreakdownVehicle={handleBreakdownVehicle}
+        handleRepairVehicle={handleRepairVehicle}
+        isBreakdownLoading={isBreakdownLoading}
+        isRepairLoading={isRepairLoading}
+        environmentData={environmentData}
+      />
+
+      {/* Panel de carreteras bloqueadas */}
+      <BlockedRoadDetailPanel
+        selectedBlockedRoad={selectedBlockedRoad}
+        setSelectedBlockedRoad={setSelectedBlockedRoad}
+      />
+
+      {/* Panel de vehículos */}
+      <VehicleSlide
+        slideMinimized={slideMinimized}
+        setSlideMinimized={setSlideMinimized}
+        slideVehicles={slideVehicles}
+        mapElements={mapElements}
+        selectedElement={selectedElement}
+        setSelectedElement={setSelectedElement}
+      />
+    </div> 
+  )  
+}
+
+
+
+
+
+
+
+function FloatingFullscreenButton({isFullscreen,onToggle,className = "",}: FloatingFullscreenButtonProps) {
+  return (
+    <button
+      className={`absolute top-4 right-16 z-50 w-10 h-10 bg-white border border-gray-300 rounded-full shadow flex items-center justify-center hover:bg-blue-50 transition ${className}`}
+      onClick={onToggle}
+      title={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
+    >
+      {isFullscreen
+        ? <Minimize className="w-5 h-5 text-blue-500" />
+        : <Maximize className="w-5 h-5 text-blue-500" />}
+    </button>
+  )
+}
+function FloatingMapControls({onZoomIn,onZoomOut,onReset,className = "",}: FloatingMapControlsProps) {
+  return (
+    <div className={`absolute bottom-4 right-24 flex flex-col gap-2 bg-white/90 p-2 rounded-md shadow-sm backdrop-blur-sm ${className}`}>
+      <Button variant="outline" size="icon" onClick={onZoomIn} title="Acercar">
+        <Plus className="h-4 w-4" />
+      </Button>
+      <Button variant="outline" size="icon" onClick={onZoomOut} title="Alejar">
+        <Minus className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="outline"
+        size="icon"
+        onClick={onReset}
+        title="Restablecer vista"
+      >
+        <RefreshCw className="h-4 w-4" />
+      </Button>
+    </div>
+  )
+}
+function FloatingSimulationTime({simulationTime,simulationRunning,onToggle,className = "",}:FloatingSimulationTimeProps) {
+  
+  if (!simulationTime) return null
+  return (
+    <div className={`absolute top-4 left-4 bg-white/90 p-2 rounded-md shadow-sm backdrop-blur-sm ${className}`}>
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-xs text-muted-foreground">Tiempo de simulación</p>
+          <p className="text-xl font-bold">{simulationTime}</p>
+        </div>
+        <Button
+          variant={simulationRunning ? "secondary" : "default"}
+          size="sm"
+          className="h-8"
+          onClick={onToggle}
+        >
+          {simulationRunning ? (
+            <>
+              <Pause className="mr-1 h-3 w-3" />
+              Pausar
+            </>
+          ) : (
+            <>
+              <Play className="mr-1 h-3 w-3" />
+              Iniciar
+            </>
+          )}
+        </Button>
+      </div>
+      <p className="text-xs mt-1 flex items-center">
+        {simulationRunning ? (
+          <>
+            <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></span>
+            Simulación en ejecución
+          </>
+        ) : (
+          <>
+            <span className="inline-block w-2 h-2 bg-amber-500 rounded-full mr-1"></span>
+            Simulación detenida
+          </>
+        )}
+      </p>
+    </div>
+  )
+}
+
+
+
+function FloatingLoader({ loading, message = "Cargando datos del entorno...", className = "" }: FloatingLoaderProps) {
+  if (!loading) return null
+
+  return (
+    <div className={`absolute top-4 left-4 bg-white/90 p-3 rounded-md shadow-sm backdrop-blur-sm ${className}`}>
+      <div className="flex items-center">
+        <div className="animate-spin mr-2 h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+        <p className="text-sm">{message}</p>
+      </div>
+    </div>
+  )
+}
+
+function FloatingError({ error, onClose, className = "" }: FloatingErrorProps) {
+  if (!error) return null
+  return (
+    <div className={`absolute top-20 left-4 bg-red-50 text-red-700 p-3 rounded-md shadow-sm border border-red-200 ${className}`}>
+      <div className="flex items-center">
+        <AlertTriangle className="mr-2 h-4 w-4" />
+        <p className="text-sm">{error}</p>
+        <Button
+          variant="outline"
+          size="sm"
+          className="ml-2 text-xs border-red-300 hover:bg-red-100"
+          onClick={onClose}
+        >
+          Cerrar
+        </Button>
+      </div>
+    </div>
+  )
+}
+function Leyenda(){
+  return (
       <div className="absolute bottom-4 left-4 bg-white/80 p-2 rounded-md shadow-sm backdrop-blur-sm">
         <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2">
           <div className="flex items-center gap-2">
@@ -1672,349 +1853,399 @@ type SlideVehicleInfo = {
           </div>
         </div>
       </div>
+  )
+}
 
-      {/* Vehicle breakdown dialog */}
-      <Dialog open={breakdownDialogOpen} onOpenChange={setBreakdownDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Simular Avería de Vehículo</DialogTitle>
-            <DialogDescription>
-              Configure los detalles de la avería para el vehículo {selectedElement?.id}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="reason">Razón de la avería</Label>
-              <Input 
-                id="reason" 
-                value={breakdownReason} 
-                onChange={(e) => setBreakdownReason(e.target.value)} 
-                placeholder="Mechanical failure"
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="hours">Horas estimadas de reparación</Label>
-              <Input 
-                id="hours" 
-                type="number" 
-                value={repairHours} 
-                onChange={(e) => setRepairHours(parseInt(e.target.value, 10) || 2)}
-                min={1}
-                max={48}
-              />
-              <div className="text-xs text-muted-foreground mt-1">
-                TI1: ≤ 2 horas | TI2: 3-24 horas | TI3: &gt; 24 horas
-              </div>
+function BreakdownDialog({open,onOpenChange,selectedElement,breakdownReason,setBreakdownReason,
+      repairHours,setRepairHours,breakdownError,isBreakdownLoading,onSubmit,}: BreakdownDialogProps) {
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Simular Avería de Vehículo</DialogTitle>
+          <DialogDescription>
+            Configure los detalles de la avería para el vehículo {selectedElement?.id}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <Label htmlFor="reason">Razón de la avería</Label>
+            <Input
+              id="reason"
+              value={breakdownReason}
+              onChange={(e) => setBreakdownReason(e.target.value)}
+              placeholder="Mechanical failure"
+            />
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="hours">Horas estimadas de reparación</Label>
+            <Input
+              id="hours"
+              type="number"
+              value={repairHours}
+              onChange={(e) => setRepairHours(parseInt(e.target.value, 10) || 2)}
+              min={1}
+              max={48}
+            />
+            <div className="text-xs text-muted-foreground mt-1">
+              TI1: ≤ 2 horas | TI2: 3-24 horas | TI3: &gt; 24 horas
             </div>
           </div>
-          
-          {breakdownError && (
-            <div className="bg-red-50 text-red-700 p-2 rounded-md text-sm">
-              {breakdownError}
-            </div>
-          )}
-          
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setBreakdownDialogOpen(false)}
-            >
-              Cancelar
-            </Button>
-            <Button 
-              onClick={submitBreakdownVehicle}
-              disabled={isBreakdownLoading}
-            >
-              {isBreakdownLoading ? "Procesando..." : "Confirmar Avería"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Operation success message */}
-      {operationSuccess && (
-        <div className="absolute top-20 left-4 bg-green-50 text-green-700 p-3 rounded-md shadow-sm border border-green-200 flex items-center justify-between">
-          <p className="text-sm">{operationSuccess}</p>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="ml-2 h-6 w-6 p-0"
-            onClick={() => setOperationSuccess(null)}
-          >
-            ×
-          </Button>
         </div>
-      )}
 
-      {/* Repair error message */}
-      {repairError && (
-        <div className="absolute top-20 left-4 bg-red-50 text-red-700 p-3 rounded-md shadow-sm border border-red-200 flex items-center justify-between">
-          <p className="text-sm">{repairError}</p>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="ml-2 h-6 w-6 p-0"
-            onClick={() => setRepairError(null)}
-          >
-            ×
-          </Button>
-        </div>
-      )}
-
-      {/* Panel de detalles para elementos seleccionados */}
-      {selectedElement && (
-        <div className="absolute top-4 left-4 bg-white p-3 rounded-md shadow-md border max-w-xs">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="font-medium text-sm flex items-center gap-1">
-              {selectedElement.type === "mainWarehouse" && <WarehouseIcon className="h-4 w-4" />}
-              {selectedElement.type === "warehouse" && <Building className="h-4 w-4" />}
-              {selectedElement.type === "vehicle" && <Truck className="h-4 w-4" />}
-              {selectedElement.type === "customer" && <User className="h-4 w-4" />}
-              {selectedElement.type === "package" && <Package className="h-4 w-4" />}
-              {selectedElement.label}
-            </h3>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0"
-              onClick={() => setSelectedElement(null)}
-            >
-              ×
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Coordenadas: ({selectedElement.x}, {selectedElement.y})
-          </p>
-
-          {selectedElement.details && (
-            <div className="mt-2 text-xs border-t pt-2">
-              <p className="text-muted-foreground">{selectedElement.details}</p>
-            </div>
-          )}
-
-          {selectedElement.type === "vehicle" && (
-            <div className="mt-2 space-y-2">
-              <div className="grid grid-cols-2 gap-2">
-                {selectedElement.status === "en-ruta" ? (
-                  <Button 
-                    variant="destructive" 
-                    size="sm" 
-                    className="w-full text-xs"
-                    onClick={handleBreakdownVehicle}
-                    disabled={isBreakdownLoading}
-                  >
-                    <AlertOctagon className="mr-1 h-3 w-3" />
-                    Simular Avería
-                  </Button>
-                ) : (
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full text-xs"
-                    onClick={handleRepairVehicle}
-                    disabled={isRepairLoading}
-                  >
-                    <WrenchIcon className="mr-1 h-3 w-3" />
-                    Reparar Vehículo
-                  </Button>
-                )}
-                <Button variant="outline" size="sm" className="w-full text-xs">
-                  <Truck className="mr-1 h-3 w-3" />
-                  Ver Ruta
-                </Button>
-              </div>
-              <div className="border-t pt-2 text-xs space-y-1">
-                <h4 className="font-medium">Detalles adicionales:</h4>
-                {environmentData?.vehicles.find(v => v.id === selectedElement.id) && (
-                  <>
-                    <p className="flex justify-between">
-                      <span>Tipo:</span>
-                      <span className="font-medium">{environmentData?.vehicles.find(v => v.id === selectedElement.id)?.type}</span>
-                    </p>
-                    <p className="flex justify-between">
-                      <span>Combustible:</span>
-                      <span className="font-medium">
-                        {environmentData?.vehicles.find(v => v.id === selectedElement.id)?.fuel.current.toFixed(2)} / {environmentData?.vehicles.find(v => v.id === selectedElement.id)?.fuel.capacity.toFixed(2)} L
-                        ({environmentData?.vehicles.find(v => v.id === selectedElement.id)?.fuel.percentage.toFixed(1)}%)
-                      </span>
-                    </p>
-                    <p className="flex justify-between">
-                      <span>GLP:</span>
-                      <span className="font-medium">
-                        {environmentData?.vehicles.find(v => v.id === selectedElement.id)?.glp.current} / {environmentData?.vehicles.find(v => v.id === selectedElement.id)?.glp.capacity} unidades
-                        ({environmentData?.vehicles.find(v => v.id === selectedElement.id)?.glp.percentage.toFixed(1)}%)
-                      </span>
-                    </p>
-                    <p className="flex justify-between">
-                      <span>Estado:</span>
-                      <span className={`font-medium ${selectedElement.status === "en-ruta" ? "text-green-600" : "text-red-600"}`}>
-                        {selectedElement.status === "en-ruta" ? "En ruta" : "Averiado"}
-                      </span>
-                    </p>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-
-          {(selectedElement.type === "customer" || selectedElement.type === "warehouse" || selectedElement.type === "mainWarehouse") && (
-            <div className="mt-2">
-              <Button variant="outline" size="sm" className="w-full text-xs">
-                <Info className="mr-1 h-3 w-3" />
-                Ver Más Detalles
-              </Button>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Panel de detalles para carreteras bloqueadas */}
-      {selectedBlockedRoad && (
-        <div className="absolute top-4 left-4 bg-white p-3 rounded-md shadow-md border max-w-xs">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="font-medium text-sm flex items-center gap-1">
-              <Ban className="h-4 w-4 text-red-500" />
-              {selectedBlockedRoad.label}
-            </h3>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0"
-              onClick={() => setSelectedBlockedRoad(null)}
-            >
-              ×
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Desde: ({selectedBlockedRoad.from.x}, {selectedBlockedRoad.from.y})
-            Hasta: ({selectedBlockedRoad.to.x}, {selectedBlockedRoad.to.y})
-          </p>
-
-          {selectedBlockedRoad.details && (
-            <div className="mt-2 text-xs border-t pt-2">
-              <p className="text-muted-foreground">{selectedBlockedRoad.details}</p>
-            </div>
-          )}
-        </div>
-      )}
-  
-<div
-  className={`
-    absolute top-0 right-0 h-full bg-white/95 border-l shadow-lg flex flex-col z-20
-    transition-all duration-300
-    ${slideMinimized ? "w-12" : "w-72"}
-  `}
-  style={{
-    minWidth: slideMinimized ? "3rem" : "18rem",
-    maxWidth: slideMinimized ? "3rem" : "18rem",
-  }}
->
-  {/* Botón de minimizar para slide ABIERTO */}
-  {!slideMinimized && (
-    <button
-      className="absolute -left-4 top-4 w-8 h-8 rounded-full shadow bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 z-30 transition"
-      onClick={() => setSlideMinimized(true)}
-      tabIndex={0}
-      aria-label="Minimizar slide"
-    >
-      <Minus className="h-5 w-5 text-blue-500" />
-    </button>
-  )}
-
-  {/* CONTENIDO DEL SLIDE */}
-  {!slideMinimized ? (
-    <>
-      <div className="p-4 border-b">
-        <h2 className="font-bold text-lg flex items-center gap-2">
-          <Truck className="h-5 w-5" /> Vehículos
-        </h2>
-      </div>
-      <div className="flex-1 overflow-y-auto p-2 space-y-2">
-        {slideVehicles.length === 0 && (
-          <div className="text-center text-muted-foreground text-sm mt-8">
-            No hay vehículos disponibles.
+        {breakdownError && (
+          <div className="bg-red-50 text-red-700 p-2 rounded-md text-sm">
+            {breakdownError}
           </div>
         )}
-        {slideVehicles
-          .filter(vehicle => vehicle.assignedOrders && vehicle.assignedOrders.length > 0)
-          .map(vehicle => (
-            <div
-              key={vehicle.id}
-              className={`rounded-md p-3 border flex flex-col gap-2 cursor-pointer transition hover:bg-blue-50 ${
-                selectedElement?.id === vehicle.id
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 bg-white"
-              }`}
-              onClick={() =>
-                setSelectedElement(mapElements.find(e => e.id === vehicle.id) || null)
-              }
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ background: vehicle.color }}
-                />
-                <div className="flex-1">
-                  <div className="font-medium text-sm">{vehicle.label}</div>
-                  <div className="text-xs text-muted-foreground">{vehicle.statusLabel}</div>
-                  <div className="text-xs mt-1">
-                    <span>
-                      Comb: {vehicle.fuel.current.toFixed(1)}/{vehicle.fuel.capacity.toFixed(1)}L
-                    </span>
-                    <span className="ml-2">
-                      GLP: {vehicle.glp.current}/{vehicle.glp.capacity}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              {/* Listado de pedidos asignados */}
-              {vehicle.assignedOrders && vehicle.assignedOrders.length > 0 ? (
-                <div className="mt-2 pl-6">
-                  <div className="text-xs font-semibold text-blue-700 mb-1">
-                    Pedidos atendiendo:
-                  </div>
-                  <ul className="space-y-1">
-                    {vehicle.assignedOrders.map(order => (
-                      <li
-                        key={order.id}
-                        className="text-xs bg-blue-50 border border-blue-100 rounded px-2 py-1"
-                      >
-                        Pedido: <b>{order.id}</b>
-                        {/* Puedes mostrar más datos si quieres */}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              ) : (
-                <div className="text-xs text-gray-400 pl-6">Sin pedidos asignados</div>
-              )}
-            </div>
-          ))}
-      </div>
-    </>
-  ) : (
-    // Slide minimizado: "+" y camión juntos, centrados vertical y horizontalmente
-    <div className="flex flex-col items-center justify-center flex-1 h-full w-full pt-2">
-      <div className="flex flex-col items-center gap-1">
-      <Truck className="h-8 w-8 text-blue-400" />
-      <button
-        className="w-8 h-8 rounded-full shadow bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50"
-        onClick={() => setSlideMinimized(false)}
-        tabIndex={0}
-        aria-label="Mostrar vehículos"
-      >
-        <Plus className="h-5 w-5 text-blue-500" />
-      </button>
-      </div>
-    </div>
-  )}
-</div>
 
+        <DialogFooter>
+          <Button
+            variant="outline"
+            onClick={() => onOpenChange(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={onSubmit}
+            disabled={isBreakdownLoading}
+          >
+            {isBreakdownLoading ? "Procesando..." : "Confirmar Avería"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function FloatingToast({message,color = "green",onClose,className = "",} :
+  {message: string | null;color?: "green" | "red" | "amber" | "blue";onClose: () => void;className?: string;}) {
   
+  if (!message) return null;
+  const colorClasses: Record<string, string> = {
+    green: "bg-green-50 text-green-700 border-green-200",
+    red: "bg-red-50 text-red-700 border-red-200",
+    amber: "bg-amber-50 text-amber-800 border-amber-200",
+    blue: "bg-blue-50 text-blue-700 border-blue-200",
+  };
+
+  return (
+    <div
+      className={`absolute top-20 left-4 p-3 rounded-md shadow-sm border flex items-center justify-between z-50 ${
+        colorClasses[color] || colorClasses.green
+      } ${className}`}
+    >
+      <p className="text-sm">{message}</p>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="ml-2 h-6 w-6 p-0"
+        onClick={onClose}
+      >
+        ×
+      </Button>
     </div>
-    
-  )
+  );
+}
+
+function ErrorToast({message,onClose,className = "",style = {},} : 
+  {message: string | null,onClose: () => void,className?: string,style?: React.CSSProperties}) {
   
+  if (!message) return null
+  return (
+    <div
+      className={
+        `absolute top-20 left-4 bg-red-50 text-red-700 p-3 rounded-md shadow-sm border border-red-200 flex items-center justify-between ${className}`
+      }
+      style={style}
+    >
+      <p className="text-sm">{message}</p>
+      <Button
+        variant="ghost"
+        size="sm"
+        className="ml-2 h-6 w-6 p-0"
+        onClick={onClose}
+      >
+        ×
+      </Button>
+    </div>
+  )
+}
+
+
+
+function PanelDetail({selectedElement,setSelectedElement,handleBreakdownVehicle,handleRepairVehicle,
+  isBreakdownLoading,isRepairLoading,environmentData,}: PanelDetailProps) {
+  
+  if (!selectedElement) return null;
+  // Buscar vehículo para mostrar detalles extendidos
+  const vehicle = selectedElement.type === "vehicle"
+    ? environmentData?.vehicles.find(v => v.id === selectedElement.id)
+    : null;
+
+  return (
+    <div className="absolute top-4 left-4 bg-white p-3 rounded-md shadow-md border max-w-xs z-30">
+      <div className="flex justify-between items-center mb-2">
+        <h3 className="font-medium text-sm flex items-center gap-1">
+          {selectedElement.type === "mainWarehouse" && <WarehouseIcon className="h-4 w-4" />}
+          {selectedElement.type === "warehouse" && <Building className="h-4 w-4" />}
+          {selectedElement.type === "vehicle" && <Truck className="h-4 w-4" />}
+          {selectedElement.type === "customer" && <User className="h-4 w-4" />}
+          {selectedElement.type === "package" && <Package className="h-4 w-4" />}
+          {selectedElement.label}
+        </h3>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 w-6 p-0"
+          onClick={() => setSelectedElement(null)}
+        >
+          ×
+        </Button>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Coordenadas: ({selectedElement.x}, {selectedElement.y})
+      </p>
+
+      {selectedElement.details && (
+        <div className="mt-2 text-xs border-t pt-2">
+          <p className="text-muted-foreground">{selectedElement.details}</p>
+        </div>
+      )}
+
+      {selectedElement.type === "vehicle" && (
+        <div className="mt-2 space-y-2">
+          <div className="grid grid-cols-2 gap-2">
+            {selectedElement.status === "en-ruta" ? (
+              <Button
+                variant="destructive"
+                size="sm"
+                className="w-full text-xs"
+                onClick={handleBreakdownVehicle}
+                disabled={isBreakdownLoading}
+              >
+                <AlertOctagon className="mr-1 h-3 w-3" />
+                Simular Avería
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full text-xs"
+                onClick={handleRepairVehicle}
+                disabled={isRepairLoading}
+              >
+                <WrenchIcon className="mr-1 h-3 w-3" />
+                Reparar Vehículo
+              </Button>
+            )}
+            <Button variant="outline" size="sm" className="w-full text-xs">
+              <Truck className="mr-1 h-3 w-3" />
+              Ver Ruta
+            </Button>
+          </div>
+          <div className="border-t pt-2 text-xs space-y-1">
+            <h4 className="font-medium">Detalles adicionales:</h4>
+            {vehicle && (
+              <>
+                <p className="flex justify-between">
+                  <span>Tipo:</span>
+                  <span className="font-medium">{vehicle.type}</span>
+                </p>
+                <p className="flex justify-between">
+                  <span>Combustible:</span>
+                  <span className="font-medium">
+                    {vehicle.fuel.current.toFixed(2)} / {vehicle.fuel.capacity.toFixed(2)} L
+                    ({vehicle.fuel.percentage.toFixed(1)}%)
+                  </span>
+                </p>
+                <p className="flex justify-between">
+                  <span>GLP:</span>
+                  <span className="font-medium">
+                    {vehicle.glp.current} / {vehicle.glp.capacity} unidades
+                    ({vehicle.glp.percentage.toFixed(1)}%)
+                  </span>
+                </p>
+                <p className="flex justify-between">
+                  <span>Estado:</span>
+                  <span className={`font-medium ${selectedElement.status === "en-ruta" ? "text-green-600" : "text-red-600"}`}>
+                    {selectedElement.status === "en-ruta" ? "En ruta" : "Averiado"}
+                  </span>
+                </p>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {(selectedElement.type === "customer" ||
+        selectedElement.type === "warehouse" ||
+        selectedElement.type === "mainWarehouse") && (
+        <div className="mt-2">
+          <Button variant="outline" size="sm" className="w-full text-xs">
+            <Info className="mr-1 h-3 w-3" />
+            Ver Más Detalles
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+
+function BlockedRoadDetailPanel({selectedBlockedRoad,setSelectedBlockedRoad,}: {
+                                selectedBlockedRoad: BlockedRoad | null;
+                                setSelectedBlockedRoad: (road: BlockedRoad | null) => void;
+                                }) 
+  {
+  if (!selectedBlockedRoad) return null;
+
+  return (
+    <div className="absolute top-4 left-4 bg-white p-3 rounded-md shadow-md border max-w-xs">
+      <div className="flex justify-between items-center mb-2">
+        <h3 className="font-medium text-sm flex items-center gap-1">
+          <Ban className="h-4 w-4 text-red-500" />
+          {selectedBlockedRoad.label}
+        </h3>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-6 w-6 p-0"
+          onClick={() => setSelectedBlockedRoad(null)}
+        >
+          ×
+        </Button>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Desde: ({selectedBlockedRoad.from.x}, {selectedBlockedRoad.from.y})<br />
+        Hasta: ({selectedBlockedRoad.to.x}, {selectedBlockedRoad.to.y})
+      </p>
+      {selectedBlockedRoad.details && (
+        <div className="mt-2 text-xs border-t pt-2">
+          <p className="text-muted-foreground">{selectedBlockedRoad.details}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+
+function VehicleSlide({slideMinimized,setSlideMinimized,
+  slideVehicles,mapElements,selectedElement,setSelectedElement}: VehicleSlideProps) {
+  return (
+    <div
+      className={`
+        absolute top-0 right-0 h-full bg-white/95 border-l shadow-lg flex flex-col z-20
+        transition-all duration-300
+        ${slideMinimized ? "w-12" : "w-72"}`}
+      style={{
+        minWidth: slideMinimized ? "3rem" : "18rem",
+        maxWidth: slideMinimized ? "3rem" : "18rem",
+      }}
+    >
+    {/* Botón de minimizar para slide ABIERTO */}
+    {!slideMinimized && (
+      <button
+        className="absolute -left-4 top-4 w-8 h-8 rounded-full shadow bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 z-30 transition"
+        onClick={() => setSlideMinimized(true)}
+        tabIndex={0}
+        aria-label="Minimizar slide"
+      >
+        <Minus className="h-5 w-5 text-blue-500" />
+      </button>
+    )}
+
+    {/* CONTENIDO DEL SLIDE */}
+    {!slideMinimized ? (
+      <>
+        <div className="p-4 border-b">
+          <h2 className="font-bold text-lg flex items-center gap-2">
+            <Truck className="h-5 w-5" /> Vehículos
+          </h2>
+        </div>
+        <div className="flex-1 overflow-y-auto p-2 space-y-2">
+          {slideVehicles.length === 0 && (
+            <div className="text-center text-muted-foreground text-sm mt-8">
+              No hay vehículos disponibles.
+            </div>
+          )}
+          {slideVehicles
+            .filter(vehicle => vehicle.assignedOrders && vehicle.assignedOrders.length > 0)
+            .map(vehicle => (
+              <div
+                key={vehicle.id}
+                className={`rounded-md p-3 border flex flex-col gap-2 cursor-pointer transition hover:bg-blue-50 ${
+                  selectedElement?.id === vehicle.id
+                    ? "border-blue-500 bg-blue-50"
+                    : "border-gray-200 bg-white"
+                }`}
+                onClick={() =>
+                  setSelectedElement(mapElements.find(e => e.id === vehicle.id) || null)
+                }
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-3 h-3 rounded-full"
+                    style={{ background: vehicle.color }}
+                  />
+                  <div className="flex-1">
+                    <div className="font-medium text-sm">{vehicle.label}</div>
+                    <div className="text-xs text-muted-foreground">{vehicle.statusLabel}</div>
+                    <div className="text-xs mt-1">
+                      <span>
+                        Comb: {vehicle.fuel.current.toFixed(1)}/{vehicle.fuel.capacity.toFixed(1)}L
+                      </span>
+                      <span className="ml-2">
+                        GLP: {vehicle.glp.current}/{vehicle.glp.capacity}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                {/* Listado de pedidos asignados */}
+                {vehicle.assignedOrders && vehicle.assignedOrders.length > 0 ? (
+                  <div className="mt-2 pl-6">
+                    <div className="text-xs font-semibold text-blue-700 mb-1">
+                      Pedidos atendiendo:
+                    </div>
+                    <ul className="space-y-1">
+                      {vehicle.assignedOrders.map(order => (
+                        <li
+                          key={order.id}
+                          className="text-xs bg-blue-50 border border-blue-100 rounded px-2 py-1"
+                        >
+                          Pedido: <b>{order.id}</b>
+                          {/* Puedes mostrar más datos si quieres */}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : (
+                  <div className="text-xs text-gray-400 pl-6">Sin pedidos asignados</div>
+                )}
+              </div>
+            ))}
+        </div>
+      </>
+    ) : (
+      // Slide minimizado: "+" y camión juntos, centrados vertical y horizontalmente
+      <div className="flex flex-col items-center justify-center flex-1 h-full w-full pt-2">
+        <div className="flex flex-col items-center gap-1">
+        <Truck className="h-8 w-8 text-blue-400" />
+        <button
+          className="w-8 h-8 rounded-full shadow bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50"
+          onClick={() => setSlideMinimized(false)}
+          tabIndex={0}
+          aria-label="Mostrar vehículos"
+        >
+          <Plus className="h-5 w-5 text-blue-500" />
+        </button>
+        </div>
+      </div>
+    )}
+  </div>
+  )
 }
