@@ -21,6 +21,7 @@ export default function RootLayout({
       <body>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <SidebarProvider>
+
             <div className="flex flex-1">
               <AppSidebar />
               <main className="flex-1 overflow-auto">{children}</main>
