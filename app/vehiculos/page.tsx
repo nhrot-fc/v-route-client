@@ -29,21 +29,10 @@ export default function VehiculosPage() {
   const [newOpen, setNewOpen] = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
-  const [confirmMessage, setConfirmMessage] = useState("")
+  const [confirmMessage] = useState("")
   const [searchTerm, setSearchTerm] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
   const [successOpen, setSuccessOpen] = useState(false)
-
-  const handleNewSubmit = () => {
-    setNewOpen(false)
-    setSuccessOpen(true)
-  }
-
-  const handleImportSubmit = () => {
-    setImportOpen(false)
-    setConfirmMessage("Importación completada con éxito.")
-    setConfirmOpen(true)
-  }
 
   const handleSearch = () => {
     setSearchQuery(searchTerm.trim())

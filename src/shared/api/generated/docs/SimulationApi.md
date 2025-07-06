@@ -6,10 +6,12 @@ All URIs are relative to *http://localhost:8080*
 |------------- | ------------- | -------------|
 |[**createSimulation**](#createsimulation) | **POST** /api/simulation | Crear nueva simulación|
 |[**deleteSimulation**](#deletesimulation) | **DELETE** /api/simulation/{id} | Eliminar simulación|
+|[**getAllReports**](#getallreports) | **GET** /api/simulation/reports | Listar todos los reportes de simulación|
 |[**getAllSimulations**](#getallsimulations) | **GET** /api/simulation | Listar todas las simulaciones|
 |[**getBlockages**](#getblockages) | **GET** /api/simulation/{id}/blockages | Listar bloqueos|
 |[**getEnvironment**](#getenvironment) | **GET** /api/simulation/{id}/environment | Obtener detalles del entorno|
 |[**getOrders**](#getorders) | **GET** /api/simulation/{id}/orders | Listar órdenes|
+|[**getSimulationReport**](#getsimulationreport) | **GET** /api/simulation/{id}/report | Obtener reporte de simulación|
 |[**getSimulationStatus**](#getsimulationstatus) | **GET** /api/simulation/{id}/status | Obtener estado de una simulación|
 |[**getVehicles**](#getvehicles) | **GET** /api/simulation/{id}/vehicles | Listar vehículos|
 |[**pauseSimulation**](#pausesimulation) | **POST** /api/simulation/{id}/pause | Pausar simulación|
@@ -21,7 +23,7 @@ All URIs are relative to *http://localhost:8080*
 # **createSimulation**
 > { [key: string]: object; } createSimulation()
 
-Crea una nueva instancia de simulación
+Crea una nueva instancia de simulación según el tipo especificado
 
 ### Example
 
@@ -34,14 +36,20 @@ import {
 const configuration = new Configuration();
 const apiInstance = new SimulationApi(configuration);
 
+let simulationType: string; // (default to undefined)
 let name: string; // (optional) (default to undefined)
 let description: string; // (optional) (default to undefined)
 let startDate: string; // (optional) (default to undefined)
+let dataSource: string; // (optional) (default to undefined)
+let durationDays: number; // (optional) (default to undefined)
 
 const { status, data } = await apiInstance.createSimulation(
+    simulationType,
     name,
     description,
-    startDate
+    startDate,
+    dataSource,
+    durationDays
 );
 ```
 
@@ -49,9 +57,12 @@ const { status, data } = await apiInstance.createSimulation(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
+| **simulationType** | [**string**] |  | defaults to undefined|
 | **name** | [**string**] |  | (optional) defaults to undefined|
 | **description** | [**string**] |  | (optional) defaults to undefined|
 | **startDate** | [**string**] |  | (optional) defaults to undefined|
+| **dataSource** | [**string**] |  | (optional) defaults to undefined|
+| **durationDays** | [**number**] |  | (optional) defaults to undefined|
 
 
 ### Return type
@@ -117,6 +128,50 @@ No authorization required
 
  - **Content-Type**: Not defined
  - **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **getAllReports**
+> Array<SimulationReportDTO> getAllReports()
+
+Obtiene todos los reportes de simulaciones finalizadas
+
+### Example
+
+```typescript
+import {
+    SimulationApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new SimulationApi(configuration);
+
+const { status, data } = await apiInstance.getAllReports();
+```
+
+### Parameters
+This endpoint does not have any parameters.
+
+
+### Return type
+
+**Array<SimulationReportDTO>**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: */*
 
 
 ### HTTP response details
@@ -225,7 +280,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getEnvironment**
-> { [key: string]: object; } getEnvironment()
+> SimulationStateDTO getEnvironment()
 
 Obtiene información detallada del entorno de simulación
 
@@ -256,7 +311,7 @@ const { status, data } = await apiInstance.getEnvironment(
 
 ### Return type
 
-**{ [key: string]: object; }**
+**SimulationStateDTO**
 
 ### Authorization
 
@@ -332,8 +387,59 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **getSimulationReport**
+> SimulationReportDTO getSimulationReport()
+
+Obtiene el reporte de una simulación finalizada
+
+### Example
+
+```typescript
+import {
+    SimulationApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new SimulationApi(configuration);
+
+let id: string; //ID de la simulación (default to undefined)
+
+const { status, data } = await apiInstance.getSimulationReport(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] | ID de la simulación | defaults to undefined|
+
+
+### Return type
+
+**SimulationReportDTO**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **getSimulationStatus**
-> { [key: string]: object; } getSimulationStatus()
+> SimulationStateDTO getSimulationStatus()
 
 Obtiene el estado actual de una simulación específica
 
@@ -364,7 +470,7 @@ const { status, data } = await apiInstance.getSimulationStatus(
 
 ### Return type
 
-**{ [key: string]: object; }**
+**SimulationStateDTO**
 
 ### Authorization
 

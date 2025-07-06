@@ -1,11 +1,7 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { MaintenanceUploadForm } from "@/components/maintenance/maintenance-upload-form"
 import { MaintenanceForm } from "@/components/maintenance/maintenance-form"
 import { MaintenanceTable } from "@/components/maintenance/maintenance-table"
-import { Plus, Upload } from "lucide-react"
 
 export default function MantenimientosPage() {
   return (

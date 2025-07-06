@@ -18,14 +18,14 @@ import { useState } from "react";
 
 export default function PedidosPage() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
   // Key to trigger re-fetching/re-rendering of OrdersTable
   const [ordersUpdateKey, setOrdersUpdateKey] = useState(0);
   // Key to reset OrderForm instance
   const [orderFormInstanceKey, setOrderFormInstanceKey] = useState(0);
 
   const handleSearch = () => {
-    setSearchQuery(searchTerm.trim());
+    // Implementar búsqueda cuando sea necesario
+    console.log("Buscando:", searchTerm.trim());
   };
 
   // This function should be called by OrderForm after a new order is successfully created.
@@ -88,27 +88,23 @@ export default function PedidosPage() {
             key: "todos",
             title: "Todos los Pedidos",
             desc: "Listado completo de pedidos registrados en el sistema",
-            filter: undefined,
           },
           {
             key: "pendiente",
             title: "Pedidos Pendientes",
             desc: "Pedidos que aún no han sido asignados a una ruta",
-            filter: "pendientes",
           },
           {
             key: "en-ruta",
             title: "Pedidos En Ruta",
             desc: "Pedidos que están actualmente en proceso de entrega",
-            filter: "en-ruta",
           },
           {
             key: "entregados",
             title: "Pedidos Entregados",
             desc: "Pedidos que han sido entregados satisfactoriamente",
-            filter: "entregados",
           },
-        ].map(({ key, title, desc, filter }) => (
+        ].map(({ key, title, desc }) => (
           <TabsContent key={key} value={key} className="space-y-4">
             <Card>
               <CardHeader>

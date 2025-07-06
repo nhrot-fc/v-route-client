@@ -1,284 +1,77 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { Maximize, Minimize } from "lucide-react"
-
-import { useEffect, useRef, useState } from "react"
-import { Button } from "@/components/ui/button"
-import {
-  AlertTriangle,
-  Minus,
-  Plus,
-  Truck,
-  Package,
-  Warehouse as WarehouseIcon,
-  Building,
-  User,
-  ArrowLeft,
-  ArrowRight,
-  ArrowUp,
-  ArrowDown,
-  Ban,
-  Info,
-  RefreshCw,
-  Play,
-  Pause,
-  AlertOctagon,
-  Wrench as WrenchIcon
-} from "lucide-react"
+import React, { useEffect, useRef, useState } from "react";
 
 // Import API client and types
-import simulationApi, {
-  Position,
-  Vehicle,
-  Order,
-  Blockage,
-  Depot
-} from '@/lib/simulation-api'
+import { useSimulation } from "@/hooks/use-simulation";
 
-// Import Dialog components
+// Import custom types
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-type SlideVehicleInfo = {
-  id: string;
-  type: string;
-  status: string;
-  fuel: ResourceLevel;
-  glp: ResourceLevel;
-  position: Position;
-  label: string;
-  statusLabel: string;
-  color: string;
-  assignedOrders: Order[];
-};
-
-// Tipos específicos para PanelDetail
-type PanelDetailProps = {
-  selectedElement: MapElement | null;
-  setSelectedElement: (el: MapElement | null) => void;
-  handleBreakdownVehicle: () => void;
-  handleRepairVehicle: () => void;
-  isBreakdownLoading: boolean;
-  isRepairLoading: boolean;
-  environmentData: EnvironmentData | null;
-};
-
-type VehicleSlideProps = {
-  slideMinimized: boolean;
-  setSlideMinimized: (val: boolean) => void;
-  slideVehicles: SlideVehicleInfo[];
-  mapElements: MapElement[];
-  selectedElement: MapElement | null;
-  setSelectedElement: (el: MapElement | null) => void;
-  
-};
-// Tipos para los elementos del mapa
-type MapElement = {
-  id: string
-  type: "vehicle" | "warehouse" | "customer" | "mainWarehouse" | "package" | "blockedRoad"
-  x: number
-  y: number
-  label: string
-  status?: string
-  direction?: "north" | "south" | "east" | "west"
-  details?: string
-}
-
-// Updated type for Fuel and GLP
-type ResourceLevel = {
-  current: number
-  capacity: number
-  percentage: number
-}
-
-// Updated Vehicle type
-type VehicleData = {
-  id: string
-  type: string
-  status: string
-  position: Position
-  fuel: ResourceLevel
-  glp: ResourceLevel
-  currentPath?: {
-    actionType: string
-    startTime: string
-    endTime: string
-    path: Position[]
-  }
-}
-
-// Updated Blockage type
-type BlockageData = {
-  id: string
-  startTime: string
-  endTime: string
-  positions: Position[]
-}
-
-// Updated Depot type
-type DepotData = {
-  id: string
-  position: Position
-  isMain: boolean
-  canRefuel: boolean
-  glp: {
-    current: number
-    capacity: number
-  }
-}
-
-// Updated Environment Response type
-type EnvironmentData = {
-  timestamp: string
-  simulationTime: string
-  simulationRunning: boolean
-  vehicles: VehicleData[]
-  orders: Order[]
-  blockages: BlockageData[]
-  depots: DepotData[]
-}
-
-// Tipo para las rutas
-type Route = {
-  id: string
-  from: string
-  to: string
-  color: string
-  waypoints?: { x: number, y: number }[]
-}
-
-// Tipo para carreteras bloqueadas
-type BlockedRoad = {
-  id: string
-  from: { x: number, y: number }
-  to: { x: number, y: number }
-  label: string
-  details: string
-}
-type BreakdownDialogProps = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  selectedElement: MapElement | null;
-  breakdownReason: string;
-  setBreakdownReason: (val: string) => void;
-  repairHours: number;
-  setRepairHours: (val: number) => void;
-  breakdownError: string | null;
-  isBreakdownLoading: boolean;
-  onSubmit: () => void;
-};
-
-type FloatingErrorProps = {
-  error: string | null
-  onClose: () => void
-  className?: string
-}
-
-type FloatingLoaderProps = {
-  loading: boolean
-  message?: string
-  className?: string
-}
-type FloatingSimulationTimeProps = {
-  simulationTime: string | null
-  simulationRunning: boolean
-  onToggle: () => void
-  className?: string
-}
-
-
-type FloatingMapControlsProps = {
-  onZoomIn: () => void
-  onZoomOut: () => void
-  onReset: () => void
-  className?: string
-}
-type FloatingFullscreenButtonProps = {
-  isFullscreen: boolean
-  onToggle: () => void
-  className?: string
-}
+  MapElement,
+  EnvironmentData,
+  VehicleData,
+  SlideVehicleInfo,
+  BlockedRoad,
+} from "./simulation-map-types";
 
 interface SimulationMapProps {
   onTimeUpdate?: (time: string, isRunning: boolean) => void;
 }
 
-
 export function SimulationMap({ onTimeUpdate }: SimulationMapProps) {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [zoom, setZoom] = useState(15) // Aumentado de 10 a 15 para mayor resolución
-  const [pan, setPan] = useState({ x: 0, y: 0 })
-  const [selectedElement, setSelectedElement] = useState<MapElement | null>(null)
-  const [hoveredElement, setHoveredElement] = useState<MapElement | null>(null)
-  const [selectedBlockedRoad, setSelectedBlockedRoad] = useState<BlockedRoad | null>(null)
-  const [isDragging, setIsDragging] = useState(false)
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
-  const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 })
-  const [environmentData, setEnvironmentData] = useState<EnvironmentData | null>(null)
-  const [mapElements, setMapElements] = useState<MapElement[]>([])
-  const [blockedRoads, setBlockedRoads] = useState<BlockedRoad[]>([])
-  const [simulationTime, setSimulationTime] = useState<string>("")
-  const [routes, setRoutes] = useState<Route[]>([])
-  const [isLoading, setIsLoading] = useState<boolean>(true)
-  const [dataError, setDataError] = useState<string | null>(null)
-  const [simulationRunning, setSimulationRunning] = useState<boolean>(false)
-  const [breakdownDialogOpen, setBreakdownDialogOpen] = useState(false)
-  const [breakdownReason, setBreakdownReason] = useState("")
-  const [repairHours, setRepairHours] = useState(2)
-  const [isBreakdownLoading, setIsBreakdownLoading] = useState(false)
-  const [isRepairLoading, setIsRepairLoading] = useState(false)
-  const [breakdownError, setBreakdownError] = useState<string | null>(null)
-  const [repairError, setRepairError] = useState<string | null>(null)
-  const [operationSuccess, setOperationSuccess] = useState<string | null>(null)
-  const [slideMinimized, setSlideMinimized] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  // Function to toggle simulation
-  const toggleSimulation = async (forceState?: boolean) => {
-    try {
-      if (forceState === true || (!forceState && !simulationRunning)) {
-        await simulationApi.startSimulation();
-        setSimulationRunning(true);
-      } else if (forceState === false || (!forceState && simulationRunning)) {
-        await simulationApi.pauseSimulation();
-        setSimulationRunning(false);
-      }
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [canvasSize, setCanvasSize] = useState({ width: 800, height: 600 });
+  const [simulationTime, setSimulationTime] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [dataError, setDataError] = useState<string | null>(null);
+  const [simulationRunning, setSimulationRunning] = useState<boolean>(false);
+  const [breakdownReason, setBreakdownReason] = useState("");
+  const [repairHours, setRepairHours] = useState(2);
+  const [environmentData, setEnvironmentData] = useState<EnvironmentData | null>(null);
+  const [mapElements, setMapElements] = useState<MapElement[]>([]);
+  const [blockedRoads, setBlockedRoads] = useState<BlockedRoad[]>([]);
+  const [sliderVehicles, setSlideVehicles] = useState<SlideVehicleInfo[]>([]);
+  const [selectedElement, setSelectedElement] = useState<MapElement | null>(null);
+  const [breakdownDialogOpen, setBreakdownDialogOpen] = useState(false);
+  const [breakdownError, setBreakdownError] = useState<string | null>(null);
+  const [isBreakdownLoading, setIsBreakdownLoading] = useState(false);
+  const [isRepairLoading, setIsRepairLoading] = useState(false);
+  const [repairError, setRepairError] = useState<string | null>(null);
+  const [operationSuccess, setOperationSuccess] = useState<string | null>(null);
+  const [hoveredElement, setHoveredElement] = useState<MapElement | null>(null);
+  const [scale, setScale] = useState(1);
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
 
-      // Notify parent component about state change
-      if (onTimeUpdate) {
-        onTimeUpdate(simulationTime, forceState === undefined ? !simulationRunning : forceState);
-      }
-    } catch (error) {
-      console.error('Error al cambiar estado de la simulación:', error);
-      setDataError('Error al cambiar el estado de la simulación');
-    }
-  };
+  // Use the simulation hook
+  const simulation = useSimulation();
+
+  // Handle canvas resize
   useEffect(() => {
-    // Escuchar cambios de full screen para controlar el estado
+    const handleResize = () => {
+      if (containerRef.current) {
+        setCanvasSize({
+          width: containerRef.current.clientWidth,
+          height: containerRef.current.clientHeight,
+        });
+      }
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    // Listen for fullscreen changes
     const handleFsChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+      // Removed setIsFullscreen since we're not using it
     };
     document.addEventListener("fullscreenchange", handleFsChange);
-    return () => document.removeEventListener("fullscreenchange", handleFsChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFsChange);
   }, []);
-  const handleToggleFullscreen = () => {
-    if (!document.fullscreenElement && containerRef.current) {
-      containerRef.current.requestFullscreen();
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen();
-      setIsFullscreen(false);
-    }
-  };
+
   // Fetch environment data
   useEffect(() => {
     const fetchEnvironmentData = async () => {
@@ -286,30 +79,104 @@ export function SimulationMap({ onTimeUpdate }: SimulationMapProps) {
         setIsLoading(true);
         setDataError(null);
 
-        // Obtener datos del entorno desde la API
-        const data = await simulationApi.getEnvironment();
-        setEnvironmentData(data);
-        setSimulationTime(data.simulationTime);
-        setSimulationRunning(data.simulationRunning);
+        // Obtain data from the API
+        const apiData = await simulation.getEnvironment();
+
+        // Convert API data to our internal EnvironmentData format
+        const environmentData: EnvironmentData = {
+          timestamp: new Date().toISOString(),
+          simulationTime: apiData.currentTime || "",
+          currentTime: apiData.currentTime,
+          running: apiData.running,
+          vehicles:
+            apiData.vehicles?.map((v) => ({
+              id: v.id || "",
+              type: v.type || "",
+              status: v.status || "",
+              position: v.currentPosition || { x: 0, y: 0 },
+              fuel: {
+                current: v.currentFuelGal || 0,
+                capacity: v.fuelCapacityGal || 100,
+                percentage:
+                  v.currentFuelGal && v.fuelCapacityGal
+                    ? (v.currentFuelGal / v.fuelCapacityGal) * 100
+                    : 0,
+              },
+              glp: {
+                current: v.currentGlpM3 || 0,
+                capacity: v.glpCapacityM3 || 100,
+                percentage:
+                  v.currentGlpM3 && v.glpCapacityM3
+                    ? (v.currentGlpM3 / v.glpCapacityM3) * 100
+                    : 0,
+              },
+            })) || [],
+          orders: apiData.orders || [],
+          blockages:
+            apiData.activeBlockages?.map((b) => ({
+              id: b.id?.toString() || "",
+              startTime: b.startTime || "",
+              endTime: b.endTime || "",
+              positions: b.lines || [],
+            })) || [],
+          depots: [
+            // Main depot
+            ...(apiData.mainDepot
+              ? [
+                  {
+                    id: apiData.mainDepot.id || "main",
+                    position: apiData.mainDepot.position || { x: 0, y: 0 },
+                    isMain: true,
+                    canRefuel: apiData.mainDepot.canRefuel || false,
+                    glp: {
+                      current: apiData.mainDepot.currentGlpM3 || 0,
+                      capacity: apiData.mainDepot.glpCapacityM3 || 0,
+                    },
+                  },
+                ]
+              : []),
+            // Auxiliary depots
+            ...(apiData.auxDepots?.map((d) => ({
+              id: d.id || "",
+              position: d.position || { x: 0, y: 0 },
+              isMain: false,
+              canRefuel: d.canRefuel || false,
+              glp: {
+                current: d.currentGlpM3 || 0,
+                capacity: d.glpCapacityM3 || 0,
+              },
+            })) || []),
+          ],
+        };
+
+        setEnvironmentData(environmentData);
+        setSimulationTime(environmentData.simulationTime || "");
+        setSimulationRunning(environmentData.running || false);
 
         // Notify parent component about time update if callback exists
         if (onTimeUpdate) {
-          onTimeUpdate(data.simulationTime, data.simulationRunning);
+          onTimeUpdate(
+            environmentData.simulationTime || "",
+            environmentData.running || false
+          );
         }
 
         // Log vehicles for debugging
-        if (data.vehicles?.length > 0) {
-          console.log(`📊 Recibidos ${data.vehicles.length} vehículos del API`);
+        if (environmentData.vehicles?.length > 0) {
+          console.log(
+            `📊 Recibidos ${environmentData.vehicles.length} vehículos del API`
+          );
         } else {
           console.warn("⚠️ No se recibieron vehículos del API");
         }
 
-        // Transform API data to map elements
-        transformDataToMapElements(data);
+        // Transform data to map elements and slide elements
+        transformDataToMapElements(environmentData);
+        transformDataToSlideElements(environmentData);
         setIsLoading(false);
       } catch (error) {
-        console.error('❌ Error fetch de datos:', error);
-        setDataError('Error al cargar datos del entorno');
+        console.error("❌ Error fetch de datos:", error);
+        setDataError("Error al cargar datos del entorno");
         setIsLoading(false);
       }
     };
@@ -323,14 +190,94 @@ export function SimulationMap({ onTimeUpdate }: SimulationMapProps) {
 
     // Clean up interval on component unmount
     return () => clearInterval(intervalId);
-  }, [onTimeUpdate]);
-  // Transforma los datos de vehículos para la barra lateral (slide)
-  
-  
+  }, [onTimeUpdate, simulation]);
 
-  const [slideVehicles, setSlideVehicles] = useState<SlideVehicleInfo[]>([]);
+  // Transform API data to map elements
+  const transformDataToMapElements = (data: EnvironmentData) => {
+    const elements: MapElement[] = [];
+    // Clear blocked roads for fresh data
+    setBlockedRoads([]);
 
-  // Transforma los datos de la API para el slide de vehículos
+    // Add vehicles to map elements
+    data.vehicles.forEach((vehicle) => {
+      elements.push({
+        id: vehicle.id,
+        type: "vehicle",
+        x: vehicle.position.x || 0,
+        y: vehicle.position.y || 0,
+        label: `${vehicle.id} (${vehicle.type})`,
+        status: vehicle.status,
+        direction: determineDirection(vehicle),
+      });
+    });
+
+    // Add depots to map elements
+    data.depots.forEach((depot) => {
+      elements.push({
+        id: depot.id,
+        type: depot.isMain ? "mainWarehouse" : "warehouse",
+        x: depot.position.x || 0,
+        y: depot.position.y || 0,
+        label: depot.isMain ? "Depósito Principal" : `Depósito ${depot.id}`,
+        details: `GLP: ${depot.glp.current}/${depot.glp.capacity} m³`,
+      });
+    });
+
+    // Add orders to map elements
+    data.orders.forEach((order) => {
+      if (order.position) {
+        elements.push({
+          id: order.id || "",
+          type: "customer",
+          x: order.position.x || 0,
+          y: order.position.y || 0,
+          label: `Pedido ${order.id}`,
+          details: `GLP: ${order.glpRequestM3} m³, Entrega: ${order.dueTime}`,
+        });
+      }
+    });
+
+    // Add blockages to map elements
+    data.blockages.forEach((blockage) => {
+      if (blockage.positions && blockage.positions.length > 0) {
+        // For each blockage, create a blocked road element
+        blockage.positions.forEach((position, index) => {
+          if (index < blockage.positions.length - 1) {
+            const nextPosition = blockage.positions[index + 1];
+
+            // Create a unique ID for this segment
+            const segmentId = `block-${blockage.id}-${index}`;
+
+            // Add to blocked roads
+            setBlockedRoads((prev: BlockedRoad[]) => [
+              ...prev,
+              {
+                id: segmentId,
+                from: { x: position.x || 0, y: position.y || 0 },
+                to: { x: nextPosition.x || 0, y: nextPosition.y || 0 },
+                label: `Bloqueo ${blockage.id}`,
+                details: `Desde: ${blockage.startTime}, Hasta: ${blockage.endTime}`,
+              },
+            ]);
+
+            // Add to map elements
+            elements.push({
+              id: segmentId,
+              type: "blockedRoad",
+              x: ((position.x || 0) + (nextPosition.x || 0)) / 2,
+              y: ((position.y || 0) + (nextPosition.y || 0)) / 2,
+              label: `Bloqueo ${blockage.id}`,
+              details: `Desde: ${blockage.startTime}, Hasta: ${blockage.endTime}`,
+            });
+          }
+        });
+      }
+    });
+
+    setMapElements(elements);
+  };
+
+  // Transform API data to slide elements
   const transformDataToSlideElements = (data: EnvironmentData) => {
     const vehicles: SlideVehicleInfo[] = data.vehicles.map((vehicle) => {
       // Color por tipo de vehículo
@@ -343,1173 +290,80 @@ export function SimulationMap({ onTimeUpdate }: SimulationMapProps) {
       // Estado legible
       let statusLabel = "En ruta";
       if (vehicle.status !== "AVAILABLE") statusLabel = "Averiado";
-      
+
       // Buscar los pedidos que está atendiendo este vehículo
       // Como no tenemos assignedVehicleId, podemos usar la posición del vehículo y del pedido
       // para determinar si un vehículo está cerca de un pedido (como aproximación)
-      const assignedOrders = data.orders.filter(
-        (order) => {
-          // Si el vehículo tiene una ruta actual y el último punto de la ruta está cerca del pedido
-          if (vehicle.currentPath && vehicle.currentPath.path.length > 0) {
-            const lastPathPoint = vehicle.currentPath.path[vehicle.currentPath.path.length - 1];
+      const assignedOrders = data.orders.filter((order) => {
+        // Si el vehículo tiene una ruta actual y el último punto de la ruta está cerca del pedido
+        if (vehicle.currentPath && vehicle.currentPath.path.length > 0) {
+          const lastPathPoint =
+            vehicle.currentPath.path[vehicle.currentPath.path.length - 1];
+
+          if (lastPathPoint && order.position) {
             const distance = Math.sqrt(
-              Math.pow(lastPathPoint.x - order.position.x, 2) + 
-              Math.pow(lastPathPoint.y - order.position.y, 2)
+              Math.pow((lastPathPoint.x || 0) - (order.position.x || 0), 2) +
+                Math.pow((lastPathPoint.y || 0) - (order.position.y || 0), 2)
             );
             // Si la distancia es menor a 2 unidades, consideramos que el pedido está asignado al vehículo
             return distance < 2;
           }
-          return false;
         }
-      );
-      
+        return false;
+      });
+
       return {
-        id: vehicle.id,
-        type: vehicle.type,
-        status: vehicle.status,
+        id: vehicle.id || "",
+        type: vehicle.type || "",
+        status: vehicle.status || "",
         fuel: vehicle.fuel,
         glp: vehicle.glp,
-        position: vehicle.position,
-        label: `${vehicle.id} (${vehicle.type})`,
+        position: vehicle.position || { x: 0, y: 0 },
+        label: `${vehicle.id || ""} (${vehicle.type || ""})`,
         statusLabel,
         color,
         assignedOrders,
       };
     });
+
     setSlideVehicles(vehicles);
   };
 
-  // Llama a la función de slide cada vez que se actualiza el entorno
-  useEffect(() => {
-    if (environmentData) {
-      transformDataToSlideElements(environmentData);
-    }
-  }, [environmentData]);
-
-
-
-
-  // Transform API data to map elements
-  const transformDataToMapElements = (data: EnvironmentData) => {
-    const elements: MapElement[] = [];
-    const newBlockedRoads: BlockedRoad[] = [];
-    const newRoutes: Route[] = [];
-
-    // Add vehicles
-    data.vehicles.forEach((vehicle) => {
-      const direction = determineDirection(vehicle);
-
-      elements.push({
-        id: vehicle.id,
-        type: "vehicle",
-        x: vehicle.position.x,
-        y: vehicle.position.y,
-        label: `${vehicle.id} (${vehicle.type})`,
-        status: vehicle.status === "AVAILABLE" ? "en-ruta" : "averiado",
-        direction,
-        details: `Tipo: ${vehicle.type} | Estado: ${vehicle.status} | Combustible: ${vehicle.fuel.current.toFixed(2)}/${vehicle.fuel.capacity.toFixed(2)} (${vehicle.fuel.percentage.toFixed(1)}%) | GLP: ${vehicle.glp.current}/${vehicle.glp.capacity} (${vehicle.glp.percentage.toFixed(1)}%)`
-      });
-
-      // If vehicle has a currentPath, add it as a route
-      if (vehicle.currentPath && vehicle.currentPath.path.length > 1) {
-        // Create waypoints from the path
-        const waypoints = vehicle.currentPath.path.map(pos => ({ x: pos.x, y: pos.y }));
-
-        // Determine color based on vehicle type
-        let color = "#10b981"; // Default green
-        if (vehicle.type === "TA") color = "#ef4444";      // Red
-        else if (vehicle.type === "TB") color = "#3b82f6"; // Blue
-        else if (vehicle.type === "TC") color = "#f59e0b"; // Amber
-        else if (vehicle.type === "TD") color = "#8b5cf6"; // Purple
-
-        newRoutes.push({
-          id: `route-${vehicle.id}`,
-          from: "origin",
-          to: "destination",
-          color,
-          waypoints
-        });
-      }
-    });
-
-    // Find main depot
-    const mainDepot = data.depots.find(depot => depot.isMain);
-    if (mainDepot) {
-      elements.push({
-        id: mainDepot.id,
-        type: "mainWarehouse",
-        x: mainDepot.position.x,
-        y: mainDepot.position.y,
-        label: "Planta Principal",
-        details: `ID: ${mainDepot.id} | GLP Actual: ${mainDepot.glp.current}/${mainDepot.glp.capacity} (${((mainDepot.glp.current / mainDepot.glp.capacity) * 100).toFixed(1)}%) | Recarga: ${mainDepot.canRefuel ? "Sí" : "No"}`
-      });
-    }
-
-    // Add auxiliary depots
-    data.depots.filter(depot => !depot.isMain).forEach((depot) => {
-      elements.push({
-        id: depot.id,
-        type: "warehouse",
-        x: depot.position.x,
-        y: depot.position.y,
-        label: depot.id,
-        details: `ID: ${depot.id} | GLP Actual: ${depot.glp.current}/${depot.glp.capacity} (${((depot.glp.current / depot.glp.capacity) * 100).toFixed(1)}%) | Recarga: ${depot.canRefuel ? "Sí" : "No"}`
-      });
-    });
-
-    // Add orders as customers with more detailed information
-    data.orders.forEach((order) => {
-      // Calcular porcentaje de entrega si hay información disponible
-      const requestedGlp = order.glp?.requested || 0;
-      // Usar remaining en lugar de delivered (que no existe en el tipo)
-      const remainingGlp = order.glp?.remaining || 0;
-      const deliveredGlp = requestedGlp - remainingGlp; // Calcular lo entregado como solicitado - restante
-      const deliveryPercentage = requestedGlp > 0 ? ((requestedGlp - remainingGlp) / requestedGlp) * 100 : 0;
-      
-      // Formatear estado de entrega
-      let deliveryStatus = "Pendiente";
-      if (deliveryPercentage >= 100) {
-        deliveryStatus = "Completado";
-      } else if (deliveryPercentage > 0) {
-        deliveryStatus = `En progreso (${deliveryPercentage.toFixed(1)}%)`;
-      }
-      
-      // Usar información de vencimiento en lugar de timeRemaining (que no existe en el tipo)
-      const timeInfo = order.isOverdue
-        ? "Tiempo agotado"
-        : deliveryPercentage >= 100
-          ? "Entrega completada"
-          : "Pendiente de asignación";
-      
-      elements.push({
-        id: order.id,
-        type: "customer",
-        x: order.position.x,
-        y: order.position.y,
-        label: `Pedido: ${order.id.substring(0, 10)}`,
-        details: `Solicitud: ${requestedGlp} GLP | Entregado: ${deliveredGlp} GLP (${deliveryPercentage.toFixed(1)}%) | Estado: ${deliveryStatus} | ${timeInfo} | Vencido: ${order.isOverdue ? "Sí" : "No"}`
-      });
-    });
-
-    // Process blockages to create blocked roads
-    // First create a unique set of blockages to avoid duplications in the API
-    const uniqueBlockages = new Map();
-
-    data.blockages
-      .forEach((blockage) => {
-        // Create a key based on the ID to detect duplicates
-        const key = blockage.id;
-
-        if (!uniqueBlockages.has(key)) {
-          uniqueBlockages.set(key, blockage);
-        }
-      });
-
-    // Convert unique blockages to blocked roads
-    Array.from(uniqueBlockages.values()).forEach((blockage, index) => {
-      if (blockage.positions.length >= 2) {
-        // For each blockage, create segments between consecutive points
-        for (let i = 0; i < blockage.positions.length - 1; i++) {
-          const from = blockage.positions[i];
-          const to = blockage.positions[i + 1];
-
-          newBlockedRoads.push({
-            id: `block-${blockage.id}-${i}`,
-            from: { x: from.x, y: from.y },
-            to: { x: to.x, y: to.y },
-            label: "Carretera bloqueada",
-            details: `Bloqueo activo desde ${blockage.startTime} hasta ${blockage.endTime}`
-          });
-        }
-      }
-    });
-
-    setMapElements(elements);
-    setBlockedRoads(newBlockedRoads);
-    setRoutes(newRoutes);
-  };
-
-  // Helper function to determine vehicle direction based on its position history
-  const determineDirection = (vehicle: VehicleData): "north" | "south" | "east" | "west" => {
-    // If vehicle has a current path, determine direction from it
-    if (vehicle.currentPath && vehicle.currentPath.path.length > 1) {
-      // Compare current position with next path point
-      const currentPos = vehicle.position;
-      const nextPos = vehicle.currentPath.path[1]; // Next position in path
-
-      // Calculate direction vector
-      const dx = nextPos.x - currentPos.x;
-      const dy = nextPos.y - currentPos.y;
-
-      // Determine dominant direction
-      if (Math.abs(dx) > Math.abs(dy)) {
-        return dx > 0 ? "east" : "west";
-      } else {
-        return dy > 0 ? "north" : "south";
-      }
-    }
-
-    // Fallback if no path: assign a direction based on vehicle ID
-    const directions: ("north" | "south" | "east" | "west")[] = ["north", "south", "east", "west"];
-    const hash = vehicle.id.charCodeAt(vehicle.id.length - 1) % directions.length;
-    return directions[hash];
-  };
-  const [maximized, setMaximized] = useState(false);
-
-  // Asegurar que el canvas ocupe el 100% del contenedor
-  useEffect(() => {
-    const updateCanvasSize = () => {
-      if (containerRef.current) {
-        const { width, height } = containerRef.current.getBoundingClientRect();
-        setCanvasSize({ width: Math.floor(width), height: Math.floor(height) });
-      }
-    };
-
-    updateCanvasSize();
-
-    window.addEventListener("resize", updateCanvasSize);
-
-    // Asegúrate de que cada vez que maximices, vuelvas a calcular el tamaño
-    return () => window.removeEventListener("resize", updateCanvasSize);
-  }, [maximized, isFullscreen]);
-
-  // Precargar imágenes para iconos
-  const [iconsLoaded, setIconsLoaded] = useState(false)
-  const iconImages = useRef<Record<string, HTMLImageElement>>({})
-
-  useEffect(() => {
-    const loadIcons = async () => {
-      // Crear una función para cargar una imagen con mejor manejo de errores
-      const loadImage = (name: string, src: string): Promise<[string, HTMLImageElement]> => {
-        return new Promise((resolve, reject) => {
-          const img = new Image()
-          img.onload = () => {
-            console.log(`✅ Icono ${name} cargado correctamente desde ${src}`)
-            resolve([name, img])
-          }
-          img.onerror = (e) => {
-            console.error(`❌ Error cargando icono ${name} desde ${src}:`, e)
-            reject(new Error(`Error cargando icono ${name}`))
-          }
-          img.src = src
-          return img
-        })
-      }
-
-      console.log("🔄 Iniciando carga de iconos SVG...")
-
-      // Cargar todas las imágenes en paralelo
-      const iconPromises = [
-        loadImage("warehouse", "/icons/warehouse.svg"),
-        loadImage("mainWarehouse", "/icons/main-warehouse.svg"),
-        loadImage("package", "/icons/package.svg"),
-        loadImage("customer", "/icons/customer.svg"),
-        loadImage("vehicleNorth", "/icons/truck-north.svg"),
-        loadImage("vehicleSouth", "/icons/truck-south.svg"),
-        loadImage("vehicleEast", "/icons/truck-east.svg"),
-        loadImage("vehicleWest", "/icons/truck-west.svg"),
-        loadImage("blockedRoad", "/icons/blocked-road.svg")
-      ]
-
-      try {
-        const loadedIcons = await Promise.all(iconPromises)
-        const iconMap: Record<string, HTMLImageElement> = {}
-        loadedIcons.forEach(([name, img]) => {
-          iconMap[name] = img
-          console.log(`🗃️ Icono ${name} almacenado en cache`)
-        })
-        iconImages.current = iconMap
-        console.log(`✨ Carga completa: ${Object.keys(iconMap).length} iconos disponibles`)
-        setIconsLoaded(true)
-      } catch (error) {
-        console.error("❌ Error cargando iconos:", error)
-        // Continuar aunque no se carguen los iconos, usaremos formas básicas
-        setIconsLoaded(true)
-      }
-    }
-
-    loadIcons()
-  }, [])
-
-  // Dibujar el mapa
-  useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return
-
-    // Ajustar el tamaño del canvas
-    canvas.width = canvasSize.width
-    canvas.height = canvasSize.height
-
-    // Limpiar el canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-    // Dibujar la cuadrícula
-    ctx.strokeStyle = "#e5e7eb"
-    ctx.lineWidth = 1
-
-    // Dibujar líneas verticales
-    for (let x = 0; x <= 70; x++) {
-      const canvasX = x * zoom + pan.x
-      ctx.beginPath()
-      ctx.moveTo(canvasX, pan.y)
-      ctx.lineTo(canvasX, 50 * zoom + pan.y)
-      ctx.stroke()
-    }
-
-    // Dibujar líneas horizontales
-    for (let y = 0; y <= 50; y++) {
-      const canvasY = y * zoom + pan.y
-      ctx.beginPath()
-      ctx.moveTo(pan.x, canvasY)
-      ctx.lineTo(70 * zoom + pan.x, canvasY)
-      ctx.stroke()
-    }
-
-    // Dibujar coordenadas en los ejes
-    ctx.fillStyle = "#6b7280"
-    ctx.font = "10px sans-serif"
-    for (let x = 0; x <= 70; x += 5) {
-      const canvasX = x * zoom + pan.x
-      ctx.fillText(`${x}`, canvasX, pan.y + 15)
-    }
-    for (let y = 0; y <= 50; y += 5) {
-      const canvasY = y * zoom + pan.y
-      ctx.fillText(`${y}`, pan.x + 5, canvasY + 4)
-    }
-
-    // Dibujar rutas primero para que estén detrás de los elementos
-    routes.forEach(route => {
-      if (route.waypoints && route.waypoints.length > 1) {
-        ctx.strokeStyle = route.color
-        ctx.lineWidth = 2
-        ctx.beginPath()
-
-        // Dibujar la línea entre waypoints
-        const startX = route.waypoints[0].x * zoom + pan.x
-        const startY = (50 - route.waypoints[0].y) * zoom + pan.y
-        ctx.moveTo(startX, startY)
-
-        for (let i = 1; i < route.waypoints.length; i++) {
-          const x = route.waypoints[i].x * zoom + pan.x
-          const y = (50 - route.waypoints[i].y) * zoom + pan.y
-          ctx.lineTo(x, y)
-        }
-
-        ctx.stroke()
-
-        // Dibujar pequeñas flechas de dirección en la ruta
-        for (let i = 1; i < route.waypoints.length; i++) {
-          const prevX = route.waypoints[i - 1].x * zoom + pan.x
-          const prevY = (50 - route.waypoints[i - 1].y) * zoom + pan.y
-          const x = route.waypoints[i].x * zoom + pan.x
-          const y = (50 - route.waypoints[i].y) * zoom + pan.y
-
-          // Punto medio donde dibujar la flecha
-          const midX = (prevX + x) / 2
-          const midY = (prevY + y) / 2
-
-          // Ángulo de la línea
-          const angle = Math.atan2(y - prevY, x - prevX)
-
-          // Dibujar la flecha
-          ctx.save()
-          ctx.translate(midX, midY)
-          ctx.rotate(angle)
-
-          // Triángulo
-          ctx.beginPath()
-          ctx.moveTo(5, 0)
-          ctx.lineTo(-2, 4)
-          ctx.lineTo(-2, -4)
-          ctx.closePath()
-          ctx.fillStyle = route.color
-          ctx.fill()
-
-          ctx.restore()
-        }
-      }
-    })
-
-    // Dibujar carreteras bloqueadas (ahora como aristas)
-    blockedRoads.forEach(road => {
-      const fromX = road.from.x * zoom + pan.x
-      const fromY = (50 - road.from.y) * zoom + pan.y
-      const toX = road.to.x * zoom + pan.x
-      const toY = (50 - road.to.y) * zoom + pan.y
-
-      // Intentar usar la imagen SVG para el bloqueo
-      const midX = (fromX + toX) / 2;
-      const midY = (fromY + toY) / 2;
-
-      // Calcular ángulo de la línea
-      const roadAngle = Math.atan2(toY - fromY, toX - fromX);
-
-      // Dibujar la línea bloqueada con efecto de barricada
-      ctx.beginPath();
-      ctx.moveTo(fromX, fromY);
-      ctx.lineTo(toX, toY);
-
-      // Efecto de gradiente para la línea
-      const gradient = ctx.createLinearGradient(fromX, fromY, toX, toY);
-      gradient.addColorStop(0, "#ef4444");      // Rojo al inicio
-      gradient.addColorStop(0.5, "#fca5a5");    // Rojo más claro en medio
-      gradient.addColorStop(1, "#ef4444");      // Rojo al final
-
-      ctx.strokeStyle = gradient;
-      ctx.lineWidth = 5 * (zoom / 15);
-
-      // Patrón de línea más estético
-      ctx.setLineDash([8 * (zoom / 15), 4 * (zoom / 15)]);
-      ctx.stroke();
-      ctx.setLineDash([]); // Restaurar línea sólida
-
-      // Dibujar símbolo de bloqueo en el punto medio, con rotación según ángulo de la carretera
-      ctx.save();
-      ctx.translate(midX, midY);
-      ctx.rotate(roadAngle);
-
-      // Intentar usar el SVG para el bloqueo
-      const blockSvgSize = 24 * (zoom / 15);
-      const blockImgLoaded = iconImages.current["blockedRoad"];
-
-      if (blockImgLoaded) {
-        // Dibujar el SVG de bloqueo
-        ctx.shadowColor = "rgba(0,0,0,0.3)";
-        ctx.shadowBlur = 5 * (zoom / 15);
-        ctx.shadowOffsetX = 2 * (zoom / 15);
-        ctx.shadowOffsetY = 2 * (zoom / 15);
-
-        ctx.drawImage(
-          blockImgLoaded,
-          -blockSvgSize / 2,
-          -blockSvgSize / 2,
-          blockSvgSize,
-          blockSvgSize
-        );
-
-        ctx.shadowColor = "transparent";
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
-      } else {
-        // Alternativa si no hay SVG: Símbolo de bloqueo mejorado
-        // Fondo circular con efecto de resplandor
-        const glowRadius = 16 * (zoom / 15);
-        const innerRadius = 12 * (zoom / 15);
-
-        // Resplandor exterior
-        const glowGradient = ctx.createRadialGradient(0, 0, innerRadius * 0.7, 0, 0, glowRadius);
-        glowGradient.addColorStop(0, "rgba(239, 68, 68, 0.7)");
-        glowGradient.addColorStop(1, "rgba(239, 68, 68, 0)");
-
-        ctx.fillStyle = glowGradient;
-        ctx.beginPath();
-        ctx.arc(0, 0, glowRadius, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Círculo rojo
-        ctx.beginPath();
-        ctx.arc(0, 0, innerRadius, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(239, 68, 68, 0.7)";
-        ctx.fill();
-
-        // Borde del círculo
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 2 * (zoom / 15);
-        ctx.beginPath();
-        ctx.arc(0, 0, innerRadius, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Símbolo de bloqueo (X)
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 3 * (zoom / 15);
-        ctx.beginPath();
-        const symbolSize = 7 * (zoom / 15);
-        ctx.moveTo(-symbolSize, -symbolSize);
-        ctx.lineTo(symbolSize, symbolSize);
-        ctx.moveTo(symbolSize, -symbolSize);
-        ctx.lineTo(-symbolSize, symbolSize);
-        ctx.stroke();
-      }
-
-      ctx.restore(); // Restaurar el contexto (quitar rotación)
-
-      // Dibujar etiqueta si está seleccionada con un estilo mejorado
-      if (selectedBlockedRoad?.id === road.id) {
-        // Tamaño de texto basado en zoom
-        const fontSize = 12 * (zoom / 15);
-        ctx.font = `${fontSize}px sans-serif`;
-        const textWidth = ctx.measureText(road.label).width;
-        const textPadding = 8 * (zoom / 15);
-
-        // Fondo de etiqueta con bordes redondeados
-        ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
-        const labelX = midX + 18 * (zoom / 15);
-        const labelY = midY - 8 * (zoom / 15);
-        const cornerRadius = 4 * (zoom / 15);
-
-        // Dibujar rectángulo redondeado
-        ctx.beginPath();
-        ctx.moveTo(labelX + cornerRadius, labelY);
-        ctx.lineTo(labelX + textWidth + textPadding - cornerRadius, labelY);
-        ctx.quadraticCurveTo(labelX + textWidth + textPadding, labelY, labelX + textWidth + textPadding, labelY + cornerRadius);
-        ctx.lineTo(labelX + textWidth + textPadding, labelY + 16 * (zoom / 15) - cornerRadius);
-        ctx.quadraticCurveTo(labelX + textWidth + textPadding, labelY + 16 * (zoom / 15), labelX + textWidth + textPadding - cornerRadius, labelY + 16 * (zoom / 15));
-        ctx.lineTo(labelX + cornerRadius, labelY + 16 * (zoom / 15));
-        ctx.quadraticCurveTo(labelX, labelY + 16 * (zoom / 15), labelX, labelY + 16 * (zoom / 15) - cornerRadius);
-        ctx.lineTo(labelX, labelY + cornerRadius);
-        ctx.quadraticCurveTo(labelX, labelY, labelX + cornerRadius, labelY);
-        ctx.closePath();
-        ctx.fill();
-
-        // Borde sutil
-        ctx.strokeStyle = "rgba(239, 68, 68, 0.5)";
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        // Texto de la etiqueta
-        ctx.fillStyle = "#1f2937";
-        ctx.textAlign = "left";
-        ctx.textBaseline = "middle";
-        ctx.fillText(road.label, labelX + textPadding / 2, midY);
-
-        // Línea conectora desde el símbolo a la etiqueta
-        ctx.strokeStyle = "rgba(239, 68, 68, 0.7)";
-        ctx.lineWidth = 1.5 * (zoom / 15);
-        ctx.beginPath();
-        ctx.setLineDash([3 * (zoom / 15), 2 * (zoom / 15)]);
-        ctx.moveTo(midX + 8 * (zoom / 15), midY);
-        ctx.lineTo(labelX, midY);
-        ctx.stroke();
-        ctx.setLineDash([]);
-      }
-    })
-
-    // Dibujar elementos del mapa
-    mapElements.forEach((element) => {
-      const x = element.x * zoom + pan.x
-      const y = (50 - element.y) * zoom + pan.y // Invertir Y para que 0 esté abajo
-
-      ctx.save()
-
-      const isHighlighted = selectedElement?.id === element.id || hoveredElement?.id === element.id
-      const scale = isHighlighted ? 1.2 : 1
-      const zoomScale = zoom / 15 // Scale based on zoom level (15 is the default)
-
-      // Dibujar círculo de selección para elementos seleccionados o con hover
-      if (isHighlighted) {
-        ctx.beginPath()
-        ctx.arc(x, y, 22 * scale * zoomScale, 0, Math.PI * 2) // Bigger selection circle
-        ctx.fillStyle = "rgba(59, 130, 246, 0.2)"
-        ctx.fill()
-      }
-
-      // Intentar usar imagenes cargadas, si no usar formas básicas
-      const drawImage = (imageName: string, size: number) => {
-        const img = iconImages.current[imageName]
-        if (img) {
-          try {
-            const scaledSize = size * scale * zoomScale
-            // Aplicar sombra para dar efecto de elevación
-            ctx.shadowColor = "rgba(0,0,0,0.2)"
-            ctx.shadowBlur = 4 * zoomScale
-            ctx.shadowOffsetX = 1 * zoomScale
-            ctx.shadowOffsetY = 2 * zoomScale
-
-            // Dibujar imagen
-            ctx.drawImage(img, x - scaledSize / 2, y - scaledSize / 2, scaledSize, scaledSize)
-
-            // Resetear sombra después de dibujar
-            ctx.shadowColor = "transparent"
-            ctx.shadowBlur = 0
-            ctx.shadowOffsetX = 0
-            ctx.shadowOffsetY = 0
-            return true
-          } catch (err) {
-            console.error(`Error dibujando imagen ${imageName}:`, err)
-            return false
-          }
+  // Determine vehicle direction based on its current path or status
+  const determineDirection = (
+    vehicle: VehicleData
+  ): "north" | "south" | "east" | "west" => {
+    // Default direction
+    let direction: "north" | "south" | "east" | "west" = "east";
+
+    // If vehicle has a current path with at least 2 points, determine direction from last two points
+    if (
+      vehicle.currentPath &&
+      vehicle.currentPath.path &&
+      vehicle.currentPath.path.length >= 2
+    ) {
+      const pathLength = vehicle.currentPath.path.length;
+      const lastPoint = vehicle.currentPath.path[pathLength - 1];
+      const secondLastPoint = vehicle.currentPath.path[pathLength - 2];
+
+      if (lastPoint && secondLastPoint) {
+        const dx = (lastPoint.x || 0) - (secondLastPoint.x || 0);
+        const dy = (lastPoint.y || 0) - (secondLastPoint.y || 0);
+
+        // Determine predominant direction
+        if (Math.abs(dx) > Math.abs(dy)) {
+          // Horizontal movement is predominant
+          direction = dx > 0 ? "east" : "west";
         } else {
-          if (iconsLoaded) {
-            console.warn(`Imagen no encontrada: ${imageName}`)
-          }
-          return false
+          // Vertical movement is predominant
+          direction = dy > 0 ? "south" : "north";
         }
       }
-
-      // Dibujar icono según el tipo
-      switch (element.type) {
-        case "mainWarehouse":
-          if (!drawImage("mainWarehouse", 44)) { // Increased base size for main warehouse
-            // Usar un diseño más detallado y visual para el almacén principal
-            ctx.shadowColor = "rgba(0,0,0,0.3)";
-            ctx.shadowBlur = 6 * zoomScale;
-            ctx.shadowOffsetX = 2 * zoomScale;
-            ctx.shadowOffsetY = 3 * zoomScale;
-
-            // Base del edificio principal
-            const scaledSize = 22 * scale * zoomScale;
-            ctx.fillStyle = "#1e40af"; // Azul oscuro
-            ctx.beginPath();
-            ctx.rect(x - scaledSize, y - scaledSize * 0.8, scaledSize * 2, scaledSize * 1.6);
-            ctx.fill();
-
-            // Techo
-            ctx.fillStyle = "#1e3a8a"; // Azul más oscuro para el techo
-            ctx.beginPath();
-            ctx.moveTo(x - scaledSize * 1.2, y - scaledSize * 0.8); // Esquina superior izquierda
-            ctx.lineTo(x + scaledSize * 1.2, y - scaledSize * 0.8); // Esquina superior derecha
-            ctx.lineTo(x, y - scaledSize * 1.5); // Punto del techo
-            ctx.closePath();
-            ctx.fill();
-
-            // Detalles de la fachada
-            ctx.fillStyle = "#bfdbfe"; // Azul claro para ventanas
-
-            // Ventanas superiores (fila)
-            const windowSize = scaledSize * 0.3;
-            const windowSpacing = scaledSize * 0.5;
-            for (let i = -1; i <= 1; i++) {
-              ctx.beginPath();
-              ctx.rect(x + i * windowSpacing - windowSize / 2, y - scaledSize * 0.5, windowSize, windowSize);
-              ctx.fill();
-            }
-
-            // Puerta principal
-            ctx.fillStyle = "#1e3a8a"; // Azul oscuro para la puerta
-            ctx.beginPath();
-            ctx.rect(x - scaledSize * 0.3, y + scaledSize * 0.1, scaledSize * 0.6, scaledSize * 0.7);
-            ctx.fill();
-
-            // Línea de base (suelo)
-            ctx.strokeStyle = "#334155"; // Gris oscuro
-            ctx.lineWidth = 2 * zoomScale;
-            ctx.beginPath();
-            ctx.moveTo(x - scaledSize * 1.2, y + scaledSize * 0.8);
-            ctx.lineTo(x + scaledSize * 1.2, y + scaledSize * 0.8);
-            ctx.stroke();
-
-            // Resetear sombras
-            ctx.shadowColor = "transparent";
-            ctx.shadowBlur = 0;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
-
-            // Bandera o indicador de planta principal
-            ctx.fillStyle = "#ef4444"; // Rojo
-            ctx.beginPath();
-            ctx.moveTo(x, y - scaledSize * 1.5); // Punta del techo
-            ctx.lineTo(x, y - scaledSize * 1.8); // Arriba de la bandera
-            ctx.lineTo(x + scaledSize * 0.4, y - scaledSize * 1.65); // Punta de la bandera
-            ctx.closePath();
-            ctx.fill();
-          }
-          break;
-        case "warehouse":
-          if (!drawImage("warehouse", 38)) { // Increased base size
-            // Visualización mejorada para almacenes secundarios
-            ctx.shadowColor = "rgba(0,0,0,0.25)";
-            ctx.shadowBlur = 5 * zoomScale;
-            ctx.shadowOffsetX = 2 * zoomScale;
-            ctx.shadowOffsetY = 2 * zoomScale;
-
-            const scaledSize = 18 * scale * zoomScale;
-
-            // Estructura principal - forma de almacén
-            ctx.fillStyle = "#3b82f6"; // Azul
-            ctx.beginPath();
-            ctx.rect(x - scaledSize, y - scaledSize * 0.7, scaledSize * 2, scaledSize * 1.4);
-            ctx.fill();
-
-            // Techo
-            ctx.fillStyle = "#2563eb"; // Azul más oscuro
-            ctx.beginPath();
-            ctx.moveTo(x - scaledSize * 1.1, y - scaledSize * 0.7);
-            ctx.lineTo(x + scaledSize * 1.1, y - scaledSize * 0.7);
-            ctx.lineTo(x + scaledSize * 0.8, y - scaledSize * 1.2);
-            ctx.lineTo(x - scaledSize * 0.8, y - scaledSize * 1.2);
-            ctx.closePath();
-            ctx.fill();
-
-            // Puerta de garaje/almacén
-            ctx.fillStyle = "#93c5fd"; // Azul más claro
-            ctx.beginPath();
-            ctx.rect(x - scaledSize * 0.6, y - scaledSize * 0.1, scaledSize * 1.2, scaledSize * 0.8);
-            ctx.fill();
-
-            // Líneas horizontales de la puerta
-            ctx.strokeStyle = "#2563eb"; // Azul
-            ctx.lineWidth = 1 * zoomScale;
-            for (let i = 1; i < 4; i++) {
-              ctx.beginPath();
-              ctx.moveTo(x - scaledSize * 0.6, y - scaledSize * 0.1 + i * scaledSize * 0.2);
-              ctx.lineTo(x + scaledSize * 0.6, y - scaledSize * 0.1 + i * scaledSize * 0.2);
-              ctx.stroke();
-            }
-
-            // Ventana circular en el techo
-            ctx.fillStyle = "#bfdbfe"; // Azul muy claro
-            ctx.beginPath();
-            ctx.arc(x, y - scaledSize * 0.95, scaledSize * 0.15, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Marco de la ventana
-            ctx.strokeStyle = "#2563eb";
-            ctx.lineWidth = 1 * zoomScale;
-            ctx.beginPath();
-            ctx.arc(x, y - scaledSize * 0.95, scaledSize * 0.15, 0, Math.PI * 2);
-            ctx.stroke();
-
-            // Cruz en la ventana
-            ctx.beginPath();
-            ctx.moveTo(x - scaledSize * 0.15, y - scaledSize * 0.95);
-            ctx.lineTo(x + scaledSize * 0.15, y - scaledSize * 0.95);
-            ctx.moveTo(x, y - scaledSize * 0.95 - scaledSize * 0.15);
-            ctx.lineTo(x, y - scaledSize * 0.95 + scaledSize * 0.15);
-            ctx.stroke();
-
-            // Resetear sombras
-            ctx.shadowColor = "transparent";
-            ctx.shadowBlur = 0;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
-          }
-          break;
-        case "customer":
-          // Intentar dibujar primero el SVG personalizado
-          if (!drawImage("customer", 32)) {
-            // Si no se pudo usar SVG, usar una visualización mejorada
-            const customerSize = 14 * scale * zoomScale;
-
-            // Aplicar sombras para dar profundidad
-            ctx.shadowColor = "rgba(0,0,0,0.2)";
-            ctx.shadowBlur = 4 * zoomScale;
-            ctx.shadowOffsetX = 1 * zoomScale;
-            ctx.shadowOffsetY = 2 * zoomScale;
-
-            // Base del edificio (rectángulo redondeado)
-            ctx.fillStyle = "#f59e0b"; // Ámbar para clientes
-            ctx.beginPath();
-            const buildingWidth = customerSize * 1.8;
-            const buildingHeight = customerSize * 1.6;
-            const cornerRadius = 3 * zoomScale;
-
-            // Dibujar rectángulo redondeado
-            ctx.beginPath();
-            ctx.moveTo(x - buildingWidth / 2 + cornerRadius, y - buildingHeight / 2);
-            ctx.lineTo(x + buildingWidth / 2 - cornerRadius, y - buildingHeight / 2);
-            ctx.quadraticCurveTo(x + buildingWidth / 2, y - buildingHeight / 2, x + buildingWidth / 2, y - buildingHeight / 2 + cornerRadius);
-            ctx.lineTo(x + buildingWidth / 2, y + buildingHeight / 2 - cornerRadius);
-            ctx.quadraticCurveTo(x + buildingWidth / 2, y + buildingHeight / 2, x + buildingWidth / 2 - cornerRadius, y + buildingHeight / 2);
-            ctx.lineTo(x - buildingWidth / 2 + cornerRadius, y + buildingHeight / 2);
-            ctx.quadraticCurveTo(x - buildingWidth / 2, y + buildingHeight / 2, x - buildingWidth / 2, y + buildingHeight / 2 - cornerRadius);
-            ctx.lineTo(x - buildingWidth / 2, y - buildingHeight / 2 + cornerRadius);
-            ctx.quadraticCurveTo(x - buildingWidth / 2, y - buildingHeight / 2, x - buildingWidth / 2 + cornerRadius, y - buildingHeight / 2);
-            ctx.closePath();
-            ctx.fill();
-
-            // Techo del edificio con forma de triángulo
-            ctx.fillStyle = "#d97706"; // Ámbar más oscuro para el techo
-            ctx.beginPath();
-            ctx.moveTo(x, y - buildingHeight / 2 - customerSize * 0.8);
-            ctx.lineTo(x - buildingWidth / 2 - customerSize * 0.3, y - buildingHeight / 2);
-            ctx.lineTo(x + buildingWidth / 2 + customerSize * 0.3, y - buildingHeight / 2);
-            ctx.closePath();
-            ctx.fill();
-
-            // Puerta
-            ctx.fillStyle = "#7c2d12"; // Marrón oscuro
-            ctx.beginPath();
-            ctx.rect(x - customerSize * 0.4, y, customerSize * 0.8, customerSize * 0.8);
-            ctx.fill();
-
-            // Ventanas (2 pequeños cuadrados)
-            ctx.fillStyle = "#a5f3fc"; // Azul claro
-            ctx.beginPath();
-            ctx.rect(x - customerSize * 0.7, y - customerSize * 0.6, customerSize * 0.5, customerSize * 0.5);
-            ctx.rect(x + customerSize * 0.2, y - customerSize * 0.6, customerSize * 0.5, customerSize * 0.5);
-            ctx.fill();
-
-            // Resetear sombras
-            ctx.shadowColor = "transparent";
-            ctx.shadowBlur = 0;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
-          }
-
-          // If the order is overdue, show indicator
-          const order = environmentData?.orders.find(o => o.id === element.id);
-          if (order) {
-            const customerSize = 14 * scale * zoomScale;
-            
-            // Calcular datos de progreso para visualización
-            const requestedGlp = order.glp?.requested || 0;
-            const remainingGlp = order.glp?.remaining || 0;
-            const deliveredGlp = requestedGlp - remainingGlp; // Calcular lo entregado como solicitado - restante
-            const deliveryPercentage = requestedGlp > 0 ? ((requestedGlp - remainingGlp) / requestedGlp) * 100 : 0;
-
-            // Draw status indicator with improved style
-            const priorityColor = order.isOverdue ? "#ef4444" : // rojo para vencidos
-              deliveryPercentage >= 100 ? "#10b981" : // verde para completados
-              deliveryPercentage > 0 ? "#3b82f6" : // azul para en progreso
-              "#f59e0b"; // ámbar para pendientes
-
-            // Círculo de estado con mejor visualización
-            ctx.fillStyle = priorityColor;
-            ctx.shadowColor = "rgba(0,0,0,0.3)";
-            ctx.shadowBlur = 3 * zoomScale;
-            ctx.shadowOffsetX = 1 * zoomScale;
-            ctx.shadowOffsetY = 1 * zoomScale;
-            ctx.beginPath();
-            ctx.arc(x + customerSize * 1.2, y - customerSize, 7 * zoomScale, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Borde del indicador
-            ctx.strokeStyle = "#ffffff";
-            ctx.lineWidth = 2 * zoomScale;
-            ctx.beginPath();
-            ctx.arc(x + customerSize * 1.2, y - customerSize, 7 * zoomScale, 0, Math.PI * 2);
-            ctx.stroke();
-
-            // Resetear sombras
-            ctx.shadowColor = "transparent";
-            ctx.shadowBlur = 0;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
-
-            // Si está vencido, añadir un símbolo X
-            if (order.isOverdue) {
-              ctx.strokeStyle = "#ffffff";
-              ctx.lineWidth = 2.5 * zoomScale;
-              ctx.beginPath();
-              ctx.moveTo(x + customerSize * 1.2 - 3.5 * zoomScale, y - customerSize - 3.5 * zoomScale);
-              ctx.lineTo(x + customerSize * 1.2 + 3.5 * zoomScale, y - customerSize + 3.5 * zoomScale);
-              ctx.moveTo(x + customerSize * 1.2 + 3.5 * zoomScale, y - customerSize - 3.5 * zoomScale);
-              ctx.lineTo(x + customerSize * 1.2 - 3.5 * zoomScale, y - customerSize + 3.5 * zoomScale);
-              ctx.stroke();
-            } 
-            // Si está completado, mostrar un check
-            else if (deliveryPercentage >= 100) {
-              ctx.strokeStyle = "#ffffff";
-              ctx.lineWidth = 2.5 * zoomScale;
-              ctx.beginPath();
-              ctx.moveTo(x + customerSize * 1.2 - 3.5 * zoomScale, y - customerSize);
-              ctx.lineTo(x + customerSize * 1.2 - 1 * zoomScale, y - customerSize + 3 * zoomScale);
-              ctx.lineTo(x + customerSize * 1.2 + 3.5 * zoomScale, y - customerSize - 3 * zoomScale);
-              ctx.stroke();
-            }
-            // Si está en progreso, mostrar un círculo parcialmente lleno
-            else if (deliveryPercentage > 0) {
-              ctx.fillStyle = "#ffffff";
-              ctx.beginPath();
-              ctx.arc(x + customerSize * 1.2, y - customerSize, 3 * zoomScale, 0, Math.PI * 2);
-              ctx.fill();
-            }
-            // Si no está ni entregado ni vencido, mostrar exclamación
-            else {
-              ctx.fillStyle = "#ffffff";
-              ctx.beginPath();
-              // Punto de exclamación
-              ctx.arc(x + customerSize * 1.2, y - customerSize + 2 * zoomScale, 1.5 * zoomScale, 0, Math.PI * 2);
-              ctx.fill();
-              ctx.fillRect(x + customerSize * 1.2 - 1 * zoomScale, y - customerSize - 3.5 * zoomScale, 2 * zoomScale, 4 * zoomScale);
-            }
-
-            // Mostrar información de GLP como texto pequeño
-            ctx.fillStyle = "white";
-            ctx.font = `bold ${8 * zoomScale}px sans-serif`;
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            
-            // Mostrar información de progreso si hay entrega parcial
-            let glpText = "";
-            if (deliveryPercentage > 0 && deliveryPercentage < 100) {
-              glpText = `${deliveredGlp}/${requestedGlp}`;
-            } else {
-              glpText = requestedGlp.toString();
-            }
-
-            // Fondo semi-transparente para el texto
-            const textWidth = ctx.measureText(glpText).width;
-            ctx.fillStyle = "rgba(0,0,0,0.5)";
-            const padding = 3 * zoomScale;
-            ctx.fillRect(
-              x - textWidth / 2 - padding,
-              y + customerSize * 1.5 - padding,
-              textWidth + padding * 2,
-              10 * zoomScale + padding * 2
-            );
-
-            // Texto GLP
-            ctx.fillStyle = "white";
-            ctx.fillText(glpText, x, y + customerSize * 1.5 + 5 * zoomScale);
-          }
-          break;
-        case "vehicle":
-          const directionMap = {
-            "north": "vehicleNorth",
-            "south": "vehicleSouth",
-            "east": "vehicleEast",
-            "west": "vehicleWest"
-          }
-          const vehicleImage = element.direction ? directionMap[element.direction] : "vehicleEast"
-
-          // Obtener el tipo de vehículo para colorear apropiadamente
-          const vehicle = environmentData?.vehicles.find(v => v.id === element.id);
-          const vehicleType = vehicle?.type || "";
-          
-          // Determinar color basado en tipo de vehículo y estado
-          let vehicleColor = "#10b981"; // Verde por defecto
-          if (element.status !== "en-ruta") {
-            vehicleColor = "#ef4444"; // Rojo para averiados
-          } else {
-            // Colores por tipo de vehículo solo si está en ruta
-            if (vehicleType === "TA") vehicleColor = "#ef4444";      // Rojo
-            else if (vehicleType === "TB") vehicleColor = "#3b82f6"; // Azul
-            else if (vehicleType === "TC") vehicleColor = "#f59e0b"; // Ámbar
-            else if (vehicleType === "TD") vehicleColor = "#8b5cf6"; // Púrpura
-          }
-
-          if (!drawImage(vehicleImage, 36)) { // Increased base size
-            console.log(`Dibujando vehículo ${element.id} con fallback en (${x}, ${y})`);
-
-            // Si no hay imagen, usar representación más moderna
-            const radius = 15 * scale * zoomScale;
-
-            // Sombra para dar profundidad
-            ctx.shadowColor = "rgba(0,0,0,0.3)";
-            ctx.shadowBlur = 5 * zoomScale;
-            ctx.shadowOffsetX = 2 * zoomScale;
-            ctx.shadowOffsetY = 2 * zoomScale;
-
-            // Círculo base
-            ctx.fillStyle = vehicleColor;
-            ctx.beginPath();
-            ctx.arc(x, y, radius, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Borde
-            ctx.strokeStyle = "rgba(255,255,255,0.6)";
-            ctx.lineWidth = 1.5 * zoomScale;
-            ctx.beginPath();
-            ctx.arc(x, y, radius, 0, Math.PI * 2);
-            ctx.stroke();
-
-            // Quitar sombra para la flecha
-            ctx.shadowColor = "transparent";
-            ctx.shadowBlur = 0;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
-
-            // Dibujar flecha para dirección con estilo mejorado
-            ctx.beginPath();
-            ctx.fillStyle = "#ffffff";
-
-            const arrowSize = 6 * scale * zoomScale;
-
-            // Dibujar un triángulo en lugar de una flecha lineal
-            if (element.direction === "north") {
-              ctx.beginPath();
-              ctx.moveTo(x, y - arrowSize * 1.2);
-              ctx.lineTo(x - arrowSize, y + arrowSize * 0.5);
-              ctx.lineTo(x + arrowSize, y + arrowSize * 0.5);
-              ctx.closePath();
-            } else if (element.direction === "south") {
-              ctx.beginPath();
-              ctx.moveTo(x, y + arrowSize * 1.2);
-              ctx.lineTo(x - arrowSize, y - arrowSize * 0.5);
-              ctx.lineTo(x + arrowSize, y - arrowSize * 0.5);
-              ctx.closePath();
-            } else if (element.direction === "east") {
-              ctx.beginPath();
-              ctx.moveTo(x + arrowSize * 1.2, y);
-              ctx.lineTo(x - arrowSize * 0.5, y - arrowSize);
-              ctx.lineTo(x - arrowSize * 0.5, y + arrowSize);
-              ctx.closePath();
-            } else { // west
-              ctx.beginPath();
-              ctx.moveTo(x - arrowSize * 1.2, y);
-              ctx.lineTo(x + arrowSize * 0.5, y - arrowSize);
-              ctx.lineTo(x + arrowSize * 0.5, y + arrowSize);
-              ctx.closePath();
-            }
-
-            ctx.fill();
-
-            // Añadir texto indicador del tipo de vehículo
-            if (vehicleType) {
-              ctx.fillStyle = "#ffffff";
-              ctx.font = `bold ${9 * scale * zoomScale}px sans-serif`;
-              ctx.textAlign = "center";
-              ctx.textBaseline = "middle";
-              ctx.fillText(vehicleType, x, y);
-            }
-          }
-          break;
-        case "package":
-          if (!drawImage("package", 30)) { // Increased base size
-            // Dibujar un cuadrado con una "P"
-            ctx.fillStyle = "#8b5cf6"
-            ctx.beginPath()
-            const scaledSize = 15 * scale * zoomScale
-            ctx.rect(x - scaledSize, y - scaledSize, scaledSize * 2, scaledSize * 2)
-            ctx.fill()
-
-            ctx.fillStyle = "#ffffff"
-            ctx.font = `${16 * scale * zoomScale}px sans-serif` // Font size scales with zoom
-            ctx.textAlign = "center"
-            ctx.textBaseline = "middle"
-            ctx.fillText("P", x, y)
-          }
-          break;
-      }
-
-      // Dibujar etiquetas para los elementos destacados o si hay hover/selección
-      if (isHighlighted || element.type === "mainWarehouse" || element.type === "warehouse") {
-        // Fondo semitransparente para la etiqueta
-        ctx.font = `${14 * Math.min(zoomScale, 1.5)}px sans-serif` // Scale font with zoom, but with a max
-        const textWidth = ctx.measureText(element.label).width
-        ctx.fillStyle = "rgba(255, 255, 255, 0.8)"
-        ctx.fillRect(x + 18 * zoomScale, y - 10 * zoomScale, textWidth + 10, 20 * zoomScale) // Scale with zoom
-
-        // Texto de la etiqueta
-        ctx.fillStyle = "#1f2937"
-        ctx.textAlign = "left"
-        ctx.textBaseline = "middle"
-        ctx.fillText(element.label, x + 23 * zoomScale, y) // Adjusted position
-      }
-
-      ctx.restore()
-    })
-  }, [zoom, pan, selectedElement, hoveredElement, selectedBlockedRoad, canvasSize, mapElements, blockedRoads, routes])
-
-  // Manejar zoom
-  const handleZoomIn = () => {
-    setZoom((prev) => Math.min(prev + 3, 30)) // Aumentado de 2 a 3 y máximo de 20 a 30
-  }
-
-  const handleZoomOut = () => {
-    setZoom((prev) => Math.max(prev - 3, 8)) // Aumentado de 2 a 3 y mínimo de 5 a 8
-  }
-
-  // Encontrar elemento en coordenadas
-  const findElementAtCoordinates = (clientX: number, clientY: number) => {
-    const canvas = canvasRef.current
-    if (!canvas) return null
-
-    const rect = canvas.getBoundingClientRect()
-    const x = clientX - rect.left
-    const y = clientY - rect.top
-
-    // Comprobar en todos los elementos
-    return mapElements.find((element) => {
-      const elementX = element.x * zoom + pan.x
-      const elementY = (50 - element.y) * zoom + pan.y
-      const distance = Math.sqrt(Math.pow(elementX - x, 2) + Math.pow(elementY - y, 2))
-      return distance < 16 // Radio de detección de clic aumentado de 12 a 16
-    })
-  }
-
-  // Encontrar carretera bloqueada en coordenadas
-  const findBlockedRoadAtCoordinates = (clientX: number, clientY: number) => {
-    const canvas = canvasRef.current
-    if (!canvas) return null
-
-    const rect = canvas.getBoundingClientRect()
-    const x = clientX - rect.left
-    const y = clientY - rect.top
-
-    return blockedRoads.find((road) => {
-      const fromX = road.from.x * zoom + pan.x
-      const fromY = (50 - road.from.y) * zoom + pan.y
-      const toX = road.to.x * zoom + pan.x
-      const toY = (50 - road.to.y) * zoom + pan.y
-
-      // Calcular distancia del punto a la línea
-      const A = x - fromX
-      const B = y - fromY
-      const C = toX - fromX
-      const D = toY - fromY
-
-      const dot = A * C + B * D
-      const lenSq = C * C + D * D
-      let param = -1
-
-      if (lenSq !== 0) {
-        param = dot / lenSq
-      }
-
-      let xx, yy
-
-      if (param < 0) {
-        xx = fromX
-        yy = fromY
-      } else if (param > 1) {
-        xx = toX
-        yy = toY
-      } else {
-        xx = fromX + param * C
-        yy = fromY + param * D
-      }
-
-      const dx = x - xx
-      const dy = y - yy
-      const distance = Math.sqrt(dx * dx + dy * dy)
-
-      return distance < 10 // Radio de detección para carreteras bloqueadas
-    })
-  }
-
-  // Manejar eventos del mouse
-  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-
-    const clickedElement = findElementAtCoordinates(e.clientX, e.clientY)
-    const clickedBlockedRoad = findBlockedRoadAtCoordinates(e.clientX, e.clientY)
-
-    if (clickedElement) {
-      setSelectedElement(clickedElement)
-      setSelectedBlockedRoad(null)
-    } else if (clickedBlockedRoad) {
-      setSelectedBlockedRoad(clickedBlockedRoad)
-      setSelectedElement(null)
-    } else {
-      setSelectedElement(null)
-      setSelectedBlockedRoad(null)
-      setIsDragging(true)
-      setDragStart({ x: e.clientX, y: e.clientY })
     }
-  }
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    // Actualizar elemento seleccionado en hover
-    const hoveredElement = findElementAtCoordinates(e.clientX, e.clientY)
-    if (hoveredElement && hoveredElement.id !== selectedElement?.id) {
-      setHoveredElement(hoveredElement)
-    }
-    if (!hoveredElement) {
-      setHoveredElement(null)
-    }
-    // Si está arrastrando, mover el mapa
-    if (!isDragging) return
+    return direction;
+  };
 
-    setPan((prev) => ({
-      x: prev.x + (e.clientX - dragStart.x),
-      y: prev.y + (e.clientY - dragStart.y),
-    }))
-
-    setDragStart({ x: e.clientX, y: e.clientY })
-  }
-
-  const handleMouseUp = () => {
-    setIsDragging(false)
-  }
-
-  
   // Handle vehicle breakdown
   const handleBreakdownVehicle = async () => {
     if (!selectedElement || selectedElement.type !== "vehicle") return;
@@ -1518,73 +372,167 @@ export function SimulationMap({ onTimeUpdate }: SimulationMapProps) {
     setBreakdownReason("");
     setRepairHours(2);
     setBreakdownError(null);
-  }
+  };
 
   // Submit vehicle breakdown
   const submitBreakdownVehicle = async () => {
     if (!selectedElement || selectedElement.type !== "vehicle") return;
-    
+
     try {
       setIsBreakdownLoading(true);
       setBreakdownError(null);
-      
-      const response = await simulationApi.breakdownVehicle({
+
+      const response = await simulation.simulateVehicleBreakdown({
         vehicleId: selectedElement.id,
         reason: breakdownReason || "Mechanical failure",
-        estimatedRepairHours: repairHours
+        estimatedRepairHours: repairHours,
       });
-      
+
       // Close dialog
       setBreakdownDialogOpen(false);
-      
+
       // Show success message
-      setOperationSuccess(`Vehículo ${selectedElement.id} averiado: ${response.incidentType}, reparación estimada: ${response.estimatedRepairTime}`);
-      
+      setOperationSuccess(
+        `Vehículo ${selectedElement.id} averiado: ${response.incidentType}, reparación estimada: ${response.estimatedRepairTime}`
+      );
+
       // Auto-dismiss success message after 5 seconds
       setTimeout(() => {
         setOperationSuccess(null);
       }, 5000);
-      
+
       // Force a refresh of the data
-      const data = await simulationApi.getEnvironment();
-      transformDataToMapElements(data);
-      
+      const apiData = await simulation.getEnvironment();
+
+      // Convert API data to our internal EnvironmentData format
+      const environmentData: EnvironmentData = {
+        timestamp: new Date().toISOString(),
+        simulationTime: apiData.currentTime || "",
+        currentTime: apiData.currentTime,
+        running: apiData.running,
+        vehicles:
+          apiData.vehicles?.map((v) => ({
+            id: v.id || "",
+            type: v.type || "",
+            status: v.status || "",
+            position: v.currentPosition || { x: 0, y: 0 },
+            fuel: {
+              current: v.currentFuelGal || 0,
+              capacity: v.fuelCapacityGal || 100,
+              percentage:
+                v.currentFuelGal && v.fuelCapacityGal
+                  ? (v.currentFuelGal / v.fuelCapacityGal) * 100
+                  : 0,
+            },
+            glp: {
+              current: v.currentGlpM3 || 0,
+              capacity: v.glpCapacityM3 || 100,
+              percentage:
+                v.currentGlpM3 && v.glpCapacityM3
+                  ? (v.currentGlpM3 / v.glpCapacityM3) * 100
+                  : 0,
+            },
+          })) || [],
+        orders: apiData.orders || [],
+        blockages:
+          apiData.activeBlockages?.map((b) => ({
+            id: b.id?.toString() || "",
+            startTime: b.startTime || "",
+            endTime: b.endTime || "",
+            positions: b.lines || [],
+          })) || [],
+        depots: [],
+      };
+
+      transformDataToMapElements(environmentData);
+      transformDataToSlideElements(environmentData);
     } catch (error) {
-      console.error('Error al averiar vehículo:', error);
-      setBreakdownError(error instanceof Error ? error.message : 'Error desconocido al averiar vehículo');
+      console.error("Error al averiar vehículo:", error);
+      setBreakdownError(
+        error instanceof Error
+          ? error.message
+          : "Error desconocido al averiar vehículo"
+      );
     } finally {
       setIsBreakdownLoading(false);
     }
-  }
+  };
 
   // Handle vehicle repair
   const handleRepairVehicle = async () => {
     if (!selectedElement || selectedElement.type !== "vehicle") return;
-    
+
     try {
       setIsRepairLoading(true);
       setRepairError(null);
-      
-      const response = await simulationApi.repairVehicle({
-        vehicleId: selectedElement.id
+
+      const response = await simulation.repairVehicle({
+        vehicleId: selectedElement.id,
       });
-      
+
       // Show success message
-      setOperationSuccess(`Vehículo ${selectedElement.id} reparado. Estado: ${response.vehicleStatus}`);
-      
+      setOperationSuccess(
+        `Vehículo ${selectedElement.id} reparado. Estado: ${response.vehicleStatus}`
+      );
+
       // Auto-dismiss success message after 5 seconds
       setTimeout(() => {
         setOperationSuccess(null);
       }, 5000);
-      
+
       // Force a refresh of the data
-      const data = await simulationApi.getEnvironment();
-      transformDataToMapElements(data);
-      
+      const apiData = await simulation.getEnvironment();
+
+      // Convert API data to our internal EnvironmentData format
+      const environmentData: EnvironmentData = {
+        timestamp: new Date().toISOString(),
+        simulationTime: apiData.currentTime || "",
+        currentTime: apiData.currentTime,
+        running: apiData.running,
+        vehicles:
+          apiData.vehicles?.map((v) => ({
+            id: v.id || "",
+            type: v.type || "",
+            status: v.status || "",
+            position: v.currentPosition || { x: 0, y: 0 },
+            fuel: {
+              current: v.currentFuelGal || 0,
+              capacity: v.fuelCapacityGal || 100,
+              percentage:
+                v.currentFuelGal && v.fuelCapacityGal
+                  ? (v.currentFuelGal / v.fuelCapacityGal) * 100
+                  : 0,
+            },
+            glp: {
+              current: v.currentGlpM3 || 0,
+              capacity: v.glpCapacityM3 || 100,
+              percentage:
+                v.currentGlpM3 && v.glpCapacityM3
+                  ? (v.currentGlpM3 / v.glpCapacityM3) * 100
+                  : 0,
+            },
+          })) || [],
+        orders: apiData.orders || [],
+        blockages:
+          apiData.activeBlockages?.map((b) => ({
+            id: b.id?.toString() || "",
+            startTime: b.startTime || "",
+            endTime: b.endTime || "",
+            positions: b.lines || [],
+          })) || [],
+        depots: [],
+      };
+
+      transformDataToMapElements(environmentData);
+      transformDataToSlideElements(environmentData);
     } catch (error) {
-      console.error('Error al reparar vehículo:', error);
-      setRepairError(error instanceof Error ? error.message : 'Error desconocido al reparar vehículo');
-      
+      console.error("Error al reparar vehículo:", error);
+      setRepairError(
+        error instanceof Error
+          ? error.message
+          : "Error desconocido al reparar vehículo"
+      );
+
       // Auto-dismiss error message after 5 seconds
       setTimeout(() => {
         setRepairError(null);
@@ -1592,673 +540,355 @@ export function SimulationMap({ onTimeUpdate }: SimulationMapProps) {
     } finally {
       setIsRepairLoading(false);
     }
-  }
+  };
 
-  return (
-      <div
-        ref={containerRef}
-        className={`relative overflow-hidden bg-white transition-all duration-300 ${
-          maximized ? "fixed inset-0 z-[100] h-screen w-screen rounded-none border-none" : "h-full w-full"
-        }`}
-      >
-      {/* Contenedor del canvas */}
-      <canvas
-        ref={canvasRef}
-        width={canvasSize.width}
-        height={canvasSize.height}
-        className="w-full h-full block m-0 p-0 border-0"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={() => {
-          setIsDragging(false)
-          setHoveredElement(null)
-        }}
-        style={{ cursor: hoveredElement || selectedBlockedRoad ? 'pointer' : isDragging ? 'grabbing' : 'grab' }}
-      />
+  // Draw the canvas
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-      {/* Controles del mapa */}
-      <FloatingMapControls
-        onZoomIn={handleZoomIn}
-        onZoomOut={handleZoomOut}
-        onReset={() => setPan({ x: 0, y: 0 })}
-      />
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Set background
+    ctx.fillStyle = "#f8fafc"; // Light gray background
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      {/* Botón de pantalla completa */}
-      <FloatingFullscreenButton
-        isFullscreen={isFullscreen}
-        onToggle={handleToggleFullscreen}
-      />
+    // Grid
+    ctx.strokeStyle = "#e2e8f0";
+    ctx.lineWidth = 1;
 
+    // Draw grid lines
+    const gridSize = 20;
+    for (let x = 0; x < canvas.width; x += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, canvas.height);
+      ctx.stroke();
+    }
+    for (let y = 0; y < canvas.height; y += gridSize) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(canvas.width, y);
+      ctx.stroke();
+    }
 
-      {/* Tiempo de simulación */}
-      <FloatingSimulationTime
-        simulationTime={simulationTime}
-        simulationRunning={simulationRunning}
-        onToggle={toggleSimulation}
-      />
+    // Calculate the visible area
+    const visibleWidth = canvas.width / scale;
+    const visibleHeight = canvas.height / scale;
+    
+    // Convert simulation coordinates to canvas coordinates
+    const toCanvasX = (x: number) => (x - offset.x) * scale + canvas.width / 2;
+    const toCanvasY = (y: number) => (y - offset.y) * scale + canvas.height / 2;
 
-
-      {/* Estado de carga */}
-      <FloatingLoader 
-        loading={isLoading && !simulationTime} 
-        message="Cargando información..." 
-      />
-
-
-      {/* Error de carga */}
-      <FloatingError 
-        error={dataError} 
-        onClose={() => setDataError(null)} 
-      />
-
-
-      {/* Leyenda del mapa */}
-      <Leyenda/>
-
-      {/* Vehicle breakdown dialog */}
-      <BreakdownDialog
-        open={breakdownDialogOpen}
-        onOpenChange={setBreakdownDialogOpen}
-        selectedElement={selectedElement}
-        breakdownReason={breakdownReason}
-        setBreakdownReason={setBreakdownReason}
-        repairHours={repairHours}
-        setRepairHours={setRepairHours}
-        breakdownError={breakdownError}
-        isBreakdownLoading={isBreakdownLoading}
-        onSubmit={submitBreakdownVehicle}
-      />
-
+    // Draw blocked roads
+    ctx.strokeStyle = "#ef4444"; // Red for blocked roads
+    ctx.lineWidth = 3;
+    
+    blockedRoads.forEach(road => {
+      ctx.beginPath();
+      ctx.moveTo(toCanvasX(road.from.x), toCanvasY(road.from.y));
+      ctx.lineTo(toCanvasX(road.to.x), toCanvasY(road.to.y));
+      ctx.stroke();
       
-      {/* Operation success message */}
-      <FloatingToast
-        message={operationSuccess}
-        color="green"
-        onClose={() => setOperationSuccess(null)}
-      />
-
-      {/* Repair error message */}
-      <ErrorToast
-        message={repairError}
-        onClose={() => setRepairError(null)}
-      />
-
-      {/* Panel de detalles para elementos seleccionados */}
-      <PanelDetail
-        selectedElement={selectedElement}
-        setSelectedElement={setSelectedElement}
-        handleBreakdownVehicle={handleBreakdownVehicle}
-        handleRepairVehicle={handleRepairVehicle}
-        isBreakdownLoading={isBreakdownLoading}
-        isRepairLoading={isRepairLoading}
-        environmentData={environmentData}
-      />
-
-      {/* Panel de carreteras bloqueadas */}
-      <BlockedRoadDetailPanel
-        selectedBlockedRoad={selectedBlockedRoad}
-        setSelectedBlockedRoad={setSelectedBlockedRoad}
-      />
-
-      {/* Panel de vehículos */}
-      <VehicleSlide
-        slideMinimized={slideMinimized}
-        setSlideMinimized={setSlideMinimized}
-        slideVehicles={slideVehicles}
-        mapElements={mapElements}
-        selectedElement={selectedElement}
-        setSelectedElement={setSelectedElement}
-      />
-    </div> 
-  )  
-}
-
-
-
-
-
-
-
-function FloatingFullscreenButton({isFullscreen,onToggle,className = "",}: FloatingFullscreenButtonProps) {
-  return (
-    <button
-      className={`absolute top-4 right-16 z-50 w-10 h-10 bg-white border border-gray-300 rounded-full shadow flex items-center justify-center hover:bg-blue-50 transition ${className}`}
-      onClick={onToggle}
-      title={isFullscreen ? "Salir de pantalla completa" : "Pantalla completa"}
-    >
-      {isFullscreen
-        ? <Minimize className="w-5 h-5 text-blue-500" />
-        : <Maximize className="w-5 h-5 text-blue-500" />}
-    </button>
-  )
-}
-function FloatingMapControls({onZoomIn,onZoomOut,onReset,className = "",}: FloatingMapControlsProps) {
-  return (
-    <div className={`absolute bottom-4 right-24 flex flex-col gap-2 bg-white/90 p-2 rounded-md shadow-sm backdrop-blur-sm ${className}`}>
-      <Button variant="outline" size="icon" onClick={onZoomIn} title="Acercar">
-        <Plus className="h-4 w-4" />
-      </Button>
-      <Button variant="outline" size="icon" onClick={onZoomOut} title="Alejar">
-        <Minus className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={onReset}
-        title="Restablecer vista"
-      >
-        <RefreshCw className="h-4 w-4" />
-      </Button>
-    </div>
-  )
-}
-function FloatingSimulationTime({simulationTime,simulationRunning,onToggle,className = "",}:FloatingSimulationTimeProps) {
+      // Draw blockage marker
+      ctx.fillStyle = "#ef4444";
+      const midX = (road.from.x + road.to.x) / 2;
+      const midY = (road.from.y + road.to.y) / 2;
+      ctx.beginPath();
+      ctx.arc(toCanvasX(midX), toCanvasY(midY), 5, 0, 2 * Math.PI);
+      ctx.fill();
+    });
+    
+    // Draw map elements
+    mapElements.forEach(element => {
+      const x = toCanvasX(element.x);
+      const y = toCanvasY(element.y);
+      
+      // Skip if outside visible area with some margin
+      if (x < -50 || x > canvas.width + 50 || y < -50 || y > canvas.height + 50) {
+        return;
+      }
+      
+      const isHovered = hoveredElement?.id === element.id;
+      const isSelected = selectedElement?.id === element.id;
+      
+      ctx.save();
+      
+      // Draw element based on type
+      switch (element.type) {
+        case "vehicle":
+          // Base color by vehicle status
+          let color = "#10b981"; // Available - green
+          if (element.status === "MAINTENANCE") color = "#f59e0b"; // Amber
+          else if (element.status === "INCIDENT") color = "#ef4444"; // Red
+          
+          ctx.fillStyle = color;
+          ctx.strokeStyle = isSelected ? "#000" : "#64748b";
+          ctx.lineWidth = isSelected ? 2 : 1;
+          
+          // Draw vehicle icon based on direction
+          ctx.beginPath();
+          
+          if (element.direction === "north") {
+            ctx.moveTo(x, y - 10);
+            ctx.lineTo(x + 7, y + 5);
+            ctx.lineTo(x - 7, y + 5);
+          } else if (element.direction === "south") {
+            ctx.moveTo(x, y + 10);
+            ctx.lineTo(x + 7, y - 5);
+            ctx.lineTo(x - 7, y - 5);
+          } else if (element.direction === "east") {
+            ctx.moveTo(x + 10, y);
+            ctx.lineTo(x - 5, y - 7);
+            ctx.lineTo(x - 5, y + 7);
+          } else { // west
+            ctx.moveTo(x - 10, y);
+            ctx.lineTo(x + 5, y - 7);
+            ctx.lineTo(x + 5, y + 7);
+          }
+          
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+          break;
+          
+        case "mainWarehouse":
+          ctx.fillStyle = "#1d4ed8"; // Blue
+          ctx.strokeStyle = isSelected ? "#000" : "#1e40af";
+          ctx.lineWidth = isSelected ? 2 : 1;
+          ctx.fillRect(x - 12, y - 12, 24, 24);
+          ctx.strokeRect(x - 12, y - 12, 24, 24);
+          break;
+          
+        case "warehouse":
+          ctx.fillStyle = "#3b82f6"; // Light blue
+          ctx.strokeStyle = isSelected ? "#000" : "#1d4ed8";
+          ctx.lineWidth = isSelected ? 2 : 1;
+          ctx.fillRect(x - 8, y - 8, 16, 16);
+          ctx.strokeRect(x - 8, y - 8, 16, 16);
+          break;
+          
+        case "customer":
+          ctx.fillStyle = "#a3e635"; // Lime
+          ctx.strokeStyle = isSelected ? "#000" : "#4d7c0f";
+          ctx.lineWidth = isSelected ? 2 : 1;
+          ctx.beginPath();
+          ctx.arc(x, y, 8, 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.stroke();
+          break;
+          
+        case "blockedRoad":
+          // Already drawn as lines, skip
+          break;
+      }
+      
+      // Draw label if hovered or selected
+      if (isHovered || isSelected) {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+        ctx.strokeStyle = "#fff";
+        ctx.lineWidth = 2;
+        
+        const label = element.label;
+        const details = element.details || "";
+        
+        ctx.font = "12px Arial";
+        const labelWidth = ctx.measureText(label).width;
+        const detailsWidth = details ? ctx.measureText(details).width : 0;
+        const boxWidth = Math.max(labelWidth, detailsWidth) + 16;
+        
+        // Draw tooltip background
+        ctx.beginPath();
+        ctx.roundRect(
+          x - boxWidth / 2, 
+          y - 40, 
+          boxWidth, 
+          details ? 40 : 24, 
+          4
+        );
+        ctx.fill();
+        ctx.stroke();
+        
+        // Draw text
+        ctx.fillStyle = "#fff";
+        ctx.fillText(label, x - labelWidth / 2, y - 26);
+        
+        if (details) {
+          ctx.font = "10px Arial";
+          ctx.fillText(details, x - detailsWidth / 2, y - 12);
+        }
+      }
+      
+      ctx.restore();
+    });
+    
+    // Draw simulation time in the corner
+    if (simulationTime) {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.7)";
+      ctx.font = "14px Arial";
+      ctx.fillText(`Tiempo: ${simulationTime}`, 10, 20);
+    }
+    
+  }, [mapElements, blockedRoads, hoveredElement, selectedElement, simulationTime, scale, offset]);
   
-  if (!simulationTime) return null
-  return (
-    <div className={`absolute top-4 left-4 bg-white/90 p-2 rounded-md shadow-sm backdrop-blur-sm ${className}`}>
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <p className="text-xs text-muted-foreground">Tiempo de simulación</p>
-          <p className="text-xl font-bold">{simulationTime}</p>
-        </div>
-        <Button
-          variant={simulationRunning ? "secondary" : "default"}
-          size="sm"
-          className="h-8"
-          onClick={onToggle}
-        >
-          {simulationRunning ? (
-            <>
-              <Pause className="mr-1 h-3 w-3" />
-              Pausar
-            </>
-          ) : (
-            <>
-              <Play className="mr-1 h-3 w-3" />
-              Iniciar
-            </>
-          )}
-        </Button>
-      </div>
-      <p className="text-xs mt-1 flex items-center">
-        {simulationRunning ? (
-          <>
-            <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse"></span>
-            Simulación en ejecución
-          </>
-        ) : (
-          <>
-            <span className="inline-block w-2 h-2 bg-amber-500 rounded-full mr-1"></span>
-            Simulación detenida
-          </>
-        )}
-      </p>
-    </div>
-  )
-}
-
-
-
-function FloatingLoader({ loading, message = "Cargando datos del entorno...", className = "" }: FloatingLoaderProps) {
-  if (!loading) return null
-
-  return (
-    <div className={`absolute top-4 left-4 bg-white/90 p-3 rounded-md shadow-sm backdrop-blur-sm ${className}`}>
-      <div className="flex items-center">
-        <div className="animate-spin mr-2 h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
-        <p className="text-sm">{message}</p>
-      </div>
-    </div>
-  )
-}
-
-function FloatingError({ error, onClose, className = "" }: FloatingErrorProps) {
-  if (!error) return null
-  return (
-    <div className={`absolute top-20 left-4 bg-red-50 text-red-700 p-3 rounded-md shadow-sm border border-red-200 ${className}`}>
-      <div className="flex items-center">
-        <AlertTriangle className="mr-2 h-4 w-4" />
-        <p className="text-sm">{error}</p>
-        <Button
-          variant="outline"
-          size="sm"
-          className="ml-2 text-xs border-red-300 hover:bg-red-100"
-          onClick={onClose}
-        >
-          Cerrar
-        </Button>
-      </div>
-    </div>
-  )
-}
-function Leyenda(){
-  return (
-      <div className="absolute bottom-4 left-4 bg-white/80 p-2 rounded-md shadow-sm backdrop-blur-sm">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-2">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-[#1e40af] rounded-sm"></div>
-            <span className="text-xs">Almacén Principal</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-[#3b82f6] rounded-sm"></div>
-            <span className="text-xs">Almacén Secundario</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-[#10b981] rounded-full"></div>
-            <span className="text-xs">Vehículo en Ruta</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-[#ef4444] rounded-full"></div>
-            <span className="text-xs">Vehículo Averiado</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-[#f59e0b] rounded-sm"></div>
-            <span className="text-xs">Cliente/Pedido</span>
-          </div>
-          <div className="flex items-center gap-2 col-span-2 md:col-span-1">
-            <div className="w-4 h-4 flex items-center justify-center rounded-full bg-red-100 border border-red-500">
-              <Ban className="h-3 w-3 text-red-500" />
-            </div>
-            <span className="text-xs">Carretera Bloqueada</span>
-          </div>
-        </div>
-      </div>
-  )
-}
-
-function BreakdownDialog({open,onOpenChange,selectedElement,breakdownReason,setBreakdownReason,
-      repairHours,setRepairHours,breakdownError,isBreakdownLoading,onSubmit,}: BreakdownDialogProps) {
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Simular Avería de Vehículo</DialogTitle>
-          <DialogDescription>
-            Configure los detalles de la avería para el vehículo {selectedElement?.id}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="reason">Razón de la avería</Label>
-            <Input
-              id="reason"
-              value={breakdownReason}
-              onChange={(e) => setBreakdownReason(e.target.value)}
-              placeholder="Mechanical failure"
-            />
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="hours">Horas estimadas de reparación</Label>
-            <Input
-              id="hours"
-              type="number"
-              value={repairHours}
-              onChange={(e) => setRepairHours(parseInt(e.target.value, 10) || 2)}
-              min={1}
-              max={48}
-            />
-            <div className="text-xs text-muted-foreground mt-1">
-              TI1: ≤ 2 horas | TI2: 3-24 horas | TI3: &gt; 24 horas
-            </div>
-          </div>
-        </div>
-
-        {breakdownError && (
-          <div className="bg-red-50 text-red-700 p-2 rounded-md text-sm">
-            {breakdownError}
-          </div>
-        )}
-
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={onSubmit}
-            disabled={isBreakdownLoading}
-          >
-            {isBreakdownLoading ? "Procesando..." : "Confirmar Avería"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function FloatingToast({message,color = "green",onClose,className = "",} :
-  {message: string | null;color?: "green" | "red" | "amber" | "blue";onClose: () => void;className?: string;}) {
+  // Handle mouse move for hover detection
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    
+    // Get mouse position relative to canvas
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+    
+    // Convert to simulation coordinates
+    const simX = (x - canvas.width / 2) / scale + offset.x;
+    const simY = (y - canvas.height / 2) / scale + offset.y;
+    
+    // Check if mouse is over any element
+    let hovered: MapElement | null = null;
+    
+    for (const element of mapElements) {
+      const distance = Math.sqrt(
+        Math.pow(simX - element.x, 2) + Math.pow(simY - element.y, 2)
+      );
+      
+      // Different hit areas based on element type
+      let hitRadius = 10;
+      if (element.type === "mainWarehouse") hitRadius = 15;
+      else if (element.type === "warehouse") hitRadius = 10;
+      else if (element.type === "customer") hitRadius = 8;
+      else if (element.type === "vehicle") hitRadius = 10;
+      
+      if (distance <= hitRadius / scale) {
+        hovered = element;
+        break;
+      }
+    }
+    
+    setHoveredElement(hovered);
+  };
   
-  if (!message) return null;
-  const colorClasses: Record<string, string> = {
-    green: "bg-green-50 text-green-700 border-green-200",
-    red: "bg-red-50 text-red-700 border-red-200",
-    amber: "bg-amber-50 text-amber-800 border-amber-200",
-    blue: "bg-blue-50 text-blue-700 border-blue-200",
+  // Handle click to select elements
+  const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    // If hovering over an element, select it
+    setSelectedElement(hoveredElement);
+  };
+  
+  // Handle wheel for zooming
+  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    
+    // Zoom factor
+    const zoomIntensity = 0.1;
+    const delta = e.deltaY > 0 ? -zoomIntensity : zoomIntensity;
+    
+    // Update scale with limits
+    setScale(prev => {
+      const newScale = Math.max(0.5, Math.min(5, prev + delta));
+      return newScale;
+    });
   };
 
   return (
-    <div
-      className={`absolute top-20 left-4 p-3 rounded-md shadow-sm border flex items-center justify-between z-50 ${
-        colorClasses[color] || colorClasses.green
-      } ${className}`}
-    >
-      <p className="text-sm">{message}</p>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="ml-2 h-6 w-6 p-0"
-        onClick={onClose}
-      >
-        ×
-      </Button>
-    </div>
-  );
-}
-
-function ErrorToast({message,onClose,className = "",style = {},} : 
-  {message: string | null,onClose: () => void,className?: string,style?: React.CSSProperties}) {
-  
-  if (!message) return null
-  return (
-    <div
-      className={
-        `absolute top-20 left-4 bg-red-50 text-red-700 p-3 rounded-md shadow-sm border border-red-200 flex items-center justify-between ${className}`
-      }
-      style={style}
-    >
-      <p className="text-sm">{message}</p>
-      <Button
-        variant="ghost"
-        size="sm"
-        className="ml-2 h-6 w-6 p-0"
-        onClick={onClose}
-      >
-        ×
-      </Button>
-    </div>
-  )
-}
-
-
-
-function PanelDetail({selectedElement,setSelectedElement,handleBreakdownVehicle,handleRepairVehicle,
-  isBreakdownLoading,isRepairLoading,environmentData,}: PanelDetailProps) {
-  
-  if (!selectedElement) return null;
-  // Buscar vehículo para mostrar detalles extendidos
-  const vehicle = selectedElement.type === "vehicle"
-    ? environmentData?.vehicles.find(v => v.id === selectedElement.id)
-    : null;
-
-  return (
-    <div className="absolute top-4 left-4 bg-white p-3 rounded-md shadow-md border max-w-xs z-30">
-      <div className="flex justify-between items-center mb-2">
-        <h3 className="font-medium text-sm flex items-center gap-1">
-          {selectedElement.type === "mainWarehouse" && <WarehouseIcon className="h-4 w-4" />}
-          {selectedElement.type === "warehouse" && <Building className="h-4 w-4" />}
-          {selectedElement.type === "vehicle" && <Truck className="h-4 w-4" />}
-          {selectedElement.type === "customer" && <User className="h-4 w-4" />}
-          {selectedElement.type === "package" && <Package className="h-4 w-4" />}
-          {selectedElement.label}
-        </h3>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-6 w-6 p-0"
-          onClick={() => setSelectedElement(null)}
-        >
-          ×
-        </Button>
-      </div>
-      <p className="text-xs text-muted-foreground">
-        Coordenadas: ({selectedElement.x}, {selectedElement.y})
-      </p>
-
-      {selectedElement.details && (
-        <div className="mt-2 text-xs border-t pt-2">
-          <p className="text-muted-foreground">{selectedElement.details}</p>
+    <div ref={containerRef} className="relative w-full h-full">
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70 z-50">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-2">Cargando datos de simulación...</p>
+          </div>
         </div>
       )}
 
-      {selectedElement.type === "vehicle" && (
-        <div className="mt-2 space-y-2">
-          <div className="grid grid-cols-2 gap-2">
-            {selectedElement.status === "en-ruta" ? (
-              <Button
-                variant="destructive"
-                size="sm"
-                className="w-full text-xs"
+      {dataError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-70 z-50">
+          <div className="text-center p-4 bg-red-50 border border-red-200 rounded-lg">
+            <p className="text-red-600">{dataError}</p>
+            <button 
+              className="mt-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded"
+              onClick={() => setDataError(null)}
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
+      
+      {/* Hover info */}
+      {selectedElement && (
+        <div className="absolute top-2 right-2 p-3 bg-white rounded-lg shadow-md border border-gray-200 max-w-xs z-30">
+          <h3 className="font-medium">{selectedElement.label}</h3>
+          {selectedElement.details && <p className="text-sm text-gray-600 mt-1">{selectedElement.details}</p>}
+          {selectedElement.type === "vehicle" && (
+            <div className="mt-2 flex gap-2">
+              <button 
                 onClick={handleBreakdownVehicle}
-                disabled={isBreakdownLoading}
+                disabled={selectedElement.status === "INCIDENT"}
+                className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded disabled:opacity-50"
               >
-                <AlertOctagon className="mr-1 h-3 w-3" />
-                Simular Avería
-              </Button>
-            ) : (
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full text-xs"
+                Averiar
+              </button>
+              <button
                 onClick={handleRepairVehicle}
-                disabled={isRepairLoading}
+                disabled={selectedElement.status !== "INCIDENT"}
+                className="px-2 py-1 text-xs bg-green-100 text-green-800 rounded disabled:opacity-50"
               >
-                <WrenchIcon className="mr-1 h-3 w-3" />
-                Reparar Vehículo
-              </Button>
-            )}
-            <Button variant="outline" size="sm" className="w-full text-xs">
-              <Truck className="mr-1 h-3 w-3" />
-              Ver Ruta
-            </Button>
-          </div>
-          <div className="border-t pt-2 text-xs space-y-1">
-            <h4 className="font-medium">Detalles adicionales:</h4>
-            {vehicle && (
-              <>
-                <p className="flex justify-between">
-                  <span>Tipo:</span>
-                  <span className="font-medium">{vehicle.type}</span>
-                </p>
-                <p className="flex justify-between">
-                  <span>Combustible:</span>
-                  <span className="font-medium">
-                    {vehicle.fuel.current.toFixed(2)} / {vehicle.fuel.capacity.toFixed(2)} L
-                    ({vehicle.fuel.percentage.toFixed(1)}%)
-                  </span>
-                </p>
-                <p className="flex justify-between">
-                  <span>GLP:</span>
-                  <span className="font-medium">
-                    {vehicle.glp.current} / {vehicle.glp.capacity} unidades
-                    ({vehicle.glp.percentage.toFixed(1)}%)
-                  </span>
-                </p>
-                <p className="flex justify-between">
-                  <span>Estado:</span>
-                  <span className={`font-medium ${selectedElement.status === "en-ruta" ? "text-green-600" : "text-red-600"}`}>
-                    {selectedElement.status === "en-ruta" ? "En ruta" : "Averiado"}
-                  </span>
-                </p>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-
-      {(selectedElement.type === "customer" ||
-        selectedElement.type === "warehouse" ||
-        selectedElement.type === "mainWarehouse") && (
-        <div className="mt-2">
-          <Button variant="outline" size="sm" className="w-full text-xs">
-            <Info className="mr-1 h-3 w-3" />
-            Ver Más Detalles
-          </Button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-
-
-function BlockedRoadDetailPanel({selectedBlockedRoad,setSelectedBlockedRoad,}: {
-                                selectedBlockedRoad: BlockedRoad | null;
-                                setSelectedBlockedRoad: (road: BlockedRoad | null) => void;
-                                }) 
-  {
-  if (!selectedBlockedRoad) return null;
-
-  return (
-    <div className="absolute top-4 left-4 bg-white p-3 rounded-md shadow-md border max-w-xs">
-      <div className="flex justify-between items-center mb-2">
-        <h3 className="font-medium text-sm flex items-center gap-1">
-          <Ban className="h-4 w-4 text-red-500" />
-          {selectedBlockedRoad.label}
-        </h3>
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-6 w-6 p-0"
-          onClick={() => setSelectedBlockedRoad(null)}
-        >
-          ×
-        </Button>
-      </div>
-      <p className="text-xs text-muted-foreground">
-        Desde: ({selectedBlockedRoad.from.x}, {selectedBlockedRoad.from.y})<br />
-        Hasta: ({selectedBlockedRoad.to.x}, {selectedBlockedRoad.to.y})
-      </p>
-      {selectedBlockedRoad.details && (
-        <div className="mt-2 text-xs border-t pt-2">
-          <p className="text-muted-foreground">{selectedBlockedRoad.details}</p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-
-
-function VehicleSlide({slideMinimized,setSlideMinimized,
-  slideVehicles,mapElements,selectedElement,setSelectedElement}: VehicleSlideProps) {
-  return (
-    <div
-      className={`
-        absolute top-0 right-0 h-full bg-white/95 border-l shadow-lg flex flex-col z-20
-        transition-all duration-300
-        ${slideMinimized ? "w-12" : "w-72"}`}
-      style={{
-        minWidth: slideMinimized ? "3rem" : "18rem",
-        maxWidth: slideMinimized ? "3rem" : "18rem",
-      }}
-    >
-    {/* Botón de minimizar para slide ABIERTO */}
-    {!slideMinimized && (
-      <button
-        className="absolute -left-4 top-4 w-8 h-8 rounded-full shadow bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50 z-30 transition"
-        onClick={() => setSlideMinimized(true)}
-        tabIndex={0}
-        aria-label="Minimizar slide"
-      >
-        <Minus className="h-5 w-5 text-blue-500" />
-      </button>
-    )}
-
-    {/* CONTENIDO DEL SLIDE */}
-    {!slideMinimized ? (
-      <>
-        <div className="p-4 border-b">
-          <h2 className="font-bold text-lg flex items-center gap-2">
-            <Truck className="h-5 w-5" /> Vehículos
-          </h2>
-        </div>
-        <div className="flex-1 overflow-y-auto p-2 space-y-2">
-          {slideVehicles.length === 0 && (
-            <div className="text-center text-muted-foreground text-sm mt-8">
-              No hay vehículos disponibles.
+                Reparar
+              </button>
             </div>
           )}
-          {slideVehicles
-            .filter(vehicle => vehicle.assignedOrders && vehicle.assignedOrders.length > 0)
-            .map(vehicle => (
-              <div
-                key={vehicle.id}
-                className={`rounded-md p-3 border flex flex-col gap-2 cursor-pointer transition hover:bg-blue-50 ${
-                  selectedElement?.id === vehicle.id
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-200 bg-white"
-                }`}
-                onClick={() =>
-                  setSelectedElement(mapElements.find(e => e.id === vehicle.id) || null)
-                }
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className="w-3 h-3 rounded-full"
-                    style={{ background: vehicle.color }}
-                  />
-                  <div className="flex-1">
-                    <div className="font-medium text-sm">{vehicle.label}</div>
-                    <div className="text-xs text-muted-foreground">{vehicle.statusLabel}</div>
-                    <div className="text-xs mt-1">
-                      <span>
-                        Comb: {vehicle.fuel.current.toFixed(1)}/{vehicle.fuel.capacity.toFixed(1)}L
-                      </span>
-                      <span className="ml-2">
-                        GLP: {vehicle.glp.current}/{vehicle.glp.capacity}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                {/* Listado de pedidos asignados */}
-                {vehicle.assignedOrders && vehicle.assignedOrders.length > 0 ? (
-                  <div className="mt-2 pl-6">
-                    <div className="text-xs font-semibold text-blue-700 mb-1">
-                      Pedidos atendiendo:
-                    </div>
-                    <ul className="space-y-1">
-                      {vehicle.assignedOrders.map(order => (
-                        <li
-                          key={order.id}
-                          className="text-xs bg-blue-50 border border-blue-100 rounded px-2 py-1"
-                        >
-                          Pedido: <b>{order.id}</b>
-                          {/* Puedes mostrar más datos si quieres */}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ) : (
-                  <div className="text-xs text-gray-400 pl-6">Sin pedidos asignados</div>
-                )}
-              </div>
-            ))}
         </div>
-      </>
-    ) : (
-      // Slide minimizado: "+" y camión juntos, centrados vertical y horizontalmente
-      <div className="flex flex-col items-center justify-center flex-1 h-full w-full pt-2">
-        <div className="flex flex-col items-center gap-1">
-        <Truck className="h-8 w-8 text-blue-400" />
-        <button
-          className="w-8 h-8 rounded-full shadow bg-white border border-gray-200 flex items-center justify-center hover:bg-gray-50"
-          onClick={() => setSlideMinimized(false)}
-          tabIndex={0}
-          aria-label="Mostrar vehículos"
-        >
-          <Plus className="h-5 w-5 text-blue-500" />
-        </button>
+      )}
+      
+      {/* Success or error messages */}
+      {operationSuccess && (
+        <div className="absolute top-2 left-2 p-3 bg-green-50 border border-green-200 rounded-lg max-w-xs text-sm text-green-800 z-30">
+          {operationSuccess}
+        </div>
+      )}
+      
+      {/* Legend */}
+      <div className="absolute bottom-2 left-2 p-2 bg-white rounded-lg shadow-md border border-gray-200 text-xs">
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-4 h-4 bg-green-500"></div>
+          <span>Vehículo disponible</span>
+        </div>
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-4 h-4 bg-amber-500"></div>
+          <span>Vehículo en mantenimiento</span>
+        </div>
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-4 h-4 bg-red-500"></div>
+          <span>Vehículo averiado</span>
+        </div>
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-4 h-4 bg-blue-700"></div>
+          <span>Depósito principal</span>
+        </div>
+        <div className="flex items-center gap-2 mb-1">
+          <div className="w-4 h-4 bg-blue-500"></div>
+          <span>Depósito secundario</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-4 h-4 rounded-full bg-lime-400"></div>
+          <span>Cliente/Pedido</span>
         </div>
       </div>
-    )}
-  </div>
-  )
+
+      <canvas 
+        ref={canvasRef} 
+        className="w-full h-full"
+        width={canvasSize.width}
+        height={canvasSize.height}
+        onMouseMove={handleMouseMove}
+        onClick={handleClick}
+        onWheel={handleWheel}
+      />
+    </div>
+  );
 }

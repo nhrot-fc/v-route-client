@@ -1,10 +1,9 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState } from "react"
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -22,20 +21,8 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
 import { downloadToCSV } from "@/lib/utils"
 import { Card, CardContent } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 
 import { useMaintenance } from "@/hooks/use-maintenance"
 import { MaintenanceDTO } from "@/lib/api-client"
@@ -44,7 +31,6 @@ export function MaintenanceTable() {
   const { maintenance, loading, error } = useMaintenance()
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
-  const [typeFilter, setTypeFilter] = useState<string>("all")
 
   const getMaintenanceStatus = (item: MaintenanceDTO): string => {
     if (item.active === false && item.realEnd) return "completado"

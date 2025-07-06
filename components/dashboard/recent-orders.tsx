@@ -2,35 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { Badge } from "@/components/ui/badge"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { ordersApi, OrderDTO } from '@/lib/api-client'
+import { OrderDTO } from '@/lib/api-client'
 import { useOrders } from "@/hooks/use-orders"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatDate } from "@/lib/utils"
-
-// Interface for processed order data
-interface ProcessedOrder {
-  id: string;
-  cliente: string;
-  volumen: string;
-  fechaRecepcion: string;
-  plazoEntrega: string;
-  vehiculoAsignado: string;
-  estado: string;
-}
-
-// Function to safely access order properties
-const safeGetOrderProperty = (order: any, path: string[], defaultValue: any = null) => {
-  let value = order;
-  for (const key of path) {
-    if (value && typeof value === 'object' && key in value) {
-      value = value[key];
-    } else {
-      return defaultValue;
-    }
-  }
-  return value ?? defaultValue;
-};
 
 export function RecentOrders() {
   const { orders, loading, error } = useOrders();

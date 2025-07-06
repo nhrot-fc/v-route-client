@@ -20,7 +20,7 @@ export function MaintenanceUploadForm() {
   const [progress, setProgress] = useState(0)
   const { toast } = useToast()
   const { createMaintenance } = useMaintenance()
-  const { vehicles, loading: vehiclesLoading } = useVehicles()
+  const { vehicles } = useVehicles()
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {

@@ -1,6 +1,5 @@
 .gitignore
 .npmignore
-.openapi-generator-ignore
 api.ts
 base.ts
 common.ts
@@ -11,9 +10,12 @@ docs/DashboardApi.md
 docs/DeliveryRecordDTO.md
 docs/Depot.md
 docs/DepotControllerApi.md
+docs/DepotDTO.md
+docs/Incident.md
 docs/IncidentControllerApi.md
 docs/IncidentCreateDTO.md
 docs/IncidentDTO.md
+docs/Maintenance.md
 docs/MaintenanceControllerApi.md
 docs/MaintenanceCreateDTO.md
 docs/MaintenanceDTO.md
@@ -24,6 +26,10 @@ docs/Position.md
 docs/ServeRecordControllerApi.md
 docs/ServeRecordDTO.md
 docs/SimulationApi.md
+docs/SimulationReportDTO.md
+docs/SimulationReportDTOTotalDuration.md
+docs/SimulationReportDTOTotalDurationUnitsInner.md
+docs/SimulationStateDTO.md
 docs/Vehicle.md
 docs/VehicleControllerApi.md
 docs/VehicleDTO.md

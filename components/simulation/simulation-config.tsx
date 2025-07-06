@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { DatePicker } from "@/components/ui/date-picker"
-import simulationApi, { SimulationScenarioType, DailyOperationsConfig, WeeklySimulationConfig, CollapseSimulationConfig } from "@/lib/simulation-api"
+import { useSimulation, SimulationScenarioType, DailyOperationsConfig, WeeklySimulationConfig, CollapseSimulationConfig } from "@/hooks/use-simulation"
 import { AlertCircle, Check, Upload } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
@@ -17,6 +17,7 @@ interface SimulationConfigProps {
 
 export function SimulationConfig({ onConfigSaved }: SimulationConfigProps) {
   const { toast } = useToast();
+  const simulation = useSimulation();
   const [activeTab, setActiveTab] = useState("daily")
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -84,7 +85,7 @@ export function SimulationConfig({ onConfigSaved }: SimulationConfigProps) {
         startTime: startTime
       };
 
-      const simulationId = await simulationApi.createSimulation(simulationConfig);
+      const simulationId = await simulation.createSimulation(simulationConfig);
       
       setSuccess(true);
       toast({
@@ -132,7 +133,7 @@ export function SimulationConfig({ onConfigSaved }: SimulationConfigProps) {
         blockagesFile
       };
 
-      const simulationId = await simulationApi.createSimulationWithFiles(simulationConfig);
+      const simulationId = await simulation.createSimulationWithFiles(simulationConfig);
       
       setSuccess(true);
       toast({
@@ -181,7 +182,7 @@ export function SimulationConfig({ onConfigSaved }: SimulationConfigProps) {
         maxDays: maxDays
       };
 
-      const simulationId = await simulationApi.createSimulationWithFiles(simulationConfig);
+      const simulationId = await simulation.createSimulationWithFiles(simulationConfig);
       
       setSuccess(true);
       toast({

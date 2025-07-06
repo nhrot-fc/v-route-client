@@ -34,7 +34,6 @@ import {
   X 
 } from "lucide-react"
 import { useBlockages } from "@/hooks/use-blockages"
-import { Blockage } from "@/lib/api-client"
 
 export function BlockagesTable() {
   const [searchTerm, setSearchTerm] = useState("")

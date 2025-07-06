@@ -7,23 +7,13 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Eye, MoreHorizontal, Pencil, Trash2, PenToolIcon as Tool, AlertTriangle, Loader2 } from "lucide-react"
+import { MoreHorizontal, Trash2, PenToolIcon as Tool, AlertTriangle, Loader2 } from "lucide-react"
 import { useVehicles } from "@/hooks/use-vehicles"
 import type { Vehicle } from "@/lib/api-client"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-  DialogClose,
-} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import {
   AlertDialog,

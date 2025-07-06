@@ -41,7 +41,7 @@ export function BlockageUploadForm() {
     const match = dateStr.match(/^(\d{2})d(\d{2})h(\d{2})m$/)
     if (!match) return new Date().toISOString()
     
-    const [_, days, hours, minutes] = match
+    const [_unused, days, hours, minutes] = match
     
     const result = new Date(baseDate)
     result.setDate(result.getDate() + parseInt(days))
@@ -68,7 +68,7 @@ export function BlockageUploadForm() {
     
     let baseDate = new Date()
     if (yearMonth) {
-      const [_, year, month] = yearMonth
+      const [_unused, year, month] = yearMonth
       baseDate = new Date(parseInt(year), parseInt(month) - 1, 1) // Month is 0-indexed
     }
     

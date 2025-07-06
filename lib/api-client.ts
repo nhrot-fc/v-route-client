@@ -7,6 +7,8 @@ import {
   MaintenanceControllerApi,
   OrderControllerApi,
   VehicleControllerApi,
+  SimulationApi,
+  ServeRecordControllerApi
 } from "@/src/shared/api/generated";
 import axios from "axios";
 
@@ -95,26 +97,78 @@ export const dashboardApi = new DashboardApi(
   BASE_URL,
   axiosInstance
 );
+export const simulationApi = new SimulationApi(
+  configuration,
+  BASE_URL,
+  axiosInstance
+);
+export const serveRecordApi = new ServeRecordControllerApi(
+  configuration,
+  BASE_URL,
+  axiosInstance
+);
 
 // Export types for use in components
 export type {
+  // Vehicle related
   Vehicle,
+  VehicleDTO,
+  
+  // Order related
   Order,
-  MaintenanceDTO,
-  IncidentDTO,
-  Blockage,
-  Depot,
-  Position,
   OrderDTO,
   DeliveryRecordDTO,
-  VehicleDTO,
+  
+  // Maintenance related
+  Maintenance,
+  MaintenanceDTO,
+  MaintenanceCreateDTO,
+  
+  // Incident related
+  Incident,
+  IncidentDTO,
+  IncidentCreateDTO,
+  
+  // Blockage related
+  Blockage,
+  
+  // Depot related
+  Depot,
+  DepotDTO,
+  
+  // Common
+  Position,
+  
+  // Serve Record related
+  ServeRecordDTO,
+  
+  // Simulation related
+  SimulationStateDTO,
+  SimulationReportDTO,
+  SimulationReportDTOTotalDuration,
+  SimulationReportDTOTotalDurationUnitsInner,
 } from "@/src/shared/api/generated";
 
 // Export enums
 export {
+  // Vehicle enums
   VehicleTypeEnum,
   VehicleStatusEnum,
+  VehicleDTOTypeEnum,
+  VehicleDTOStatusEnum,
+  
+  // Incident enums
+  IncidentTypeEnum,
+  IncidentShiftEnum,
   IncidentDTOTypeEnum,
+  IncidentDTOShiftEnum,
+  IncidentCreateDTOTypeEnum,
+  IncidentCreateDTOShiftEnum,
+  
+  // Vehicle listing enums
   ListStatusEnum,
   ListTypeEnum,
+  
+  // Simulation enums
+  GetVehiclesStatusEnum,
 } from "@/src/shared/api/generated";

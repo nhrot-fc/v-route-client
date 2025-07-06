@@ -3,13 +3,12 @@
 import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { FastForward, Pause, Play, RotateCcw, Timer, Clock, Plus, BarChart4, Calendar } from "lucide-react"
-import simulationApi, { SimulationMetadata, SimulationScenarioType } from "@/lib/simulation-api"
+import { Pause, Play, RotateCcw, Clock, Plus, BarChart4, Calendar } from "lucide-react"
+import { useSimulation, SimulationMetadata, SimulationScenarioType } from "@/hooks/use-simulation"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -40,34 +39,37 @@ export function SimulationController({ onSimulationChange, layout = "vertical" }
   const [error, setError] = useState<string | null>(null)
   const [configDialogOpen, setConfigDialogOpen] = useState(false)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  
+  // Use the simulation hook
+  const simulation = useSimulation();
 
   // Cargar simulaciones disponibles
   const loadSimulations = async () => {
     try {
       setIsLoading(true);
-      const simulations = await simulationApi.getAllSimulations();
-      setSimulations(simulations);
+      const simulationsList = await simulation.getAllSimulations();
+      setSimulations(simulationsList);
       
       // Si hay simulaciones y no hay una seleccionada, seleccionar la primera
-      if (simulations.length > 0 && !currentSimulationId) {
-        const firstSim = simulations[0];
+      if (simulationsList.length > 0 && !currentSimulationId) {
+        const firstSim = simulationsList[0];
         setCurrentSimulationId(firstSim.id);
-        simulationApi.setCurrentSimulation(firstSim.id);
+        simulation.setCurrentSimulation(firstSim.id);
         
         // Cargar el estado inicial de la simulación
-        const status = await simulationApi.getSimulationStatus();
+        const status = await simulation.getSimulationStatus();
         
-        setIsRunning(status.running);
+        setIsRunning(status.running || false);
         setCurrentTime(status.currentTime || "00:00:00");
         
         // Calcular tiempo transcurrido
         if (status.elapsedTime) {
-          const elapsedSeconds = parseInt(status.elapsedTime);
+          const elapsedSeconds = parseInt(status.elapsedTime.toString());
           setElapsedSeconds(elapsedSeconds);
         }
         
         if (onSimulationChange) {
-          onSimulationChange(status.running);
+          onSimulationChange(status.running || false);
         }
       }
       
@@ -90,7 +92,7 @@ export function SimulationController({ onSimulationChange, layout = "vertical" }
         timerRef.current = null;
       }
     };
-  }, []);
+  }, [loadSimulations]);
 
   // Formatear segundos a formato hh:mm:ss
   const formatElapsedTime = (seconds: number): string => {
@@ -111,19 +113,19 @@ export function SimulationController({ onSimulationChange, layout = "vertical" }
       if (!currentSimulationId) return;
       
       try {
-        const status = await simulationApi.getSimulationStatus();
+        const status = await simulation.getSimulationStatus();
         
-        setIsRunning(status.running);
+        setIsRunning(status.running || false);
         setCurrentTime(status.currentTime || "00:00:00");
         
         // Calcular tiempo transcurrido
         if (status.elapsedTime) {
-          const elapsedSeconds = parseInt(status.elapsedTime);
+          const elapsedSeconds = parseInt(status.elapsedTime.toString());
           setElapsedSeconds(elapsedSeconds);
         }
         
         if (onSimulationChange) {
-          onSimulationChange(status.running);
+          onSimulationChange(status.running || false);
         }
       } catch (error) {
         console.error("Error obteniendo estado de simulación:", error);
@@ -135,7 +137,7 @@ export function SimulationController({ onSimulationChange, layout = "vertical" }
     const intervalId = setInterval(fetchSimulationStatus, 1000);
     
     return () => clearInterval(intervalId);
-  }, [currentSimulationId, onSimulationChange]);
+  }, [currentSimulationId, onSimulationChange, simulation]);
 
   // Alternar entre iniciar y pausar la simulación
   const toggleSimulation = async () => {
@@ -148,9 +150,9 @@ export function SimulationController({ onSimulationChange, layout = "vertical" }
       setIsLoading(true);
       
       if (isRunning) {
-        await simulationApi.pauseSimulation();
+        await simulation.pauseSimulation();
       } else {
-        await simulationApi.startSimulation();
+        await simulation.startSimulation();
       }
       
       setIsRunning(!isRunning);
@@ -174,11 +176,11 @@ export function SimulationController({ onSimulationChange, layout = "vertical" }
       
       // Pausar primero si está corriendo
       if (isRunning) {
-        await simulationApi.pauseSimulation();
+        await simulation.pauseSimulation();
       }
       
       // Reiniciar la simulación
-      await simulationApi.resetSimulation();
+      await simulation.resetSimulation();
       
       // Reiniciar contadores
       setElapsedSeconds(0);
@@ -199,7 +201,7 @@ export function SimulationController({ onSimulationChange, layout = "vertical" }
   // Cambiar la velocidad de la simulación
   const changeSpeed = async (newSpeed: number) => {
     try {
-      await simulationApi.setSimulationSpeed(newSpeed);
+      await simulation.setSimulationSpeed(newSpeed);
       setSpeed(newSpeed);
       setIsLoading(false);
     } catch (error) {
@@ -240,33 +242,34 @@ export function SimulationController({ onSimulationChange, layout = "vertical" }
       setIsLoading(true);
       
       // Encontrar la simulación seleccionada
-      const simulation = simulations.find(sim => sim.id === id);
-      if (!simulation) {
+      const selectedSimulation = simulations.find(sim => sim.id === id);
+      if (!selectedSimulation) {
         throw new Error(`No se encontró la simulación con ID ${id}`);
       }
       
       // Establecer la simulación actual
       setCurrentSimulationId(id);
-      setCurrentSimulation(simulation);
+      setCurrentSimulation(selectedSimulation);
+      simulation.setCurrentSimulation(id);
       
       // Reiniciar contadores
       setElapsedSeconds(0);
       setCurrentTime("00:00:00");
       
       // Cargar el estado inicial de la simulación
-      const status = await simulationApi.getSimulationStatus();
+      const status = await simulation.getSimulationStatus();
       
-      setIsRunning(status.running);
+      setIsRunning(status.running || false);
       setCurrentTime(status.currentTime || "00:00:00");
       
       // Calcular tiempo transcurrido
       if (status.elapsedTime) {
-        const elapsedSeconds = parseInt(status.elapsedTime);
+        const elapsedSeconds = parseInt(status.elapsedTime.toString());
         setElapsedSeconds(elapsedSeconds);
       }
       
       if (onSimulationChange) {
-        onSimulationChange(status.running);
+        onSimulationChange(status.running || false);
       }
       
       setIsLoading(false);

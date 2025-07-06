@@ -1,84 +1,83 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { SimulationMap } from "@/components/simulation/simulation-map"
-import { SimulationResults } from "@/components/simulation/simulation-results"
-import { SimulationConfig } from "@/components/simulation/simulation-config"
-import { SimulationController } from "@/components/simulation/simulation-controller"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { SimulationScenarioType } from "@/lib/simulation-api"
-import { Calendar, Clock, BarChart4, AlertOctagon } from "lucide-react"
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { SimulationMap } from "@/components/simulation/simulation-map";
+import { SimulationResults } from "@/components/simulation/simulation-results";
+import { SimulationConfig } from "@/components/simulation/simulation-config";
+import { SimulationController } from "@/components/simulation/simulation-controller";
+import { Badge } from "@/components/ui/badge";
+import { SimulationScenarioType } from "@/hooks/use-simulation";
+import { Calendar, Clock, AlertOctagon } from "lucide-react";
 
 export default function SimulacionPage() {
-  const [isRunning, setIsRunning] = useState(false)
-  const [currentTime, setCurrentTime] = useState("00:00:00")
-  const [activeTab, setActiveTab] = useState("mapa")
-  const [apiStatus, setApiStatus] = useState<"loading" | "connected" | "error">("loading")
-  const [selectedScenario, setSelectedScenario] = useState<SimulationScenarioType>(SimulationScenarioType.DAILY_OPERATIONS)
-  const [currentSimulationId, setCurrentSimulationId] = useState<string | null>(null)
-  
+  const [isRunning, setIsRunning] = useState(false);
+  const [activeTab, setActiveTab] = useState("mapa");
+  const [apiStatus, setApiStatus] = useState<"loading" | "connected" | "error">(
+    "loading"
+  );
+  const [selectedScenario] = useState<SimulationScenarioType>(
+    SimulationScenarioType.DAILY_OPERATIONS
+  );
+
   const handleTimeUpdate = (time: string, running: boolean) => {
-    setCurrentTime(time)
-    setIsRunning(running)
-    setApiStatus("connected")
-  }
+    setIsRunning(running);
+    setApiStatus("connected");
+  };
 
   const handleSimulationChange = (running: boolean) => {
-    setIsRunning(running)
-  }
+    setIsRunning(running);
+  };
 
-  const handleApiError = () => {
-    setApiStatus("error")
-  }
-  
-  const handleSimulationCreated = (simulationId: string) => {
-    setCurrentSimulationId(simulationId)
-    // Cambiar a la pestaña de mapa después de crear una simulación
-    setActiveTab("mapa")
-  }
+  const handleSimulationCreated = () => {
+    setActiveTab("mapa");
+  };
 
   const getScenarioIcon = () => {
     switch (selectedScenario) {
       case SimulationScenarioType.DAILY_OPERATIONS:
-        return <Clock className="h-5 w-5" />
+        return <Clock className="h-5 w-5" />;
       case SimulationScenarioType.WEEKLY_SIMULATION:
-        return <Calendar className="h-5 w-5" />
+        return <Calendar className="h-5 w-5" />;
       case SimulationScenarioType.COLLAPSE_SIMULATION:
-        return <AlertOctagon className="h-5 w-5" />
+        return <AlertOctagon className="h-5 w-5" />;
       default:
-        return <Clock className="h-5 w-5" />
+        return <Clock className="h-5 w-5" />;
     }
-  }
+  };
 
   const getScenarioLabel = () => {
     switch (selectedScenario) {
       case SimulationScenarioType.DAILY_OPERATIONS:
-        return "Operaciones diarias"
+        return "Operaciones diarias";
       case SimulationScenarioType.WEEKLY_SIMULATION:
-        return "Simulación semanal"
+        return "Simulación semanal";
       case SimulationScenarioType.COLLAPSE_SIMULATION:
-        return "Simulación hasta el colapso"
+        return "Simulación hasta el colapso";
       default:
-        return "Desconocido"
+        return "Desconocido";
     }
-  }
+  };
 
   const getScenarioBadgeColor = () => {
     switch (selectedScenario) {
       case SimulationScenarioType.DAILY_OPERATIONS:
-        return "bg-blue-100 text-blue-800"
+        return "bg-blue-100 text-blue-800";
       case SimulationScenarioType.WEEKLY_SIMULATION:
-        return "bg-green-100 text-green-800"
+        return "bg-green-100 text-green-800";
       case SimulationScenarioType.COLLAPSE_SIMULATION:
-        return "bg-amber-100 text-amber-800"
+        return "bg-amber-100 text-amber-800";
       default:
-        return ""
+        return "";
     }
-  }
+  };
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -88,7 +87,11 @@ export default function SimulacionPage() {
         </h2>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="space-y-4"
+      >
         <TabsList>
           <TabsTrigger value="mapa">Mapa</TabsTrigger>
           <TabsTrigger value="configuracion">Configuración</TabsTrigger>
@@ -106,8 +109,8 @@ export default function SimulacionPage() {
                       <span>Controles de Simulación</span>
                     </CardTitle>
                     {selectedScenario && (
-                      <Badge 
-                        variant="outline" 
+                      <Badge
+                        variant="outline"
                         className={`ml-2 px-2 py-0 text-xs ${getScenarioBadgeColor()}`}
                       >
                         {getScenarioLabel()}
@@ -116,23 +119,30 @@ export default function SimulacionPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <Badge 
-                      variant={apiStatus === "connected" ? "default" : "outline"} 
-                      className={apiStatus === "connected" 
-                        ? "bg-green-100 text-green-800" 
-                        : apiStatus === "error" 
-                          ? "bg-red-100 text-red-800" 
-                          : ""}
+                    <Badge
+                      variant={
+                        apiStatus === "connected" ? "default" : "outline"
+                      }
+                      className={
+                        apiStatus === "connected"
+                          ? "bg-green-100 text-green-800"
+                          : apiStatus === "error"
+                          ? "bg-red-100 text-red-800"
+                          : ""
+                      }
                     >
-                      {apiStatus === "connected" 
-                        ? "Conectado" 
-                        : apiStatus === "error" 
-                          ? "Error" 
-                          : "Conectando..."}
+                      {apiStatus === "connected"
+                        ? "Conectado"
+                        : apiStatus === "error"
+                        ? "Error"
+                        : "Conectando..."}
                     </Badge>
-                    
+
                     {isRunning && (
-                      <Badge variant="default" className="bg-blue-100 text-blue-800">
+                      <Badge
+                        variant="default"
+                        className="bg-blue-100 text-blue-800"
+                      >
                         Simulación activa
                       </Badge>
                     )}
@@ -144,9 +154,9 @@ export default function SimulacionPage() {
                 <div className="flex flex-col">
                   <div className="p-4 bg-slate-50 border-b">
                     <div className="w-full">
-                      <SimulationController 
+                      <SimulationController
                         onSimulationChange={handleSimulationChange}
-                        layout="horizontal" 
+                        layout="horizontal"
                       />
                     </div>
                   </div>
@@ -164,7 +174,9 @@ export default function SimulacionPage() {
           <Card>
             <CardHeader>
               <CardTitle>Configuración de Escenarios</CardTitle>
-              <CardDescription>Personaliza los parámetros para cada modo de visualización</CardDescription>
+              <CardDescription>
+                Personaliza los parámetros para cada modo de visualización
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <SimulationConfig onConfigSaved={handleSimulationCreated} />
@@ -176,7 +188,9 @@ export default function SimulacionPage() {
           <Card>
             <CardHeader>
               <CardTitle>Estadísticas y Métricas</CardTitle>
-              <CardDescription>Análisis del desempeño operativo y logístico</CardDescription>
+              <CardDescription>
+                Análisis del desempeño operativo y logístico
+              </CardDescription>
             </CardHeader>
             <CardContent>
               <SimulationResults />
@@ -185,5 +199,5 @@ export default function SimulacionPage() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

@@ -26,7 +26,7 @@ import { useDashboardMetrics } from "@/hooks/use-dashboard";
 import { useEffect, useState } from "react";
 
 export default function DashboardPage() {
-  const { metrics, loading, error } = useDashboardMetrics();
+  const { metrics, loading } = useDashboardMetrics();
   const [currentTime, setCurrentTime] = useState("");
 
   useEffect(() => {

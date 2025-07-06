@@ -69,7 +69,7 @@ export default function OrderForm({ onOrderAdded }: OrderFormProps) {
     };
 
     try {
-      const response = await ordersApi.create2(orderData);
+      await ordersApi.create2(orderData);
 
       toast({
         title: "Pedido creado",

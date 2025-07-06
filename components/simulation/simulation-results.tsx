@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Bar, BarChart, CartesianGrid, Line, LineChart, Legend, Pie, PieChart, Cell, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { Badge } from "@/components/ui/badge"
-import { ArrowUp, ArrowDown, TrendingUp, TrendingDown, Truck, Package, Fuel, Clock, AlertTriangle } from "lucide-react"
+import { ArrowUp, ArrowDown, TrendingUp, TrendingDown, Package, Fuel, Clock, AlertTriangle } from "lucide-react"
 
 // Datos de ejemplo para los gráficos
 const deliveryData = [
@@ -44,8 +44,6 @@ const vehicleStatusData = [
   { name: "Averiados", value: 2, color: "#ef4444" },
   { name: "Mantenimiento", value: 1, color: "#f59e0b" },
 ]
-
-const COLORS = ["#10b981", "#3b82f6", "#ef4444", "#f59e0b"];
 
 const efficiencyData = [
   { name: "Lun", eficiencia: 92 },

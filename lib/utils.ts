@@ -40,7 +40,7 @@ export function formatCurrency(number: number) {
  * @param data - Array of objects to convert to CSV
  * @param filename - Name for the downloaded file
  */
-export function downloadToCSV(data: Record<string, any>[], filename: string) {
+export function downloadToCSV(data: Record<string, unknown>[], filename: string) {
   // Get headers from the first object
   const headers = Object.keys(data[0]);
   
