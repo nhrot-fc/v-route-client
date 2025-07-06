@@ -14,7 +14,9 @@ import {
   MapPin,
   AlertCircle,
   HelpCircle,
-  LogOut
+  LogOut,
+  Package,
+  FileBarChart
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -121,6 +123,15 @@ export function AppSidebar() {
                   <Link href="/pedidos">
                     <ClipboardList className={isActive("/pedidos") ? "text-blue-600" : ""} />
                     <span>Pedidos</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive("/entregas")} className={isActive("/entregas") ? "bg-blue-50 text-blue-700" : ""}>
+                  <Link href="/entregas">
+                    <Package className={isActive("/entregas") ? "text-blue-600" : ""} />
+                    <span>Entregas</span>
                     <Badge variant="outline" className="ml-auto text-xs py-0 px-1.5 bg-blue-50">Nuevo</Badge>
                   </Link>
                 </SidebarMenuButton>
@@ -145,6 +156,16 @@ export function AppSidebar() {
               </SidebarMenuItem>
 
               <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive("/incidentes")} className={isActive("/incidentes") ? "bg-blue-50 text-blue-700" : ""}>
+                  <Link href="/incidentes">
+                    <AlertCircle className={isActive("/incidentes") ? "text-blue-600" : ""} />
+                    <span>Incidentes</span>
+                    <Badge variant="outline" className="ml-auto text-xs py-0 px-1.5 bg-blue-50">Nuevo</Badge>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
                 <SidebarMenuButton asChild isActive={isActive("/bloqueos")} className={isActive("/bloqueos") ? "bg-blue-50 text-blue-700" : ""}>
                   <Link href="/bloqueos">
                     <AlertTriangle className={isActive("/bloqueos") ? "text-blue-600" : ""} />
@@ -160,6 +181,16 @@ export function AppSidebar() {
                   <Link href="/simulacion">
                     <PlayCircle className={isActive("/simulacion") ? "text-blue-600" : ""} />
                     <span>Simulación</span>
+                    <Badge variant="outline" className="ml-auto text-xs py-0 px-1.5 bg-amber-50 text-amber-600 border-amber-200">Beta</Badge>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild isActive={isActive("/reportes")} className={isActive("/reportes") ? "bg-blue-50 text-blue-700" : ""}>
+                  <Link href="/reportes">
+                    <FileBarChart className={isActive("/reportes") ? "text-blue-600" : ""} />
+                    <span>Reportes</span>
                     <Badge variant="outline" className="ml-auto text-xs py-0 px-1.5 bg-amber-50 text-amber-600 border-amber-200">Beta</Badge>
                   </Link>
                 </SidebarMenuButton>

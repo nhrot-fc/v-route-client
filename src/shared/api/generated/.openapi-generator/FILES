@@ -1,5 +1,6 @@
 .gitignore
 .npmignore
+.openapi-generator-ignore
 api.ts
 base.ts
 common.ts
@@ -23,6 +24,7 @@ docs/Order.md
 docs/OrderControllerApi.md
 docs/OrderDTO.md
 docs/Position.md
+docs/ServeRecord.md
 docs/ServeRecordControllerApi.md
 docs/ServeRecordDTO.md
 docs/SimulationApi.md

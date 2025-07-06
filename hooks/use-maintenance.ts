@@ -7,26 +7,65 @@ interface MaintenanceWithLegacyFields extends MaintenanceDTO {
   // No legacy fields needed for now
 }
 
+// Define pagination parameters
+interface PaginationParams {
+  page: number;
+  size: number;
+  sortBy?: string;
+  direction?: string;
+}
+
 // Export with original name for backward compatibility
-export function useMaintenance() {
+export function useMaintenance(paginationParams?: PaginationParams) {
   const [maintenance, setMaintenance] = useState<MaintenanceWithLegacyFields[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const { toast } = useToast()
+
+  // Extract pagination values to use in dependencies
+  const page = paginationParams?.page;
+  const size = paginationParams?.size;
+  const sortBy = paginationParams?.sortBy;
+  const direction = paginationParams?.direction;
 
   const fetchMaintenance = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await maintenanceApi.listMaintenances()
       
-      // Map the response data to include legacy fields if needed
-      const maintenanceData = Array.isArray(response.data) ? response.data : [response.data].filter(Boolean)
-      const mappedMaintenance = maintenanceData.map(record => ({
-        ...record
-      }))
+      // Set up pagination parameters
+      const isPaginated = !!paginationParams;
+      const { page, size, sortBy, direction } = paginationParams || { page: 0, size: 10 };
       
-      setMaintenance(mappedMaintenance)
+      const response = await maintenanceApi.listMaintenances(undefined, undefined, undefined, undefined, isPaginated, page, size, sortBy, direction)
+      
+      const responseData = response.data;
+      
+      // Handle paginated response
+      if (isPaginated && responseData && typeof responseData === 'object' && 'content' in responseData) {
+        const { content, totalElements, totalPages: pages } = responseData as any;
+        
+        // Map the response data to include legacy fields if needed
+        const mappedMaintenance = content.map((record: MaintenanceDTO) => ({
+          ...record
+        }));
+        
+        setMaintenance(mappedMaintenance);
+        setTotalItems(totalElements || content.length);
+        setTotalPages(pages || 1);
+      } else {
+        // Map the response data to include legacy fields if needed
+        const maintenanceData = Array.isArray(responseData) ? responseData : [responseData].filter(Boolean)
+        const mappedMaintenance = maintenanceData.map(record => ({
+          ...record
+        }))
+        
+        setMaintenance(mappedMaintenance);
+        setTotalItems(mappedMaintenance.length);
+        setTotalPages(1);
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al cargar registros de mantenimiento'
       setError(errorMessage)
@@ -38,7 +77,7 @@ export function useMaintenance() {
     } finally {
       setLoading(false)
     }
-  }, [toast])
+  }, [page, size, sortBy, direction, toast])
 
   useEffect(() => {
     fetchMaintenance()
@@ -150,6 +189,8 @@ export function useMaintenance() {
     scheduleMaintenance,
     completeMaintenanceRecord,
     cancelMaintenanceRecord,
+    totalItems,
+    totalPages,
   }
 }
 

@@ -8,55 +8,124 @@ interface BlockageWithLegacyFields extends Blockage {
   endNode?: { x: number; y: number; }; // Legacy field
 }
 
-export function useBlockages() {
+// Define pagination parameters
+interface PaginationParams {
+  page: number;
+  size: number;
+  sortBy?: string;
+  direction?: string;
+}
+
+export function useBlockages(paginationParams?: PaginationParams) {
   const [blockages, setBlockages] = useState<BlockageWithLegacyFields[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const { toast } = useToast()
+
+  // Extract pagination values to use in dependencies
+  const page = paginationParams?.page;
+  const size = paginationParams?.size;
+  const sortBy = paginationParams?.sortBy;
+  const direction = paginationParams?.direction;
 
   const fetchBlockages = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
-      const response = await blockagesApi.list5()
       
-      // Convert the line points to start and end nodes for compatibility
-      const blockagesData = Array.isArray(response.data) ? response.data : [response.data].filter(Boolean)
-      const mappedBlockages = blockagesData.map(blockage => {
-        // Create a blockage with legacy fields
-        const blockageWithLegacy: BlockageWithLegacyFields = {
-          ...blockage
-        }
+      // Set up pagination parameters
+      const isPaginated = !!paginationParams;
+      const { page, size, sortBy, direction } = paginationParams || { page: 0, size: 10 };
+      
+      const response = await blockagesApi.list5(undefined, undefined, undefined, isPaginated, page, size, sortBy, direction)
+      
+      const responseData = response.data;
+      
+      // Handle paginated response
+      if (isPaginated && responseData && typeof responseData === 'object' && 'content' in responseData) {
+        const { content, totalElements, totalPages: pages } = responseData as any;
         
-        // Parse linePoints if available to extract start and end nodes
-        if (blockage.linePoints) {
-          try {
-            const points = blockage.linePoints.split('-')
-            if (points.length === 2) {
-              const startCoords = points[0].split(',')
-              const endCoords = points[1].split(',')
-              
-              if (startCoords.length === 2 && endCoords.length === 2) {
-                blockageWithLegacy.startNode = {
-                  x: parseFloat(startCoords[0]),
-                  y: parseFloat(startCoords[1])
-                }
+        // Convert the line points to start and end nodes for compatibility
+        const mappedBlockages = content.map((blockage: Blockage) => {
+          // Create a blockage with legacy fields
+          const blockageWithLegacy: BlockageWithLegacyFields = {
+            ...blockage
+          }
+          
+          // Parse linePoints if available to extract start and end nodes
+          if (blockage.linePoints) {
+            try {
+              const points = blockage.linePoints.split('-')
+              if (points.length === 2) {
+                const startCoords = points[0].split(',')
+                const endCoords = points[1].split(',')
                 
-                blockageWithLegacy.endNode = {
-                  x: parseFloat(endCoords[0]),
-                  y: parseFloat(endCoords[1])
+                if (startCoords.length === 2 && endCoords.length === 2) {
+                  blockageWithLegacy.startNode = {
+                    x: parseFloat(startCoords[0]),
+                    y: parseFloat(startCoords[1])
+                  }
+                  
+                  blockageWithLegacy.endNode = {
+                    x: parseFloat(endCoords[0]),
+                    y: parseFloat(endCoords[1])
+                  }
                 }
               }
+            } catch (e) {
+              console.error('Error parsing blockage line points:', e)
             }
-          } catch (e) {
-            console.error('Error parsing blockage line points:', e)
           }
-        }
+          
+          return blockageWithLegacy
+        });
         
-        return blockageWithLegacy
-      })
-      
-      setBlockages(mappedBlockages)
+        setBlockages(mappedBlockages);
+        setTotalItems(totalElements || content.length);
+        setTotalPages(pages || 1);
+      } else {
+        // Handle non-paginated response (backward compatibility)
+        const blockagesData = Array.isArray(responseData) ? responseData : [responseData].filter(Boolean)
+        const mappedBlockages = blockagesData.map(blockage => {
+          // Create a blockage with legacy fields
+          const blockageWithLegacy: BlockageWithLegacyFields = {
+            ...blockage
+          }
+          
+          // Parse linePoints if available to extract start and end nodes
+          if (blockage.linePoints) {
+            try {
+              const points = blockage.linePoints.split('-')
+              if (points.length === 2) {
+                const startCoords = points[0].split(',')
+                const endCoords = points[1].split(',')
+                
+                if (startCoords.length === 2 && endCoords.length === 2) {
+                  blockageWithLegacy.startNode = {
+                    x: parseFloat(startCoords[0]),
+                    y: parseFloat(startCoords[1])
+                  }
+                  
+                  blockageWithLegacy.endNode = {
+                    x: parseFloat(endCoords[0]),
+                    y: parseFloat(endCoords[1])
+                  }
+                }
+              }
+            } catch (e) {
+              console.error('Error parsing blockage line points:', e)
+            }
+          }
+          
+          return blockageWithLegacy
+        });
+        
+        setBlockages(mappedBlockages);
+        setTotalItems(mappedBlockages.length);
+        setTotalPages(1);
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al cargar bloqueos'
       setError(errorMessage)
@@ -68,7 +137,7 @@ export function useBlockages() {
     } finally {
       setLoading(false)
     }
-  }, [toast])
+  }, [page, size, sortBy, direction, toast])
 
   useEffect(() => {
     fetchBlockages()
@@ -157,6 +226,8 @@ export function useBlockages() {
     createBlockage,
     deleteBlockage,
     updateBlockage,
+    totalItems,
+    totalPages,
   }
 }
 

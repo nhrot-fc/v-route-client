@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/card";
 import { PageLayout } from "@/components/ui/page-layout";
 import { Divider } from "@/components/ui/divider";
-import { DataTable } from "@/components/ui/data-table";
 import { SectionContainer } from "@/components/ui/section-container";
 import { OrderUploadForm } from "@/components/orders/order-upload-form";
 import OrderForm from "@/components/orders/order-form";
@@ -18,6 +17,11 @@ import { useOrders } from "@/hooks/use-orders";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { OrderDTO } from "@/lib/api-client";
 import { formatDate } from "@/lib/utils";
+import { PaginationFooter } from "@/components/ui/pagination-footer";
+import { DataTable } from "@/components/ui/data-table";
+import { TableFilterTabs } from "@/components/ui/table-filter-tabs";
+import { TableSearch } from "@/components/ui/table-search";
+import { TableFilterControls } from "@/components/ui/table-filter-controls";
 
 import {
   Plus,
@@ -27,7 +31,9 @@ import {
   ClipboardList,
   MapPin,
   Timer,
+  Download,
 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 // Extend the OrderDTO type to handle our custom fields
 interface OrderWithStatus extends OrderDTO {
@@ -38,13 +44,28 @@ export default function PedidosPage() {
   const [activeTab, setActiveTab] = useState("todos");
   // Key to reset OrderForm instance
   const [orderFormInstanceKey, setOrderFormInstanceKey] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
   
-  const { orders, loading, error } = useOrders();
+  // Add pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  
+  // Add filter state
+  const [overdueAt, setOverdueAt] = useState<string | undefined>(undefined);
+  
+  // Use pagination parameters in the hook
+  const { orders, loading, error, totalItems, totalPages, refetch } = useOrders(undefined, {
+    page: currentPage - 1, // API uses 0-based index
+    size: pageSize
+  }, {
+    pending: activeTab === "pendiente" ? true : (activeTab === "entregado" ? false : undefined),
+    overdueAt: overdueAt
+  });
 
   // This function should be called by OrderForm after a new order is successfully created.
   const handleOrderAdded = () => {
     // Refresh the orders table by triggering a re-fetch in the useOrders hook
-    // This is handled internally by the hook
+    refetch();
   };
 
   const handleNewPedidoClick = () => {
@@ -58,6 +79,17 @@ export default function PedidosPage() {
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
+    // Reset to first page when changing tabs
+    setCurrentPage(1);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1); // Reset to first page when changing page size
   };
 
   // Prepare orders data with additional status information
@@ -71,7 +103,7 @@ export default function PedidosPage() {
     };
   });
 
-  // Count orders by status
+  // Count orders by status - this will be updated with API counts once available
   const pendingCount = ordersWithStatus.filter(order => !order.delivered && !order.isInRoute).length;
   const inRouteCount = ordersWithStatus.filter(order => !order.delivered && order.isInRoute).length;
   const deliveredCount = ordersWithStatus.filter(order => order.delivered).length;
@@ -177,6 +209,37 @@ export default function PedidosPage() {
     },
   ];
 
+  // Filter data based on active tab and search term
+  const filteredData = useMemo(() => {
+    let result = [...ordersWithStatus];
+    
+    // Apply tab filter
+    if (activeTab !== "todos") {
+      const activeTabFilter = filterTabs.find(tab => tab.id === activeTab);
+      if (activeTabFilter) {
+        result = result.filter(activeTabFilter.filter);
+      }
+    }
+    
+    // Apply search filter
+    if (searchTerm) {
+      result = result.filter(order => 
+        order.id?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (order.position && 
+          `(${order.position.x}, ${order.position.y})`.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+    
+    return result;
+  }, [ordersWithStatus, activeTab, searchTerm, filterTabs]);
+
+  // Reset filters handler
+  const handleResetFilters = () => {
+    setOverdueAt(undefined);
+    // Refresh data with cleared filters
+    refetch();
+  };
+
   return (
     <PageLayout
       title="Gestión de Pedidos"
@@ -251,22 +314,71 @@ export default function PedidosPage() {
         variant="card"
         className="p-4"
       >
-        <DataTable
-          data={ordersWithStatus}
-          columns={columns}
-          actions={actions}
-          filterTabs={filterTabs}
-          searchable={{
-            field: "id" as keyof OrderWithStatus,
-            placeholder: "Buscar por ID o coordenadas...",
-          }}
-          isLoading={loading}
-          error={error}
-          activeFilter={activeTab}
-          onFilterChange={handleTabChange}
-          onDownload={() => console.log("Exportando pedidos...")}
-          noDataMessage="No se encontraron pedidos con los filtros seleccionados."
-        />
+        <div className="space-y-4">
+          {/* Table header with search and filters */}
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+            <TableSearch 
+              value={searchTerm} 
+              onChange={setSearchTerm} 
+              placeholder="Buscar por ID o coordenadas..." 
+            />
+            
+            <div className="flex items-center gap-2 ml-auto">
+              <Button variant="outline" size="sm" onClick={() => console.log("Exportando pedidos...")}>
+                <Download className="h-4 w-4 mr-1.5" />
+                Descargar
+              </Button>
+            </div>
+          </div>
+          
+          {/* Filter controls */}
+          <div className="mb-4">
+            <TableFilterControls
+              filters={[
+                {
+                  id: "overdueAt",
+                  label: "Vencimiento",
+                  type: "text",
+                  value: overdueAt || "",
+                  onChange: (value: string | number | undefined) => {
+                    setOverdueAt(value as string);
+                    setCurrentPage(1); // Reset to first page when changing filter
+                    refetch();
+                  },
+                },
+              ]}
+              onReset={handleResetFilters}
+            />
+          </div>
+          
+          {/* Filter tabs */}
+          <TableFilterTabs
+            filterTabs={filterTabs}
+            data={ordersWithStatus}
+            activeFilter={activeTab}
+            onFilterChange={handleTabChange}
+          />
+          
+          {/* Data table */}
+          <DataTable
+            data={filteredData}
+            columns={columns}
+            actions={actions}
+            isLoading={loading}
+            error={error}
+            noDataMessage="No se encontraron pedidos con los filtros seleccionados."
+            footerContent={
+              <PaginationFooter
+                currentPage={currentPage}
+                pageSize={pageSize}
+                totalItems={totalItems}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+              />
+            }
+          />
+        </div>
       </SectionContainer>
       
       <div className="grid gap-6 md:grid-cols-2 mt-6" id="order-form-section">

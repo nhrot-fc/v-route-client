@@ -11,6 +11,7 @@ Name | Type | Description | Notes
 **glpRequestM3** | **number** |  | [optional] [default to undefined]
 **position** | [**Position**](Position.md) |  | [optional] [default to undefined]
 **remainingGlpM3** | **number** |  | [optional] [default to undefined]
+**serveRecords** | [**Array&lt;ServeRecord&gt;**](ServeRecord.md) |  | [optional] [default to undefined]
 **delivered** | **boolean** |  | [optional] [default to undefined]
 
 ## Example
@@ -25,6 +26,7 @@ const instance: Order = {
     glpRequestM3,
     position,
     remainingGlpM3,
+    serveRecords,
     delivered,
 };
 ```

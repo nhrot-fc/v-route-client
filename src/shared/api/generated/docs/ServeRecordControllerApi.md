@@ -161,7 +161,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **list1**
-> Array<ServeRecordDTO> list1()
+> object list1()
 
 
 ### Example
@@ -179,12 +179,22 @@ let orderId: string; // (optional) (default to undefined)
 let vehicleId: string; // (optional) (default to undefined)
 let startDate: string; // (optional) (default to undefined)
 let endDate: string; // (optional) (default to undefined)
+let paginated: boolean; // (optional) (default to undefined)
+let page: number; // (optional) (default to 0)
+let size: number; // (optional) (default to 10)
+let sortBy: string; // (optional) (default to 'serveDate')
+let direction: string; // (optional) (default to 'desc')
 
 const { status, data } = await apiInstance.list1(
     orderId,
     vehicleId,
     startDate,
-    endDate
+    endDate,
+    paginated,
+    page,
+    size,
+    sortBy,
+    direction
 );
 ```
 
@@ -196,11 +206,16 @@ const { status, data } = await apiInstance.list1(
 | **vehicleId** | [**string**] |  | (optional) defaults to undefined|
 | **startDate** | [**string**] |  | (optional) defaults to undefined|
 | **endDate** | [**string**] |  | (optional) defaults to undefined|
+| **paginated** | [**boolean**] |  | (optional) defaults to undefined|
+| **page** | [**number**] |  | (optional) defaults to 0|
+| **size** | [**number**] |  | (optional) defaults to 10|
+| **sortBy** | [**string**] |  | (optional) defaults to 'serveDate'|
+| **direction** | [**string**] |  | (optional) defaults to 'desc'|
 
 
 ### Return type
 
-**Array<ServeRecordDTO>**
+**object**
 
 ### Authorization
 

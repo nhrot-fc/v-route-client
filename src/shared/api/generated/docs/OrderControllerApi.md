@@ -163,7 +163,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **list2**
-> Array<OrderDTO> list2()
+> object list2()
 
 
 ### Example
@@ -180,11 +180,21 @@ const apiInstance = new OrderControllerApi(configuration);
 let pending: boolean; // (optional) (default to undefined)
 let overdueAt: string; // (optional) (default to undefined)
 let availableAt: string; // (optional) (default to undefined)
+let paginated: boolean; // (optional) (default to undefined)
+let page: number; // (optional) (default to 0)
+let size: number; // (optional) (default to 10)
+let sortBy: string; // (optional) (default to 'id')
+let direction: string; // (optional) (default to 'asc')
 
 const { status, data } = await apiInstance.list2(
     pending,
     overdueAt,
-    availableAt
+    availableAt,
+    paginated,
+    page,
+    size,
+    sortBy,
+    direction
 );
 ```
 
@@ -195,11 +205,16 @@ const { status, data } = await apiInstance.list2(
 | **pending** | [**boolean**] |  | (optional) defaults to undefined|
 | **overdueAt** | [**string**] |  | (optional) defaults to undefined|
 | **availableAt** | [**string**] |  | (optional) defaults to undefined|
+| **paginated** | [**boolean**] |  | (optional) defaults to undefined|
+| **page** | [**number**] |  | (optional) defaults to 0|
+| **size** | [**number**] |  | (optional) defaults to 10|
+| **sortBy** | [**string**] |  | (optional) defaults to 'id'|
+| **direction** | [**string**] |  | (optional) defaults to 'asc'|
 
 
 ### Return type
 
-**Array<OrderDTO>**
+**object**
 
 ### Authorization
 

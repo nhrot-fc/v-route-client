@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { MaintenanceUploadForm } from "@/components/maintenance/maintenance-upload-form";
 import { MaintenanceForm } from "@/components/maintenance/maintenance-form";
@@ -13,13 +13,34 @@ import { Divider } from "@/components/ui/divider";
 import { Wrench, FileUp, Plus, ClipboardList, Timer, CheckCircle, AlertTriangle } from "lucide-react";
 import { useMaintenance } from "@/hooks/use-maintenance";
 import { MaintenanceDTO } from "@/lib/api-client";
+import { PaginationFooter } from "@/components/ui/pagination-footer";
+import { TableFilterTabs } from "@/components/ui/table-filter-tabs";
 
 export default function MantenimientosPage() {
   const [activeTab, setActiveTab] = useState("list");
   const [newOpen, setNewOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   
-  const { maintenance, loading, error } = useMaintenance();
+  // Add pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  
+  // Use pagination parameters in the hook
+  const { maintenance, loading, error, totalItems, totalPages } = useMaintenance({
+    page: currentPage - 1, // API uses 0-based index
+    size: pageSize
+  });
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
 
   // Count maintenance by status
   const pendingCount = maintenance.filter(item => !item.active && !item.realEnd).length;
@@ -101,6 +122,15 @@ export default function MantenimientosPage() {
     },
   ];
 
+  // Filtrar datos según la pestaña activa
+  const filteredData = useMemo(() => {
+    if (activeTab === "list" || !activeTab) {
+      return maintenance;
+    }
+    const tabFilter = filterTabs.find(tab => tab.id === activeTab);
+    return tabFilter ? maintenance.filter(tabFilter.filter) : maintenance;
+  }, [maintenance, activeTab, filterTabs]);
+
   return (
     <PageLayout 
       title="Gestión de Mantenimientos" 
@@ -176,20 +206,29 @@ export default function MantenimientosPage() {
         variant="card"
         className="p-4"
       >
-        <DataTable
-          data={maintenance}
-          columns={columns}
+        <TableFilterTabs
           filterTabs={filterTabs}
-          searchable={{
-            field: "vehicleId" as keyof MaintenanceDTO,
-            placeholder: "Buscar por ID de vehículo...",
-          }}
-          isLoading={loading}
-          error={error}
+          data={maintenance}
           activeFilter={activeTab}
           onFilterChange={setActiveTab}
-          onDownload={() => console.log("Exportando mantenimientos...")}
+        />
+        
+        <DataTable
+          data={filteredData}
+          columns={columns}
+          isLoading={loading}
+          error={error}
           noDataMessage="No se encontraron registros de mantenimiento con los filtros seleccionados."
+          footerContent={
+            <PaginationFooter
+              currentPage={currentPage}
+              pageSize={pageSize}
+              totalItems={totalItems}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+            />
+          }
         />
       </SectionContainer>
 

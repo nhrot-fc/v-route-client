@@ -7,6 +7,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **number** |  | [optional] [default to undefined]
 **vehicleId** | **string** |  | [optional] [default to undefined]
+**vehicle** | [**Vehicle**](Vehicle.md) |  | [optional] [default to undefined]
 **type** | **string** |  | [optional] [default to undefined]
 **shift** | **string** |  | [optional] [default to undefined]
 **occurrenceTime** | **string** |  | [optional] [default to undefined]
@@ -22,6 +23,7 @@ import { Incident } from './api';
 const instance: Incident = {
     id,
     vehicleId,
+    vehicle,
     type,
     shift,
     occurrenceTime,

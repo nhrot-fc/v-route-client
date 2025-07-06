@@ -179,6 +179,12 @@ export interface Incident {
     'vehicleId'?: string;
     /**
      * 
+     * @type {Vehicle}
+     * @memberof Incident
+     */
+    'vehicle'?: Vehicle;
+    /**
+     * 
      * @type {string}
      * @memberof Incident
      */
@@ -392,6 +398,12 @@ export interface Maintenance {
     'vehicleId'?: string;
     /**
      * 
+     * @type {Vehicle}
+     * @memberof Maintenance
+     */
+    'vehicle'?: Vehicle;
+    /**
+     * 
      * @type {string}
      * @memberof Maintenance
      */
@@ -533,6 +545,12 @@ export interface Order {
     'remainingGlpM3'?: number;
     /**
      * 
+     * @type {Array<ServeRecord>}
+     * @memberof Order
+     */
+    'serveRecords'?: Array<ServeRecord>;
+    /**
+     * 
      * @type {boolean}
      * @memberof Order
      */
@@ -605,6 +623,55 @@ export interface Position {
      * @memberof Position
      */
     'y'?: number;
+}
+/**
+ * 
+ * @export
+ * @interface ServeRecord
+ */
+export interface ServeRecord {
+    /**
+     * 
+     * @type {number}
+     * @memberof ServeRecord
+     */
+    'id'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ServeRecord
+     */
+    'vehicleId'?: string;
+    /**
+     * 
+     * @type {Vehicle}
+     * @memberof ServeRecord
+     */
+    'vehicle'?: Vehicle;
+    /**
+     * 
+     * @type {string}
+     * @memberof ServeRecord
+     */
+    'orderId'?: string;
+    /**
+     * 
+     * @type {Order}
+     * @memberof ServeRecord
+     */
+    'order'?: Order;
+    /**
+     * 
+     * @type {number}
+     * @memberof ServeRecord
+     */
+    'volumeM3'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ServeRecord
+     */
+    'serveDate'?: string;
 }
 /**
  * 
@@ -1001,6 +1068,24 @@ export interface Vehicle {
      * @memberof Vehicle
      */
     'status'?: VehicleStatusEnum;
+    /**
+     * 
+     * @type {Array<Incident>}
+     * @memberof Vehicle
+     */
+    'incidents'?: Array<Incident>;
+    /**
+     * 
+     * @type {Array<ServeRecord>}
+     * @memberof Vehicle
+     */
+    'serveRecords'?: Array<ServeRecord>;
+    /**
+     * 
+     * @type {Array<Maintenance>}
+     * @memberof Vehicle
+     */
+    'maintenances'?: Array<Maintenance>;
 }
 
 export const VehicleTypeEnum = {
@@ -1214,10 +1299,15 @@ export const BlockageControllerApiAxiosParamCreator = function (configuration?: 
          * @param {string} [activeAt] 
          * @param {string} [startTime] 
          * @param {string} [endTime] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        list5: async (activeAt?: string, startTime?: string, endTime?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        list5: async (activeAt?: string, startTime?: string, endTime?: string, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/blockages`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1246,6 +1336,26 @@ export const BlockageControllerApiAxiosParamCreator = function (configuration?: 
                 localVarQueryParameter['endTime'] = (endTime as any instanceof Date) ?
                     (endTime as any).toISOString() :
                     endTime;
+            }
+
+            if (paginated !== undefined) {
+                localVarQueryParameter['paginated'] = paginated;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (sortBy !== undefined) {
+                localVarQueryParameter['sortBy'] = sortBy;
+            }
+
+            if (direction !== undefined) {
+                localVarQueryParameter['direction'] = direction;
             }
 
 
@@ -1349,11 +1459,16 @@ export const BlockageControllerApiFp = function(configuration?: Configuration) {
          * @param {string} [activeAt] 
          * @param {string} [startTime] 
          * @param {string} [endTime] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async list5(activeAt?: string, startTime?: string, endTime?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Blockage>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.list5(activeAt, startTime, endTime, options);
+        async list5(activeAt?: string, startTime?: string, endTime?: string, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.list5(activeAt, startTime, endTime, paginated, page, size, sortBy, direction, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BlockageControllerApi.list5']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -1413,11 +1528,16 @@ export const BlockageControllerApiFactory = function (configuration?: Configurat
          * @param {string} [activeAt] 
          * @param {string} [startTime] 
          * @param {string} [endTime] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        list5(activeAt?: string, startTime?: string, endTime?: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<Blockage>> {
-            return localVarFp.list5(activeAt, startTime, endTime, options).then((request) => request(axios, basePath));
+        list5(activeAt?: string, startTime?: string, endTime?: string, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.list5(activeAt, startTime, endTime, paginated, page, size, sortBy, direction, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -1477,12 +1597,17 @@ export class BlockageControllerApi extends BaseAPI {
      * @param {string} [activeAt] 
      * @param {string} [startTime] 
      * @param {string} [endTime] 
+     * @param {boolean} [paginated] 
+     * @param {number} [page] 
+     * @param {number} [size] 
+     * @param {string} [sortBy] 
+     * @param {string} [direction] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof BlockageControllerApi
      */
-    public list5(activeAt?: string, startTime?: string, endTime?: string, options?: RawAxiosRequestConfig) {
-        return BlockageControllerApiFp(this.configuration).list5(activeAt, startTime, endTime, options).then((request) => request(this.axios, this.basePath));
+    public list5(activeAt?: string, startTime?: string, endTime?: string, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig) {
+        return BlockageControllerApiFp(this.configuration).list5(activeAt, startTime, endTime, paginated, page, size, sortBy, direction, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1907,10 +2032,15 @@ export const DepotControllerApiAxiosParamCreator = function (configuration?: Con
          * @param {boolean} [canRefuel] 
          * @param {number} [minGlpCapacity] 
          * @param {number} [minCurrentGlp] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        list4: async (canRefuel?: boolean, minGlpCapacity?: number, minCurrentGlp?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        list4: async (canRefuel?: boolean, minGlpCapacity?: number, minCurrentGlp?: number, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/depots`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1933,6 +2063,26 @@ export const DepotControllerApiAxiosParamCreator = function (configuration?: Con
 
             if (minCurrentGlp !== undefined) {
                 localVarQueryParameter['minCurrentGlp'] = minCurrentGlp;
+            }
+
+            if (paginated !== undefined) {
+                localVarQueryParameter['paginated'] = paginated;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (sortBy !== undefined) {
+                localVarQueryParameter['sortBy'] = sortBy;
+            }
+
+            if (direction !== undefined) {
+                localVarQueryParameter['direction'] = direction;
             }
 
 
@@ -2036,11 +2186,16 @@ export const DepotControllerApiFp = function(configuration?: Configuration) {
          * @param {boolean} [canRefuel] 
          * @param {number} [minGlpCapacity] 
          * @param {number} [minCurrentGlp] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async list4(canRefuel?: boolean, minGlpCapacity?: number, minCurrentGlp?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Depot>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.list4(canRefuel, minGlpCapacity, minCurrentGlp, options);
+        async list4(canRefuel?: boolean, minGlpCapacity?: number, minCurrentGlp?: number, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.list4(canRefuel, minGlpCapacity, minCurrentGlp, paginated, page, size, sortBy, direction, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DepotControllerApi.list4']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -2100,11 +2255,16 @@ export const DepotControllerApiFactory = function (configuration?: Configuration
          * @param {boolean} [canRefuel] 
          * @param {number} [minGlpCapacity] 
          * @param {number} [minCurrentGlp] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        list4(canRefuel?: boolean, minGlpCapacity?: number, minCurrentGlp?: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<Depot>> {
-            return localVarFp.list4(canRefuel, minGlpCapacity, minCurrentGlp, options).then((request) => request(axios, basePath));
+        list4(canRefuel?: boolean, minGlpCapacity?: number, minCurrentGlp?: number, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.list4(canRefuel, minGlpCapacity, minCurrentGlp, paginated, page, size, sortBy, direction, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2164,12 +2324,17 @@ export class DepotControllerApi extends BaseAPI {
      * @param {boolean} [canRefuel] 
      * @param {number} [minGlpCapacity] 
      * @param {number} [minCurrentGlp] 
+     * @param {boolean} [paginated] 
+     * @param {number} [page] 
+     * @param {number} [size] 
+     * @param {string} [sortBy] 
+     * @param {string} [direction] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof DepotControllerApi
      */
-    public list4(canRefuel?: boolean, minGlpCapacity?: number, minCurrentGlp?: number, options?: RawAxiosRequestConfig) {
-        return DepotControllerApiFp(this.configuration).list4(canRefuel, minGlpCapacity, minCurrentGlp, options).then((request) => request(this.axios, this.basePath));
+    public list4(canRefuel?: boolean, minGlpCapacity?: number, minCurrentGlp?: number, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig) {
+        return DepotControllerApiFp(this.configuration).list4(canRefuel, minGlpCapacity, minCurrentGlp, paginated, page, size, sortBy, direction, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2266,10 +2431,16 @@ export const IncidentControllerApiAxiosParamCreator = function (configuration?: 
          * @param {string} [vehicleId] 
          * @param {string} [startDate] 
          * @param {string} [endDate] 
+         * @param {boolean} [resolved] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        list3: async (vehicleId?: string, startDate?: string, endDate?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        list3: async (vehicleId?: string, startDate?: string, endDate?: string, resolved?: boolean, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/incidents`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2296,6 +2467,30 @@ export const IncidentControllerApiAxiosParamCreator = function (configuration?: 
                 localVarQueryParameter['endDate'] = (endDate as any instanceof Date) ?
                     (endDate as any).toISOString() :
                     endDate;
+            }
+
+            if (resolved !== undefined) {
+                localVarQueryParameter['resolved'] = resolved;
+            }
+
+            if (paginated !== undefined) {
+                localVarQueryParameter['paginated'] = paginated;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (sortBy !== undefined) {
+                localVarQueryParameter['sortBy'] = sortBy;
+            }
+
+            if (direction !== undefined) {
+                localVarQueryParameter['direction'] = direction;
             }
 
 
@@ -2381,11 +2576,17 @@ export const IncidentControllerApiFp = function(configuration?: Configuration) {
          * @param {string} [vehicleId] 
          * @param {string} [startDate] 
          * @param {string} [endDate] 
+         * @param {boolean} [resolved] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async list3(vehicleId?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<IncidentDTO>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.list3(vehicleId, startDate, endDate, options);
+        async list3(vehicleId?: string, startDate?: string, endDate?: string, resolved?: boolean, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.list3(vehicleId, startDate, endDate, resolved, paginated, page, size, sortBy, direction, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['IncidentControllerApi.list3']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -2435,11 +2636,17 @@ export const IncidentControllerApiFactory = function (configuration?: Configurat
          * @param {string} [vehicleId] 
          * @param {string} [startDate] 
          * @param {string} [endDate] 
+         * @param {boolean} [resolved] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        list3(vehicleId?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<IncidentDTO>> {
-            return localVarFp.list3(vehicleId, startDate, endDate, options).then((request) => request(axios, basePath));
+        list3(vehicleId?: string, startDate?: string, endDate?: string, resolved?: boolean, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.list3(vehicleId, startDate, endDate, resolved, paginated, page, size, sortBy, direction, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2487,12 +2694,18 @@ export class IncidentControllerApi extends BaseAPI {
      * @param {string} [vehicleId] 
      * @param {string} [startDate] 
      * @param {string} [endDate] 
+     * @param {boolean} [resolved] 
+     * @param {boolean} [paginated] 
+     * @param {number} [page] 
+     * @param {number} [size] 
+     * @param {string} [sortBy] 
+     * @param {string} [direction] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof IncidentControllerApi
      */
-    public list3(vehicleId?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig) {
-        return IncidentControllerApiFp(this.configuration).list3(vehicleId, startDate, endDate, options).then((request) => request(this.axios, this.basePath));
+    public list3(vehicleId?: string, startDate?: string, endDate?: string, resolved?: boolean, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig) {
+        return IncidentControllerApiFp(this.configuration).list3(vehicleId, startDate, endDate, resolved, paginated, page, size, sortBy, direction, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2552,11 +2765,15 @@ export const MaintenanceControllerApiAxiosParamCreator = function (configuration
         },
         /**
          * 
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listActiveMaintenances: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/maintenances/active`;
+        getMaintenanceById: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getMaintenanceById', 'id', id)
+            const localVarPath = `/api/maintenances/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -2581,14 +2798,73 @@ export const MaintenanceControllerApiAxiosParamCreator = function (configuration
         },
         /**
          * 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listActiveMaintenances: async (paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/maintenances/active`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (paginated !== undefined) {
+                localVarQueryParameter['paginated'] = paginated;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (sortBy !== undefined) {
+                localVarQueryParameter['sortBy'] = sortBy;
+            }
+
+            if (direction !== undefined) {
+                localVarQueryParameter['direction'] = direction;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {string} [vehicleId] 
          * @param {string} [date] 
          * @param {string} [startDate] 
          * @param {string} [endDate] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listMaintenances: async (vehicleId?: string, date?: string, startDate?: string, endDate?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        listMaintenances: async (vehicleId?: string, date?: string, startDate?: string, endDate?: string, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/maintenances`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2621,6 +2897,26 @@ export const MaintenanceControllerApiAxiosParamCreator = function (configuration
                 localVarQueryParameter['endDate'] = (endDate as any instanceof Date) ?
                     (endDate as any).toISOString().substring(0,10) :
                     endDate;
+            }
+
+            if (paginated !== undefined) {
+                localVarQueryParameter['paginated'] = paginated;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (sortBy !== undefined) {
+                localVarQueryParameter['sortBy'] = sortBy;
+            }
+
+            if (direction !== undefined) {
+                localVarQueryParameter['direction'] = direction;
             }
 
 
@@ -2658,11 +2954,28 @@ export const MaintenanceControllerApiFp = function(configuration?: Configuration
         },
         /**
          * 
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async listActiveMaintenances(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<MaintenanceDTO>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.listActiveMaintenances(options);
+        async getMaintenanceById(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MaintenanceDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getMaintenanceById(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['MaintenanceControllerApi.getMaintenanceById']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async listActiveMaintenances(paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listActiveMaintenances(paginated, page, size, sortBy, direction, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['MaintenanceControllerApi.listActiveMaintenances']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -2673,11 +2986,16 @@ export const MaintenanceControllerApiFp = function(configuration?: Configuration
          * @param {string} [date] 
          * @param {string} [startDate] 
          * @param {string} [endDate] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async listMaintenances(vehicleId?: string, date?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<MaintenanceDTO>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.listMaintenances(vehicleId, date, startDate, endDate, options);
+        async listMaintenances(vehicleId?: string, date?: string, startDate?: string, endDate?: string, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listMaintenances(vehicleId, date, startDate, endDate, paginated, page, size, sortBy, direction, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['MaintenanceControllerApi.listMaintenances']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -2703,11 +3021,25 @@ export const MaintenanceControllerApiFactory = function (configuration?: Configu
         },
         /**
          * 
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listActiveMaintenances(options?: RawAxiosRequestConfig): AxiosPromise<Array<MaintenanceDTO>> {
-            return localVarFp.listActiveMaintenances(options).then((request) => request(axios, basePath));
+        getMaintenanceById(id: number, options?: RawAxiosRequestConfig): AxiosPromise<MaintenanceDTO> {
+            return localVarFp.getMaintenanceById(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listActiveMaintenances(paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.listActiveMaintenances(paginated, page, size, sortBy, direction, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -2715,11 +3047,16 @@ export const MaintenanceControllerApiFactory = function (configuration?: Configu
          * @param {string} [date] 
          * @param {string} [startDate] 
          * @param {string} [endDate] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        listMaintenances(vehicleId?: string, date?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<MaintenanceDTO>> {
-            return localVarFp.listMaintenances(vehicleId, date, startDate, endDate, options).then((request) => request(axios, basePath));
+        listMaintenances(vehicleId?: string, date?: string, startDate?: string, endDate?: string, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.listMaintenances(vehicleId, date, startDate, endDate, paginated, page, size, sortBy, direction, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -2744,12 +3081,28 @@ export class MaintenanceControllerApi extends BaseAPI {
 
     /**
      * 
+     * @param {number} id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof MaintenanceControllerApi
      */
-    public listActiveMaintenances(options?: RawAxiosRequestConfig) {
-        return MaintenanceControllerApiFp(this.configuration).listActiveMaintenances(options).then((request) => request(this.axios, this.basePath));
+    public getMaintenanceById(id: number, options?: RawAxiosRequestConfig) {
+        return MaintenanceControllerApiFp(this.configuration).getMaintenanceById(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {boolean} [paginated] 
+     * @param {number} [page] 
+     * @param {number} [size] 
+     * @param {string} [sortBy] 
+     * @param {string} [direction] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof MaintenanceControllerApi
+     */
+    public listActiveMaintenances(paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig) {
+        return MaintenanceControllerApiFp(this.configuration).listActiveMaintenances(paginated, page, size, sortBy, direction, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -2758,12 +3111,17 @@ export class MaintenanceControllerApi extends BaseAPI {
      * @param {string} [date] 
      * @param {string} [startDate] 
      * @param {string} [endDate] 
+     * @param {boolean} [paginated] 
+     * @param {number} [page] 
+     * @param {number} [size] 
+     * @param {string} [sortBy] 
+     * @param {string} [direction] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof MaintenanceControllerApi
      */
-    public listMaintenances(vehicleId?: string, date?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig) {
-        return MaintenanceControllerApiFp(this.configuration).listMaintenances(vehicleId, date, startDate, endDate, options).then((request) => request(this.axios, this.basePath));
+    public listMaintenances(vehicleId?: string, date?: string, startDate?: string, endDate?: string, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig) {
+        return MaintenanceControllerApiFp(this.configuration).listMaintenances(vehicleId, date, startDate, endDate, paginated, page, size, sortBy, direction, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -2881,10 +3239,15 @@ export const OrderControllerApiAxiosParamCreator = function (configuration?: Con
          * @param {boolean} [pending] 
          * @param {string} [overdueAt] 
          * @param {string} [availableAt] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        list2: async (pending?: boolean, overdueAt?: string, availableAt?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        list2: async (pending?: boolean, overdueAt?: string, availableAt?: string, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/orders`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2911,6 +3274,26 @@ export const OrderControllerApiAxiosParamCreator = function (configuration?: Con
                 localVarQueryParameter['availableAt'] = (availableAt as any instanceof Date) ?
                     (availableAt as any).toISOString() :
                     availableAt;
+            }
+
+            if (paginated !== undefined) {
+                localVarQueryParameter['paginated'] = paginated;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (sortBy !== undefined) {
+                localVarQueryParameter['sortBy'] = sortBy;
+            }
+
+            if (direction !== undefined) {
+                localVarQueryParameter['direction'] = direction;
             }
 
 
@@ -3053,11 +3436,16 @@ export const OrderControllerApiFp = function(configuration?: Configuration) {
          * @param {boolean} [pending] 
          * @param {string} [overdueAt] 
          * @param {string} [availableAt] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async list2(pending?: boolean, overdueAt?: string, availableAt?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<OrderDTO>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.list2(pending, overdueAt, availableAt, options);
+        async list2(pending?: boolean, overdueAt?: string, availableAt?: string, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.list2(pending, overdueAt, availableAt, paginated, page, size, sortBy, direction, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['OrderControllerApi.list2']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -3130,11 +3518,16 @@ export const OrderControllerApiFactory = function (configuration?: Configuration
          * @param {boolean} [pending] 
          * @param {string} [overdueAt] 
          * @param {string} [availableAt] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        list2(pending?: boolean, overdueAt?: string, availableAt?: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<OrderDTO>> {
-            return localVarFp.list2(pending, overdueAt, availableAt, options).then((request) => request(axios, basePath));
+        list2(pending?: boolean, overdueAt?: string, availableAt?: string, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.list2(pending, overdueAt, availableAt, paginated, page, size, sortBy, direction, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -3204,12 +3597,17 @@ export class OrderControllerApi extends BaseAPI {
      * @param {boolean} [pending] 
      * @param {string} [overdueAt] 
      * @param {string} [availableAt] 
+     * @param {boolean} [paginated] 
+     * @param {number} [page] 
+     * @param {number} [size] 
+     * @param {string} [sortBy] 
+     * @param {string} [direction] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof OrderControllerApi
      */
-    public list2(pending?: boolean, overdueAt?: string, availableAt?: string, options?: RawAxiosRequestConfig) {
-        return OrderControllerApiFp(this.configuration).list2(pending, overdueAt, availableAt, options).then((request) => request(this.axios, this.basePath));
+    public list2(pending?: boolean, overdueAt?: string, availableAt?: string, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig) {
+        return OrderControllerApiFp(this.configuration).list2(pending, overdueAt, availableAt, paginated, page, size, sortBy, direction, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -3352,10 +3750,15 @@ export const ServeRecordControllerApiAxiosParamCreator = function (configuration
          * @param {string} [vehicleId] 
          * @param {string} [startDate] 
          * @param {string} [endDate] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        list1: async (orderId?: string, vehicleId?: string, startDate?: string, endDate?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        list1: async (orderId?: string, vehicleId?: string, startDate?: string, endDate?: string, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/serve-records`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -3386,6 +3789,26 @@ export const ServeRecordControllerApiAxiosParamCreator = function (configuration
                 localVarQueryParameter['endDate'] = (endDate as any instanceof Date) ?
                     (endDate as any).toISOString() :
                     endDate;
+            }
+
+            if (paginated !== undefined) {
+                localVarQueryParameter['paginated'] = paginated;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (sortBy !== undefined) {
+                localVarQueryParameter['sortBy'] = sortBy;
+            }
+
+            if (direction !== undefined) {
+                localVarQueryParameter['direction'] = direction;
             }
 
 
@@ -3451,11 +3874,16 @@ export const ServeRecordControllerApiFp = function(configuration?: Configuration
          * @param {string} [vehicleId] 
          * @param {string} [startDate] 
          * @param {string} [endDate] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async list1(orderId?: string, vehicleId?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ServeRecordDTO>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.list1(orderId, vehicleId, startDate, endDate, options);
+        async list1(orderId?: string, vehicleId?: string, startDate?: string, endDate?: string, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.list1(orderId, vehicleId, startDate, endDate, paginated, page, size, sortBy, direction, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ServeRecordControllerApi.list1']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -3503,11 +3931,16 @@ export const ServeRecordControllerApiFactory = function (configuration?: Configu
          * @param {string} [vehicleId] 
          * @param {string} [startDate] 
          * @param {string} [endDate] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        list1(orderId?: string, vehicleId?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<ServeRecordDTO>> {
-            return localVarFp.list1(orderId, vehicleId, startDate, endDate, options).then((request) => request(axios, basePath));
+        list1(orderId?: string, vehicleId?: string, startDate?: string, endDate?: string, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.list1(orderId, vehicleId, startDate, endDate, paginated, page, size, sortBy, direction, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -3558,12 +3991,17 @@ export class ServeRecordControllerApi extends BaseAPI {
      * @param {string} [vehicleId] 
      * @param {string} [startDate] 
      * @param {string} [endDate] 
+     * @param {boolean} [paginated] 
+     * @param {number} [page] 
+     * @param {number} [size] 
+     * @param {string} [sortBy] 
+     * @param {string} [direction] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof ServeRecordControllerApi
      */
-    public list1(orderId?: string, vehicleId?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig) {
-        return ServeRecordControllerApiFp(this.configuration).list1(orderId, vehicleId, startDate, endDate, options).then((request) => request(this.axios, this.basePath));
+    public list1(orderId?: string, vehicleId?: string, startDate?: string, endDate?: string, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig) {
+        return ServeRecordControllerApiFp(this.configuration).list1(orderId, vehicleId, startDate, endDate, paginated, page, size, sortBy, direction, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -4855,10 +5293,15 @@ export const VehicleControllerApiAxiosParamCreator = function (configuration?: C
          * @param {ListStatusEnum} [status] 
          * @param {number} [minGlp] 
          * @param {number} [minFuel] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        list: async (type?: ListTypeEnum, status?: ListStatusEnum, minGlp?: number, minFuel?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        list: async (type?: ListTypeEnum, status?: ListStatusEnum, minGlp?: number, minFuel?: number, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/vehicles`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -4885,6 +5328,26 @@ export const VehicleControllerApiAxiosParamCreator = function (configuration?: C
 
             if (minFuel !== undefined) {
                 localVarQueryParameter['minFuel'] = minFuel;
+            }
+
+            if (paginated !== undefined) {
+                localVarQueryParameter['paginated'] = paginated;
+            }
+
+            if (page !== undefined) {
+                localVarQueryParameter['page'] = page;
+            }
+
+            if (size !== undefined) {
+                localVarQueryParameter['size'] = size;
+            }
+
+            if (sortBy !== undefined) {
+                localVarQueryParameter['sortBy'] = sortBy;
+            }
+
+            if (direction !== undefined) {
+                localVarQueryParameter['direction'] = direction;
             }
 
 
@@ -5148,11 +5611,16 @@ export const VehicleControllerApiFp = function(configuration?: Configuration) {
          * @param {ListStatusEnum} [status] 
          * @param {number} [minGlp] 
          * @param {number} [minFuel] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async list(type?: ListTypeEnum, status?: ListStatusEnum, minGlp?: number, minFuel?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<VehicleDTO>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.list(type, status, minGlp, minFuel, options);
+        async list(type?: ListTypeEnum, status?: ListStatusEnum, minGlp?: number, minFuel?: number, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.list(type, status, minGlp, minFuel, paginated, page, size, sortBy, direction, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['VehicleControllerApi.list']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -5265,11 +5733,16 @@ export const VehicleControllerApiFactory = function (configuration?: Configurati
          * @param {ListStatusEnum} [status] 
          * @param {number} [minGlp] 
          * @param {number} [minFuel] 
+         * @param {boolean} [paginated] 
+         * @param {number} [page] 
+         * @param {number} [size] 
+         * @param {string} [sortBy] 
+         * @param {string} [direction] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        list(type?: ListTypeEnum, status?: ListStatusEnum, minGlp?: number, minFuel?: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<VehicleDTO>> {
-            return localVarFp.list(type, status, minGlp, minFuel, options).then((request) => request(axios, basePath));
+        list(type?: ListTypeEnum, status?: ListStatusEnum, minGlp?: number, minFuel?: number, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.list(type, status, minGlp, minFuel, paginated, page, size, sortBy, direction, options).then((request) => request(axios, basePath));
         },
         /**
          * 
@@ -5370,12 +5843,17 @@ export class VehicleControllerApi extends BaseAPI {
      * @param {ListStatusEnum} [status] 
      * @param {number} [minGlp] 
      * @param {number} [minFuel] 
+     * @param {boolean} [paginated] 
+     * @param {number} [page] 
+     * @param {number} [size] 
+     * @param {string} [sortBy] 
+     * @param {string} [direction] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof VehicleControllerApi
      */
-    public list(type?: ListTypeEnum, status?: ListStatusEnum, minGlp?: number, minFuel?: number, options?: RawAxiosRequestConfig) {
-        return VehicleControllerApiFp(this.configuration).list(type, status, minGlp, minFuel, options).then((request) => request(this.axios, this.basePath));
+    public list(type?: ListTypeEnum, status?: ListStatusEnum, minGlp?: number, minFuel?: number, paginated?: boolean, page?: number, size?: number, sortBy?: string, direction?: string, options?: RawAxiosRequestConfig) {
+        return VehicleControllerApiFp(this.configuration).list(type, status, minGlp, minFuel, paginated, page, size, sortBy, direction, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

@@ -13,6 +13,9 @@ Name | Type | Description | Notes
 **currentGlpM3** | **number** |  | [optional] [default to undefined]
 **currentFuelGal** | **number** |  | [optional] [default to undefined]
 **status** | **string** |  | [optional] [default to undefined]
+**incidents** | [**Array&lt;Incident&gt;**](Incident.md) |  | [optional] [default to undefined]
+**serveRecords** | [**Array&lt;ServeRecord&gt;**](ServeRecord.md) |  | [optional] [default to undefined]
+**maintenances** | [**Array&lt;Maintenance&gt;**](Maintenance.md) |  | [optional] [default to undefined]
 
 ## Example
 
@@ -28,6 +31,9 @@ const instance: Vehicle = {
     currentGlpM3,
     currentFuelGal,
     status,
+    incidents,
+    serveRecords,
+    maintenances,
 };
 ```
 

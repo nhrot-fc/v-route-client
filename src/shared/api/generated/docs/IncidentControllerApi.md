@@ -111,7 +111,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **list3**
-> Array<IncidentDTO> list3()
+> object list3()
 
 
 ### Example
@@ -128,11 +128,23 @@ const apiInstance = new IncidentControllerApi(configuration);
 let vehicleId: string; // (optional) (default to undefined)
 let startDate: string; // (optional) (default to undefined)
 let endDate: string; // (optional) (default to undefined)
+let resolved: boolean; // (optional) (default to undefined)
+let paginated: boolean; // (optional) (default to undefined)
+let page: number; // (optional) (default to 0)
+let size: number; // (optional) (default to 10)
+let sortBy: string; // (optional) (default to 'occurrenceTime')
+let direction: string; // (optional) (default to 'desc')
 
 const { status, data } = await apiInstance.list3(
     vehicleId,
     startDate,
-    endDate
+    endDate,
+    resolved,
+    paginated,
+    page,
+    size,
+    sortBy,
+    direction
 );
 ```
 
@@ -143,11 +155,17 @@ const { status, data } = await apiInstance.list3(
 | **vehicleId** | [**string**] |  | (optional) defaults to undefined|
 | **startDate** | [**string**] |  | (optional) defaults to undefined|
 | **endDate** | [**string**] |  | (optional) defaults to undefined|
+| **resolved** | [**boolean**] |  | (optional) defaults to undefined|
+| **paginated** | [**boolean**] |  | (optional) defaults to undefined|
+| **page** | [**number**] |  | (optional) defaults to 0|
+| **size** | [**number**] |  | (optional) defaults to 10|
+| **sortBy** | [**string**] |  | (optional) defaults to 'occurrenceTime'|
+| **direction** | [**string**] |  | (optional) defaults to 'desc'|
 
 
 ### Return type
 
-**Array<IncidentDTO>**
+**object**
 
 ### Authorization
 

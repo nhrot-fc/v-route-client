@@ -1,4 +1,4 @@
-# Maintenance
+# ServeRecord
 
 
 ## Properties
@@ -8,26 +8,24 @@ Name | Type | Description | Notes
 **id** | **number** |  | [optional] [default to undefined]
 **vehicleId** | **string** |  | [optional] [default to undefined]
 **vehicle** | [**Vehicle**](Vehicle.md) |  | [optional] [default to undefined]
-**assignedDate** | **string** |  | [optional] [default to undefined]
-**realStart** | **string** |  | [optional] [default to undefined]
-**realEnd** | **string** |  | [optional] [default to undefined]
-**durationHours** | **number** |  | [optional] [default to undefined]
-**date** | **string** |  | [optional] [default to undefined]
+**orderId** | **string** |  | [optional] [default to undefined]
+**order** | [**Order**](Order.md) |  | [optional] [default to undefined]
+**volumeM3** | **number** |  | [optional] [default to undefined]
+**serveDate** | **string** |  | [optional] [default to undefined]
 
 ## Example
 
 ```typescript
-import { Maintenance } from './api';
+import { ServeRecord } from './api';
 
-const instance: Maintenance = {
+const instance: ServeRecord = {
     id,
     vehicleId,
     vehicle,
-    assignedDate,
-    realStart,
-    realEnd,
-    durationHours,
-    date,
+    orderId,
+    order,
+    volumeM3,
+    serveDate,
 };
 ```
 

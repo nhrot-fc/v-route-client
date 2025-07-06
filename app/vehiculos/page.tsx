@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState, useMemo } from "react"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -14,6 +14,10 @@ import { VehicleUploadForm } from "@/components/vehicles/vehicle-upload-form"
 import { useVehicles } from "@/hooks/use-vehicles"
 import { StatusBadge } from "@/components/ui/status-badge"
 import { Vehicle, VehicleStatusEnum } from "@/lib/api-client"
+import { PaginationFooter } from "@/components/ui/pagination-footer"
+import { TableFilterControls } from "@/components/ui/table-filter-controls"
+import { TableFilterTabs } from "@/components/ui/table-filter-tabs"
+import { TableSearch } from "@/components/ui/table-search"
 
 import { 
   Plus, 
@@ -41,8 +45,41 @@ export default function VehiculosPage() {
   const [confirmMessage] = useState("")
   const [successOpen, setSuccessOpen] = useState(false)
   const [activeTab, setActiveTab] = useState("todos")
+  const [searchTerm, setSearchTerm] = useState("")
 
-  const { vehicles, loading, error, updateVehicleStatus, deleteVehicle } = useVehicles()
+  // Add pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  
+  // Add filter state
+  const [filterType, setFilterType] = useState<string | undefined>(undefined)
+  const [minGlp, setMinGlp] = useState<number | undefined>(undefined)
+  const [minFuel, setMinFuel] = useState<number | undefined>(undefined)
+
+  // Use pagination parameters in the hook
+  const { vehicles, loading, error, updateVehicleStatus, deleteVehicle, totalItems, totalPages, refetch } = useVehicles(
+    activeTab !== "todos" ? activeTab : undefined, 
+    {
+      page: currentPage - 1, // API uses 0-based index
+      size: pageSize
+    },
+    {
+      type: filterType,
+      minGlp,
+      minFuel
+    }
+  );
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
 
   // Count vehicles by status
   const availableCount = vehicles.filter(v => v.status === VehicleStatusEnum.Available).length
@@ -196,6 +233,45 @@ export default function VehiculosPage() {
     },
   ];
 
+  // Filtrar datos según la pestaña activa y búsqueda
+  const filteredData = useMemo(() => {
+    let result = [...vehicles];
+    
+    // Filtrar por pestaña
+    if (activeTab !== "todos") {
+      const tabFilter = filterTabs.find(tab => tab.id === activeTab);
+      if (tabFilter) {
+        result = result.filter(tabFilter.filter);
+      }
+    }
+    
+    // Filtrar por búsqueda
+    if (searchTerm) {
+      result = result.filter(vehicle => 
+        vehicle.id?.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (vehicle.type && 
+          vehicle.type.toLowerCase().includes(searchTerm.toLowerCase()))
+      );
+    }
+    
+    return result;
+  }, [vehicles, activeTab, filterTabs, searchTerm]);
+
+  // Reset filters handler
+  const handleResetFilters = () => {
+    setFilterType(undefined);
+    setMinGlp(undefined);
+    setMinFuel(undefined);
+    // Refresh data with cleared filters
+    refetch();
+  };
+
+  // Manejar cambio de pestaña
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    setCurrentPage(1); // Reset to first page when changing tab
+  };
+
   return (
     <PageLayout
       title="Gestión de Vehículos" 
@@ -271,21 +347,90 @@ export default function VehiculosPage() {
         variant="card"
         className="p-4"
       >
-        <DataTable
-          data={vehicles}
-          columns={columns}
-          actions={actions}
-          filterTabs={filterTabs}
-          searchable={{
-            field: "id" as keyof Vehicle,
-            placeholder: "Buscar por ID...",
-          }}
-          isLoading={loading}
-          error={error}
-          activeFilter={activeTab}
-          onFilterChange={setActiveTab}
-          noDataMessage="No se encontraron vehículos con los filtros seleccionados."
-        />
+        {/* Add filter controls */}
+        <div className="mb-4">
+          <TableFilterControls
+            filters={[
+              {
+                id: "type",
+                label: "Tipo",
+                type: "select",
+                options: [
+                  { value: "TA", label: "Tipo TA" },
+                  { value: "TB", label: "Tipo TB" },
+                  { value: "TC", label: "Tipo TC" },
+                  { value: "TD", label: "Tipo TD" },
+                ],
+                value: filterType,
+                onChange: (value: string | number | undefined) => {
+                  setFilterType(value as string);
+                  setCurrentPage(1); // Reset to first page when changing filter
+                  refetch();
+                },
+              },
+              {
+                id: "minGlp",
+                label: "GLP (m³)",
+                type: "number",
+                value: minGlp,
+                onChange: (value: string | number | undefined) => {
+                  setMinGlp(value as number);
+                  setCurrentPage(1); // Reset to first page when changing filter
+                  refetch();
+                },
+              },
+              {
+                id: "minFuel",
+                label: "Combustible (gal)",
+                type: "number",
+                value: minFuel,
+                onChange: (value: string | number | undefined) => {
+                  setMinFuel(value as number);
+                  setCurrentPage(1); // Reset to first page when changing filter
+                  refetch();
+                },
+              },
+            ]}
+            onReset={handleResetFilters}
+          />
+        </div>
+
+        {/* Search and Filter Tabs */}
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+            <TableSearch 
+              value={searchTerm} 
+              onChange={setSearchTerm} 
+              placeholder="Buscar por ID o tipo..." 
+            />
+          </div>
+          
+          <TableFilterTabs
+            filterTabs={filterTabs}
+            data={vehicles}
+            activeFilter={activeTab}
+            onFilterChange={handleTabChange}
+          />
+
+          <DataTable
+            data={filteredData}
+            columns={columns}
+            actions={actions}
+            isLoading={loading}
+            error={error}
+            noDataMessage="No se encontraron vehículos con los filtros seleccionados."
+            footerContent={
+              <PaginationFooter
+                currentPage={currentPage}
+                pageSize={pageSize}
+                totalItems={totalItems}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+                onPageSizeChange={handlePageSizeChange}
+              />
+            }
+          />
+        </div>
       </SectionContainer>
 
       {/* Modal de registro de vehículo */}

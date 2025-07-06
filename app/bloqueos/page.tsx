@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { BlockageUploadForm } from "@/components/blockages/blockage-upload-form";
 import { BlockageForm } from "@/components/blockages/blockage-form";
@@ -13,13 +13,34 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import { useBlockages } from "@/hooks/use-blockages";
 import { AlertTriangle, FileUp, Plus, List, Map, MapPin, Calendar, Clock, X } from "lucide-react";
 import { Blockage } from "@/lib/api-client";
+import { PaginationFooter } from "@/components/ui/pagination-footer";
+import { TableFilterTabs } from "@/components/ui/table-filter-tabs";
 
 export default function BlockagesPage() {
   const [activeTab, setActiveTab] = useState("list");
   const [newOpen, setNewOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   
-  const { blockages, loading, error, deleteBlockage } = useBlockages();
+  // Add pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  
+  // Use pagination parameters in the hook
+  const { blockages, loading, error, deleteBlockage, totalItems, totalPages } = useBlockages({
+    page: currentPage - 1, // API uses 0-based index
+    size: pageSize
+  });
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // Handle page size change
+  const handlePageSizeChange = (size: number) => {
+    setPageSize(size);
+    setCurrentPage(1); // Reset to first page when changing page size
+  };
   
   // Count blockages by status
   const activeBlockages = blockages.filter(blockage => {
@@ -208,6 +229,15 @@ export default function BlockagesPage() {
     },
   ];
 
+  // Filtrar datos según la pestaña activa
+  const filteredData = React.useMemo(() => {
+    if (activeTab === "list" || !activeTab) {
+      return blockages;
+    }
+    const tabFilter = filterTabs.find(tab => tab.id === activeTab);
+    return tabFilter ? blockages.filter(tabFilter.filter) : blockages;
+  }, [blockages, activeTab, filterTabs]);
+
   return (
     <PageLayout
       title="Gestión de Bloqueos" 
@@ -283,20 +313,30 @@ export default function BlockagesPage() {
         variant="card"
         className="p-4"
       >
-        <DataTable
-          data={blockages}
-          columns={columns}
-          actions={actions}
+        <TableFilterTabs
           filterTabs={filterTabs}
-          searchable={{
-            field: "linePoints" as keyof Blockage,
-            placeholder: "Buscar por coordenadas...",
-          }}
-          isLoading={loading}
-          error={error}
+          data={blockages}
           activeFilter={activeTab}
           onFilterChange={setActiveTab}
+        />
+
+        <DataTable
+          data={filteredData}
+          columns={columns}
+          actions={actions}
+          isLoading={loading}
+          error={error}
           noDataMessage="No se encontraron bloqueos con los filtros seleccionados."
+          footerContent={
+            <PaginationFooter
+              currentPage={currentPage}
+              pageSize={pageSize}
+              totalItems={totalItems}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+              onPageSizeChange={handlePageSizeChange}
+            />
+          }
         />
       </SectionContainer>
 

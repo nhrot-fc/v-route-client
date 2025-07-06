@@ -162,7 +162,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **list4**
-> Array<Depot> list4()
+> object list4()
 
 
 ### Example
@@ -179,11 +179,21 @@ const apiInstance = new DepotControllerApi(configuration);
 let canRefuel: boolean; // (optional) (default to undefined)
 let minGlpCapacity: number; // (optional) (default to undefined)
 let minCurrentGlp: number; // (optional) (default to undefined)
+let paginated: boolean; // (optional) (default to undefined)
+let page: number; // (optional) (default to 0)
+let size: number; // (optional) (default to 10)
+let sortBy: string; // (optional) (default to 'id')
+let direction: string; // (optional) (default to 'asc')
 
 const { status, data } = await apiInstance.list4(
     canRefuel,
     minGlpCapacity,
-    minCurrentGlp
+    minCurrentGlp,
+    paginated,
+    page,
+    size,
+    sortBy,
+    direction
 );
 ```
 
@@ -194,11 +204,16 @@ const { status, data } = await apiInstance.list4(
 | **canRefuel** | [**boolean**] |  | (optional) defaults to undefined|
 | **minGlpCapacity** | [**number**] |  | (optional) defaults to undefined|
 | **minCurrentGlp** | [**number**] |  | (optional) defaults to undefined|
+| **paginated** | [**boolean**] |  | (optional) defaults to undefined|
+| **page** | [**number**] |  | (optional) defaults to 0|
+| **size** | [**number**] |  | (optional) defaults to 10|
+| **sortBy** | [**string**] |  | (optional) defaults to 'id'|
+| **direction** | [**string**] |  | (optional) defaults to 'asc'|
 
 
 ### Return type
 
-**Array<Depot>**
+**object**
 
 ### Authorization
 

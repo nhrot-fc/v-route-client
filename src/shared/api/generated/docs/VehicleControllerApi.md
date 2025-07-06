@@ -166,7 +166,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **list**
-> Array<VehicleDTO> list()
+> object list()
 
 
 ### Example
@@ -184,12 +184,22 @@ let type: 'TA' | 'TB' | 'TC' | 'TD'; // (optional) (default to undefined)
 let status: 'AVAILABLE' | 'DRIVING' | 'MAINTENANCE' | 'REFUELING' | 'RELOADING' | 'SERVING' | 'INCIDENT' | 'IDLE'; // (optional) (default to undefined)
 let minGlp: number; // (optional) (default to undefined)
 let minFuel: number; // (optional) (default to undefined)
+let paginated: boolean; // (optional) (default to undefined)
+let page: number; // (optional) (default to 0)
+let size: number; // (optional) (default to 10)
+let sortBy: string; // (optional) (default to 'id')
+let direction: string; // (optional) (default to 'asc')
 
 const { status, data } = await apiInstance.list(
     type,
     status,
     minGlp,
-    minFuel
+    minFuel,
+    paginated,
+    page,
+    size,
+    sortBy,
+    direction
 );
 ```
 
@@ -201,11 +211,16 @@ const { status, data } = await apiInstance.list(
 | **status** | [**&#39;AVAILABLE&#39; | &#39;DRIVING&#39; | &#39;MAINTENANCE&#39; | &#39;REFUELING&#39; | &#39;RELOADING&#39; | &#39;SERVING&#39; | &#39;INCIDENT&#39; | &#39;IDLE&#39;**]**Array<&#39;AVAILABLE&#39; &#124; &#39;DRIVING&#39; &#124; &#39;MAINTENANCE&#39; &#124; &#39;REFUELING&#39; &#124; &#39;RELOADING&#39; &#124; &#39;SERVING&#39; &#124; &#39;INCIDENT&#39; &#124; &#39;IDLE&#39;>** |  | (optional) defaults to undefined|
 | **minGlp** | [**number**] |  | (optional) defaults to undefined|
 | **minFuel** | [**number**] |  | (optional) defaults to undefined|
+| **paginated** | [**boolean**] |  | (optional) defaults to undefined|
+| **page** | [**number**] |  | (optional) defaults to 0|
+| **size** | [**number**] |  | (optional) defaults to 10|
+| **sortBy** | [**string**] |  | (optional) defaults to 'id'|
+| **direction** | [**string**] |  | (optional) defaults to 'asc'|
 
 
 ### Return type
 
-**Array<VehicleDTO>**
+**object**
 
 ### Authorization
 
