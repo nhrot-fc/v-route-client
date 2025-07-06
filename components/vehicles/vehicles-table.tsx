@@ -24,76 +24,94 @@ import {
   DialogDescription,
   DialogClose,
 } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { Card, CardContent } from "@/components/ui/card"
+import { Search } from "lucide-react"
+import { VehicleStatusEnum, VehicleTypeEnum } from "@/lib/api-client"
 
 interface VehiclesTableProps {
-  filter?: string
-  search?: string
+  filter?: string;
+  search?: string;
 }
 
 export function VehiclesTable({ filter, search }: VehiclesTableProps) {
-  const [deleteDialogVehicle, setDeleteDialogVehicle] = useState<Vehicle | null>(null)
   const { vehicles, loading, error, updateVehicleStatus, deleteVehicle } = useVehicles(filter)
   const q = search?.trim().toLowerCase() ?? ""
+  const [searchTerm, setSearchTerm] = useState("")
+  const [deleteDialogVehicle, setDeleteDialogVehicle] = useState<Vehicle | null>(null)
 
   const filtered = useMemo(() => {
-    if (!q) return vehicles
-    return vehicles.filter(v =>
-      v.id.toLowerCase().includes(q)
-    )
-  }, [vehicles, q])
+    return vehicles.filter(v => 
+      !q || (v.id && v.id.toLowerCase().includes(q))
+    ).filter(v => 
+      !searchTerm || (v.id && v.id.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  }, [vehicles, q, searchTerm]);
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "AVAILABLE":
-        return <Badge variant="default">Disponible</Badge>
-      case "IN_TRANSIT":
-        return <Badge variant="secondary">En Ruta</Badge>
-      case "MAINTENANCE":
-        return <Badge variant="outline">Mantenimiento</Badge>
-      case "BROKEN_DOWN":
-        return <Badge variant="destructive">Averiado</Badge>
-      default:
-        return <Badge variant="outline">{status}</Badge>
+  const handleStatusChange = async (vehicleId: string, newStatus: string) => {
+    await updateVehicleStatus(vehicleId, newStatus);
+  };
+
+  const handleDelete = async (vehicleId: string) => {
+    if (vehicleId) {
+      await deleteVehicle(vehicleId);
+      setDeleteDialogVehicle(null);
     }
-  }
+  };
 
   const getVehicleType = (type: string) => {
     switch (type) {
-      case "TA":
-        return "Cisterna Pequeña"
-      case "TB":
-        return "Cisterna Mediana"
-      case "TC":
-        return "Cisterna Grande"
-      case "TD":
-        return "Cisterna Extra Grande"
+      case VehicleTypeEnum.Ta:
+        return "Tipo TA"
+      case VehicleTypeEnum.Tb:
+        return "Tipo TB"
+      case VehicleTypeEnum.Tc:
+        return "Tipo TC"
+      case VehicleTypeEnum.Td:
+        return "Tipo TD"
       default:
-        return type
+        return "Desconocido"
+    }
+  }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case VehicleStatusEnum.Available:
+        return <Badge className="bg-green-500">Disponible</Badge>
+      case VehicleStatusEnum.Driving:
+        return <Badge className="bg-blue-500">En Tránsito</Badge>
+      case VehicleStatusEnum.Maintenance:
+        return <Badge className="bg-yellow-500">Mantenimiento</Badge>
+      case VehicleStatusEnum.Incident:
+        return <Badge className="bg-red-500">Averiado</Badge>
+      case VehicleStatusEnum.Idle:
+        return <Badge className="bg-gray-500">Inactivo</Badge>
+      case VehicleStatusEnum.Refueling:
+        return <Badge className="bg-purple-500">Reabasteciendo</Badge>
+      case VehicleStatusEnum.Reloading:
+        return <Badge className="bg-indigo-500">Recargando</Badge>
+      case VehicleStatusEnum.Serving:
+        return <Badge className="bg-pink-500">En Servicio</Badge>
+      default:
+        return <Badge className="bg-gray-500">Desconocido</Badge>
     }
   }
 
   const formatPosition = (vehicle: Vehicle) => {
-    if (vehicle.currentPosition) {
-      return `(${vehicle.currentPosition.x}, ${vehicle.currentPosition.y})`
-    }
-    return "No disponible"
-  }
-
-  const handleStatusChange = async (vehicleId: string, newStatus: string) => {
-    try {
-      await updateVehicleStatus(vehicleId, newStatus)
-    } catch (error) {
-      console.error('Error updating vehicle status:', error)
-    }
-  }
-
-  const handleDelete = async (vehicleId: string) => {
-    try {
-      await deleteVehicle(vehicleId)
-      setDeleteDialogVehicle(null)
-    } catch (error) {
-      console.error('Error deleting vehicle:', error)
-    }
+    if (!vehicle.currentPosition) return "N/A"
+    const x = vehicle.currentPosition.x ?? 0
+    const y = vehicle.currentPosition.y ?? 0
+    return `(${x.toFixed(2)}, ${y.toFixed(2)})`
   }
 
   if (loading) {
@@ -123,93 +141,108 @@ export function VehiclesTable({ filter, search }: VehiclesTableProps) {
   }
 
   return (
-    <>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>ID</TableHead>
-            <TableHead>Tipo</TableHead>
-            <TableHead>Capacidad GLP</TableHead>
-            <TableHead>GLP Actual</TableHead>
-            <TableHead>Combustible</TableHead>
-            <TableHead>Estado</TableHead>
-            <TableHead>Ubicación</TableHead>
-            <TableHead className="text-right">Acciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filtered.map((vehicle) => (
-            <TableRow key={vehicle.id}>
-              <TableCell className="font-medium">{vehicle.id}</TableCell>
-              <TableCell>{getVehicleType(vehicle.type || '')}</TableCell>
-              <TableCell>{vehicle.glpCapacity?.toFixed(2) || '0'} L</TableCell>
-              <TableCell>{vehicle.currentGLP?.toFixed(2) || '0'} L</TableCell>
-              <TableCell>{vehicle.currentFuel?.toFixed(2) || '0'} / {vehicle.fuelCapacity?.toFixed(2) || '0'} L</TableCell>
-              <TableCell>
-                {getStatusBadge(vehicle.status || '')}
-              </TableCell>
-              <TableCell>{formatPosition(vehicle)}</TableCell>
-              <TableCell className="text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
-                      <span className="sr-only">Abrir menú</span>
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => handleStatusChange(vehicle.id || '', 'AVAILABLE')}>
-                      <Tool className="mr-2 h-4 w-4" />
-                      <span>Marcar como disponible</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleStatusChange(vehicle.id || '', 'MAINTENANCE')}>
-                      <Tool className="mr-2 h-4 w-4" />
-                      <span>Enviar a mantenimiento</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleStatusChange(vehicle.id || '', 'BROKEN_DOWN')}>
-                      <AlertTriangle className="mr-2 h-4 w-4" />
-                      <span>Reportar avería</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      className="text-destructive"
-                      onClick={() => setDeleteDialogVehicle(vehicle)}
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      <span>Eliminar</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-
-      {/* Dialogo de confirmación de eliminación */}
-      <Dialog open={!!deleteDialogVehicle} onOpenChange={() => setDeleteDialogVehicle(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Eliminar vehículo</DialogTitle>
-            <DialogDescription>
-              ¿Está seguro que desea eliminar el vehículo <b>{deleteDialogVehicle?.id}</b>? Esta acción no se puede deshacer.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogVehicle(null)}>
-              Cancelar
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={() => deleteDialogVehicle && handleDelete(deleteDialogVehicle.id)}
+    <div className="space-y-4">
+      <div className="flex items-center space-x-2">
+        <div className="relative flex-grow">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input 
+            placeholder="Buscar por ID..." 
+            className="pl-8"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
+      
+      {filtered.length > 0 ? (
+        <div className="border rounded-md">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Tipo</TableHead>
+                <TableHead>Capacidad GLP</TableHead>
+                <TableHead>GLP Actual</TableHead>
+                <TableHead>Combustible</TableHead>
+                <TableHead>Posición</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead className="text-right">Acciones</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filtered.map((vehicle) => (
+                <TableRow key={vehicle.id}>
+                  <TableCell>{vehicle.id}</TableCell>
+                  <TableCell>{getVehicleType(vehicle.type || '')}</TableCell>
+                  <TableCell>{vehicle.glpCapacityM3?.toFixed(2) || '0'} m³</TableCell>
+                  <TableCell>{vehicle.currentGlpM3?.toFixed(2) || '0'} m³</TableCell>
+                  <TableCell>{vehicle.currentFuelGal?.toFixed(2) || '0'} / {vehicle.fuelCapacityGal?.toFixed(2) || '0'} gal</TableCell>
+                  <TableCell>{formatPosition(vehicle)}</TableCell>
+                  <TableCell>{getStatusBadge(vehicle.status || '')}</TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="h-8 w-8 p-0">
+                          <span className="sr-only">Abrir menú</span>
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleStatusChange(vehicle.id || '', VehicleStatusEnum.Available)}>
+                          <Tool className="mr-2 h-4 w-4" />
+                          <span>Marcar como disponible</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleStatusChange(vehicle.id || '', VehicleStatusEnum.Maintenance)}>
+                          <Tool className="mr-2 h-4 w-4" />
+                          <span>Enviar a mantenimiento</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleStatusChange(vehicle.id || '', VehicleStatusEnum.Incident)}>
+                          <AlertTriangle className="mr-2 h-4 w-4" />
+                          <span>Reportar avería</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => setDeleteDialogVehicle(vehicle)}
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          <span>Eliminar</span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      ) : (
+        <Card>
+          <CardContent className="pt-6 text-center text-muted-foreground">
+            No se encontraron vehículos.
+          </CardContent>
+        </Card>
+      )}
+      
+      <AlertDialog open={!!deleteDialogVehicle} onOpenChange={(isOpen) => !isOpen && setDeleteDialogVehicle(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción eliminará permanentemente el vehículo {deleteDialogVehicle?.id} y no se puede deshacer.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => deleteDialogVehicle && handleDelete(deleteDialogVehicle.id || '')}
             >
               Eliminar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
   )
 }

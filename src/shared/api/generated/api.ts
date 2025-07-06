@@ -37,18 +37,6 @@ export interface Blockage {
     'id'?: number;
     /**
      * 
-     * @type {Position}
-     * @memberof Blockage
-     */
-    'startNode'?: Position;
-    /**
-     * 
-     * @type {Position}
-     * @memberof Blockage
-     */
-    'endNode'?: Position;
-    /**
-     * 
      * @type {string}
      * @memberof Blockage
      */
@@ -59,6 +47,43 @@ export interface Blockage {
      * @memberof Blockage
      */
     'endTime'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Blockage
+     */
+    'linePoints'?: string;
+    /**
+     * 
+     * @type {Array<Position>}
+     * @memberof Blockage
+     */
+    'lines'?: Array<Position>;
+}
+/**
+ * 
+ * @export
+ * @interface DeliveryRecordDTO
+ */
+export interface DeliveryRecordDTO {
+    /**
+     * 
+     * @type {string}
+     * @memberof DeliveryRecordDTO
+     */
+    'vehicleId'?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof DeliveryRecordDTO
+     */
+    'volumeM3'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof DeliveryRecordDTO
+     */
+    'serveDate'?: string;
 }
 /**
  * 
@@ -68,309 +93,245 @@ export interface Blockage {
 export interface Depot {
     /**
      * 
+     * @type {string}
+     * @memberof Depot
+     */
+    'id'?: string;
+    /**
+     * 
      * @type {Position}
      * @memberof Depot
      */
     'position'?: Position;
     /**
      * 
-     * @type {string}
+     * @type {number}
      * @memberof Depot
      */
-    'id'?: string;
+    'glpCapacityM3'?: number;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof Depot
+     */
+    'canRefuel'?: boolean;
     /**
      * 
      * @type {number}
      * @memberof Depot
      */
-    'glpCapacity'?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Depot
-     */
-    'fuelCapacity'?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Depot
-     */
-    'currentGLP'?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Depot
-     */
-    'currentFuel'?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Depot
-     */
-    'glpMinThreshold'?: number;
+    'currentGlpM3'?: number;
 }
 /**
  * 
  * @export
- * @interface Incident
+ * @interface IncidentCreateDTO
  */
-export interface Incident {
+export interface IncidentCreateDTO {
     /**
      * 
      * @type {string}
-     * @memberof Incident
-     */
-    'id'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof Incident
+     * @memberof IncidentCreateDTO
      */
     'vehicleId'?: string;
     /**
      * 
      * @type {string}
-     * @memberof Incident
+     * @memberof IncidentCreateDTO
      */
-    'type'?: IncidentTypeEnum;
+    'type'?: IncidentCreateDTOTypeEnum;
     /**
      * 
      * @type {string}
-     * @memberof Incident
+     * @memberof IncidentCreateDTO
+     */
+    'shift'?: IncidentCreateDTOShiftEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof IncidentCreateDTO
      */
     'occurrenceTime'?: string;
     /**
      * 
-     * @type {string}
-     * @memberof Incident
-     */
-    'resolutionTime'?: string;
-    /**
-     * 
      * @type {Position}
-     * @memberof Incident
+     * @memberof IncidentCreateDTO
      */
     'location'?: Position;
     /**
      * 
-     * @type {IncidentOnSiteImmobilizationDuration}
-     * @memberof Incident
+     * @type {number}
+     * @memberof IncidentCreateDTO
      */
-    'onSiteImmobilizationDuration'?: IncidentOnSiteImmobilizationDuration;
-    /**
-     * 
-     * @type {IncidentOnSiteImmobilizationDuration}
-     * @memberof Incident
-     */
-    'workshopRepairDuration'?: IncidentOnSiteImmobilizationDuration;
-    /**
-     * 
-     * @type {string}
-     * @memberof Incident
-     */
-    'description'?: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof Incident
-     */
-    'resolved'?: boolean;
-    /**
-     * 
-     * @type {Position}
-     * @memberof Incident
-     */
-    'position'?: Position;
-    /**
-     * 
-     * @type {string}
-     * @memberof Incident
-     */
-    'timestamp'?: string;
+    'transferableGlp'?: number;
 }
 
-export const IncidentTypeEnum = {
-    Type1: 'TYPE_1',
-    Type2: 'TYPE_2',
-    Type3: 'TYPE_3'
+export const IncidentCreateDTOTypeEnum = {
+    Ti1: 'TI1',
+    Ti2: 'TI2',
+    Ti3: 'TI3'
 } as const;
 
-export type IncidentTypeEnum = typeof IncidentTypeEnum[keyof typeof IncidentTypeEnum];
+export type IncidentCreateDTOTypeEnum = typeof IncidentCreateDTOTypeEnum[keyof typeof IncidentCreateDTOTypeEnum];
+export const IncidentCreateDTOShiftEnum = {
+    T1: 'T1',
+    T2: 'T2',
+    T3: 'T3'
+} as const;
+
+export type IncidentCreateDTOShiftEnum = typeof IncidentCreateDTOShiftEnum[keyof typeof IncidentCreateDTOShiftEnum];
 
 /**
  * 
  * @export
- * @interface IncidentOnSiteImmobilizationDuration
+ * @interface IncidentDTO
  */
-export interface IncidentOnSiteImmobilizationDuration {
+export interface IncidentDTO {
     /**
      * 
      * @type {number}
-     * @memberof IncidentOnSiteImmobilizationDuration
-     */
-    'seconds'?: number;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof IncidentOnSiteImmobilizationDuration
-     */
-    'zero'?: boolean;
-    /**
-     * 
-     * @type {number}
-     * @memberof IncidentOnSiteImmobilizationDuration
-     */
-    'nano'?: number;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof IncidentOnSiteImmobilizationDuration
-     */
-    'negative'?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof IncidentOnSiteImmobilizationDuration
-     */
-    'positive'?: boolean;
-    /**
-     * 
-     * @type {Array<IncidentOnSiteImmobilizationDurationUnitsInner>}
-     * @memberof IncidentOnSiteImmobilizationDuration
-     */
-    'units'?: Array<IncidentOnSiteImmobilizationDurationUnitsInner>;
-}
-/**
- * 
- * @export
- * @interface IncidentOnSiteImmobilizationDurationUnitsInner
- */
-export interface IncidentOnSiteImmobilizationDurationUnitsInner {
-    /**
-     * 
-     * @type {boolean}
-     * @memberof IncidentOnSiteImmobilizationDurationUnitsInner
-     */
-    'durationEstimated'?: boolean;
-    /**
-     * 
-     * @type {IncidentOnSiteImmobilizationDurationUnitsInnerDuration}
-     * @memberof IncidentOnSiteImmobilizationDurationUnitsInner
-     */
-    'duration'?: IncidentOnSiteImmobilizationDurationUnitsInnerDuration;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof IncidentOnSiteImmobilizationDurationUnitsInner
-     */
-    'timeBased'?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof IncidentOnSiteImmobilizationDurationUnitsInner
-     */
-    'dateBased'?: boolean;
-}
-/**
- * 
- * @export
- * @interface IncidentOnSiteImmobilizationDurationUnitsInnerDuration
- */
-export interface IncidentOnSiteImmobilizationDurationUnitsInnerDuration {
-    /**
-     * 
-     * @type {number}
-     * @memberof IncidentOnSiteImmobilizationDurationUnitsInnerDuration
-     */
-    'seconds'?: number;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof IncidentOnSiteImmobilizationDurationUnitsInnerDuration
-     */
-    'zero'?: boolean;
-    /**
-     * 
-     * @type {number}
-     * @memberof IncidentOnSiteImmobilizationDurationUnitsInnerDuration
-     */
-    'nano'?: number;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof IncidentOnSiteImmobilizationDurationUnitsInnerDuration
-     */
-    'negative'?: boolean;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof IncidentOnSiteImmobilizationDurationUnitsInnerDuration
-     */
-    'positive'?: boolean;
-}
-/**
- * 
- * @export
- * @interface Maintenance
- */
-export interface Maintenance {
-    /**
-     * 
-     * @type {number}
-     * @memberof Maintenance
+     * @memberof IncidentDTO
      */
     'id'?: number;
     /**
      * 
      * @type {string}
-     * @memberof Maintenance
+     * @memberof IncidentDTO
      */
     'vehicleId'?: string;
     /**
      * 
      * @type {string}
-     * @memberof Maintenance
+     * @memberof IncidentDTO
      */
-    'startDate'?: string;
+    'type'?: IncidentDTOTypeEnum;
     /**
      * 
      * @type {string}
-     * @memberof Maintenance
+     * @memberof IncidentDTO
      */
-    'endDate'?: string;
+    'shift'?: IncidentDTOShiftEnum;
     /**
      * 
      * @type {string}
-     * @memberof Maintenance
+     * @memberof IncidentDTO
      */
-    'type'?: MaintenanceTypeEnum;
+    'occurrenceTime'?: string;
     /**
      * 
-     * @type {string}
-     * @memberof Maintenance
+     * @type {Position}
+     * @memberof IncidentDTO
      */
-    'description'?: string;
+    'location'?: Position;
     /**
      * 
      * @type {boolean}
-     * @memberof Maintenance
+     * @memberof IncidentDTO
      */
-    'completed'?: boolean;
+    'resolved'?: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof IncidentDTO
+     */
+    'transferableGlp'?: number;
     /**
      * 
      * @type {string}
-     * @memberof Maintenance
+     * @memberof IncidentDTO
      */
-    'scheduledDate'?: string;
+    'availabilityTime'?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof IncidentDTO
+     */
+    'requiresReturnToDepot'?: boolean;
 }
 
-export const MaintenanceTypeEnum = {
-    Preventive: 'PREVENTIVE',
-    Corrective: 'CORRECTIVE'
+export const IncidentDTOTypeEnum = {
+    Ti1: 'TI1',
+    Ti2: 'TI2',
+    Ti3: 'TI3'
 } as const;
 
-export type MaintenanceTypeEnum = typeof MaintenanceTypeEnum[keyof typeof MaintenanceTypeEnum];
+export type IncidentDTOTypeEnum = typeof IncidentDTOTypeEnum[keyof typeof IncidentDTOTypeEnum];
+export const IncidentDTOShiftEnum = {
+    T1: 'T1',
+    T2: 'T2',
+    T3: 'T3'
+} as const;
 
+export type IncidentDTOShiftEnum = typeof IncidentDTOShiftEnum[keyof typeof IncidentDTOShiftEnum];
+
+/**
+ * 
+ * @export
+ * @interface MaintenanceCreateDTO
+ */
+export interface MaintenanceCreateDTO {
+    /**
+     * 
+     * @type {string}
+     * @memberof MaintenanceCreateDTO
+     */
+    'vehicleId'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaintenanceCreateDTO
+     */
+    'assignedDate'?: string;
+}
+/**
+ * 
+ * @export
+ * @interface MaintenanceDTO
+ */
+export interface MaintenanceDTO {
+    /**
+     * 
+     * @type {number}
+     * @memberof MaintenanceDTO
+     */
+    'id'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaintenanceDTO
+     */
+    'vehicleId'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaintenanceDTO
+     */
+    'assignedDate'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaintenanceDTO
+     */
+    'realStart'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof MaintenanceDTO
+     */
+    'realEnd'?: string;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof MaintenanceDTO
+     */
+    'active'?: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof MaintenanceDTO
+     */
+    'durationHours'?: number;
+}
 /**
  * 
  * @export
@@ -379,12 +340,6 @@ export type MaintenanceTypeEnum = typeof MaintenanceTypeEnum[keyof typeof Mainte
 export interface Order {
     /**
      * 
-     * @type {Position}
-     * @memberof Order
-     */
-    'position'?: Position;
-    /**
-     * 
      * @type {string}
      * @memberof Order
      */
@@ -394,37 +349,86 @@ export interface Order {
      * @type {string}
      * @memberof Order
      */
-    'arriveDate'?: string;
+    'arriveTime'?: string;
     /**
      * 
      * @type {string}
      * @memberof Order
      */
-    'dueDate'?: string;
+    'dueTime'?: string;
     /**
      * 
      * @type {number}
      * @memberof Order
      */
-    'remainingVolume'?: number;
+    'glpRequestM3'?: number;
+    /**
+     * 
+     * @type {Position}
+     * @memberof Order
+     */
+    'position'?: Position;
     /**
      * 
      * @type {number}
      * @memberof Order
      */
-    'glpRequest'?: number;
+    'remainingGlpM3'?: number;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof Order
+     */
+    'delivered'?: boolean;
+}
+/**
+ * 
+ * @export
+ * @interface OrderDTO
+ */
+export interface OrderDTO {
     /**
      * 
      * @type {string}
-     * @memberof Order
+     * @memberof OrderDTO
      */
-    'deliveryDate'?: string;
+    'id'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof OrderDTO
+     */
+    'arriveTime'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof OrderDTO
+     */
+    'dueTime'?: string;
     /**
      * 
      * @type {number}
-     * @memberof Order
+     * @memberof OrderDTO
      */
-    'remainingGLP'?: number;
+    'glpRequestM3'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof OrderDTO
+     */
+    'remainingGlpM3'?: number;
+    /**
+     * 
+     * @type {Position}
+     * @memberof OrderDTO
+     */
+    'position'?: Position;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof OrderDTO
+     */
+    'delivered'?: boolean;
 }
 /**
  * 
@@ -448,6 +452,43 @@ export interface Position {
 /**
  * 
  * @export
+ * @interface ServeRecordDTO
+ */
+export interface ServeRecordDTO {
+    /**
+     * 
+     * @type {number}
+     * @memberof ServeRecordDTO
+     */
+    'id'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ServeRecordDTO
+     */
+    'vehicleId'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ServeRecordDTO
+     */
+    'orderId'?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ServeRecordDTO
+     */
+    'volumeM3'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ServeRecordDTO
+     */
+    'serveDate'?: string;
+}
+/**
+ * 
+ * @export
  * @interface Vehicle
  */
 export interface Vehicle {
@@ -465,52 +506,40 @@ export interface Vehicle {
     'type'?: VehicleTypeEnum;
     /**
      * 
+     * @type {number}
+     * @memberof Vehicle
+     */
+    'glpCapacityM3'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof Vehicle
+     */
+    'fuelCapacityGal'?: number;
+    /**
+     * 
      * @type {Position}
      * @memberof Vehicle
      */
     'currentPosition'?: Position;
     /**
      * 
+     * @type {number}
+     * @memberof Vehicle
+     */
+    'currentGlpM3'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof Vehicle
+     */
+    'currentFuelGal'?: number;
+    /**
+     * 
      * @type {string}
      * @memberof Vehicle
      */
     'status'?: VehicleStatusEnum;
-    /**
-     * 
-     * @type {number}
-     * @memberof Vehicle
-     */
-    'currentCombinedWeightTon'?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Vehicle
-     */
-    'currentGlpWeightTon'?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Vehicle
-     */
-    'glpCapacity'?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Vehicle
-     */
-    'fuelCapacity'?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Vehicle
-     */
-    'currentGLP'?: number;
-    /**
-     * 
-     * @type {number}
-     * @memberof Vehicle
-     */
-    'currentFuel'?: number;
 }
 
 export const VehicleTypeEnum = {
@@ -523,30 +552,110 @@ export const VehicleTypeEnum = {
 export type VehicleTypeEnum = typeof VehicleTypeEnum[keyof typeof VehicleTypeEnum];
 export const VehicleStatusEnum = {
     Available: 'AVAILABLE',
-    InTransit: 'IN_TRANSIT',
+    Driving: 'DRIVING',
     Maintenance: 'MAINTENANCE',
-    BrokenDown: 'BROKEN_DOWN'
+    Refueling: 'REFUELING',
+    Reloading: 'RELOADING',
+    Serving: 'SERVING',
+    Incident: 'INCIDENT',
+    Idle: 'IDLE'
 } as const;
 
 export type VehicleStatusEnum = typeof VehicleStatusEnum[keyof typeof VehicleStatusEnum];
 
+/**
+ * 
+ * @export
+ * @interface VehicleDTO
+ */
+export interface VehicleDTO {
+    /**
+     * 
+     * @type {string}
+     * @memberof VehicleDTO
+     */
+    'id'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof VehicleDTO
+     */
+    'type'?: VehicleDTOTypeEnum;
+    /**
+     * 
+     * @type {number}
+     * @memberof VehicleDTO
+     */
+    'glpCapacityM3'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof VehicleDTO
+     */
+    'fuelCapacityGal'?: number;
+    /**
+     * 
+     * @type {Position}
+     * @memberof VehicleDTO
+     */
+    'currentPosition'?: Position;
+    /**
+     * 
+     * @type {number}
+     * @memberof VehicleDTO
+     */
+    'currentGlpM3'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof VehicleDTO
+     */
+    'currentFuelGal'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof VehicleDTO
+     */
+    'status'?: VehicleDTOStatusEnum;
+}
+
+export const VehicleDTOTypeEnum = {
+    Ta: 'TA',
+    Tb: 'TB',
+    Tc: 'TC',
+    Td: 'TD'
+} as const;
+
+export type VehicleDTOTypeEnum = typeof VehicleDTOTypeEnum[keyof typeof VehicleDTOTypeEnum];
+export const VehicleDTOStatusEnum = {
+    Available: 'AVAILABLE',
+    Driving: 'DRIVING',
+    Maintenance: 'MAINTENANCE',
+    Refueling: 'REFUELING',
+    Reloading: 'RELOADING',
+    Serving: 'SERVING',
+    Incident: 'INCIDENT',
+    Idle: 'IDLE'
+} as const;
+
+export type VehicleDTOStatusEnum = typeof VehicleDTOStatusEnum[keyof typeof VehicleDTOStatusEnum];
+
 
 /**
- * BlockagesApi - axios parameter creator
+ * BlockageControllerApi - axios parameter creator
  * @export
  */
-export const BlockagesApiAxiosParamCreator = function (configuration?: Configuration) {
+export const BlockageControllerApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Registra un nuevo bloqueo en el sistema
-         * @summary Crear nuevo bloqueo
+         * 
          * @param {Blockage} blockage 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createBlockage: async (blockage: Blockage, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        create5: async (blockage: Blockage, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'blockage' is not null or undefined
-            assertParamExists('createBlockage', 'blockage', blockage)
+            assertParamExists('create5', 'blockage', blockage)
             const localVarPath = `/api/blockages`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -574,15 +683,14 @@ export const BlockagesApiAxiosParamCreator = function (configuration?: Configura
             };
         },
         /**
-         * Elimina un bloqueo del sistema
-         * @summary Eliminar bloqueo
-         * @param {number} id ID del bloqueo a eliminar
+         * 
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteBlockage: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        delete4: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('deleteBlockage', 'id', id)
+            assertParamExists('delete4', 'id', id)
             const localVarPath = `/api/blockages/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -608,109 +716,14 @@ export const BlockagesApiAxiosParamCreator = function (configuration?: Configura
             };
         },
         /**
-         * Retorna todos los bloqueos actualmente activos
-         * @summary Obtener bloqueos activos
+         * 
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getActiveBlockages: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/blockages/active`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna bloqueos activos en una fecha y hora específica
-         * @summary Obtener bloqueos activos en fecha específica
-         * @param {string} dateTime Fecha y hora para consultar (ISO 8601)
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getActiveBlockagesAt: async (dateTime: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'dateTime' is not null or undefined
-            assertParamExists('getActiveBlockagesAt', 'dateTime', dateTime)
-            const localVarPath = `/api/blockages/active/{dateTime}`
-                .replace(`{${"dateTime"}}`, encodeURIComponent(String(dateTime)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna la lista completa de bloqueos registrados
-         * @summary Obtener todos los bloqueos
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getAllBlockages: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/blockages`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna un bloqueo específico
-         * @summary Obtener bloqueo por ID
-         * @param {number} id ID del bloqueo
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getBlockageById: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getById5: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('getBlockageById', 'id', id)
+            assertParamExists('getById5', 'id', id)
             const localVarPath = `/api/blockages/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -736,19 +749,15 @@ export const BlockagesApiAxiosParamCreator = function (configuration?: Configura
             };
         },
         /**
-         * Retorna bloqueos en un rango de fechas específico
-         * @summary Obtener bloqueos por rango de fechas
-         * @param {string} startDate Fecha de inicio (ISO 8601)
-         * @param {string} endDate Fecha de fin (ISO 8601)
+         * 
+         * @param {string} [activeAt] 
+         * @param {string} [startTime] 
+         * @param {string} [endTime] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getBlockagesByDateRange: async (startDate: string, endDate: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'startDate' is not null or undefined
-            assertParamExists('getBlockagesByDateRange', 'startDate', startDate)
-            // verify required parameter 'endDate' is not null or undefined
-            assertParamExists('getBlockagesByDateRange', 'endDate', endDate)
-            const localVarPath = `/api/blockages/date-range`;
+        list5: async (activeAt?: string, startTime?: string, endTime?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/blockages`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -760,12 +769,22 @@ export const BlockagesApiAxiosParamCreator = function (configuration?: Configura
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-            if (startDate !== undefined) {
-                localVarQueryParameter['startDate'] = startDate;
+            if (activeAt !== undefined) {
+                localVarQueryParameter['activeAt'] = (activeAt as any instanceof Date) ?
+                    (activeAt as any).toISOString() :
+                    activeAt;
             }
 
-            if (endDate !== undefined) {
-                localVarQueryParameter['endDate'] = endDate;
+            if (startTime !== undefined) {
+                localVarQueryParameter['startTime'] = (startTime as any instanceof Date) ?
+                    (startTime as any).toISOString() :
+                    startTime;
+            }
+
+            if (endTime !== undefined) {
+                localVarQueryParameter['endTime'] = (endTime as any instanceof Date) ?
+                    (endTime as any).toISOString() :
+                    endTime;
             }
 
 
@@ -780,25 +799,19 @@ export const BlockagesApiAxiosParamCreator = function (configuration?: Configura
             };
         },
         /**
-         * Retorna bloqueos que afectan un segmento específico de ruta
-         * @summary Obtener bloqueos en segmento
-         * @param {number} x1 Coordenada X del punto inicial
-         * @param {number} y1 Coordenada Y del punto inicial
-         * @param {number} x2 Coordenada X del punto final
-         * @param {number} y2 Coordenada Y del punto final
+         * 
+         * @param {number} id 
+         * @param {Blockage} blockage 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getBlockagesForSegment: async (x1: number, y1: number, x2: number, y2: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'x1' is not null or undefined
-            assertParamExists('getBlockagesForSegment', 'x1', x1)
-            // verify required parameter 'y1' is not null or undefined
-            assertParamExists('getBlockagesForSegment', 'y1', y1)
-            // verify required parameter 'x2' is not null or undefined
-            assertParamExists('getBlockagesForSegment', 'x2', x2)
-            // verify required parameter 'y2' is not null or undefined
-            assertParamExists('getBlockagesForSegment', 'y2', y2)
-            const localVarPath = `/api/blockages/segment`;
+        update3: async (id: number, blockage: Blockage, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('update3', 'id', id)
+            // verify required parameter 'blockage' is not null or undefined
+            assertParamExists('update3', 'blockage', blockage)
+            const localVarPath = `/api/blockages/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -806,31 +819,18 @@ export const BlockagesApiAxiosParamCreator = function (configuration?: Configura
                 baseOptions = configuration.baseOptions;
             }
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-            if (x1 !== undefined) {
-                localVarQueryParameter['x1'] = x1;
-            }
-
-            if (y1 !== undefined) {
-                localVarQueryParameter['y1'] = y1;
-            }
-
-            if (x2 !== undefined) {
-                localVarQueryParameter['x2'] = x2;
-            }
-
-            if (y2 !== undefined) {
-                localVarQueryParameter['y2'] = y2;
-            }
-
 
     
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(blockage, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -841,316 +841,199 @@ export const BlockagesApiAxiosParamCreator = function (configuration?: Configura
 };
 
 /**
- * BlockagesApi - functional programming interface
+ * BlockageControllerApi - functional programming interface
  * @export
  */
-export const BlockagesApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = BlockagesApiAxiosParamCreator(configuration)
+export const BlockageControllerApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = BlockageControllerApiAxiosParamCreator(configuration)
     return {
         /**
-         * Registra un nuevo bloqueo en el sistema
-         * @summary Crear nuevo bloqueo
+         * 
          * @param {Blockage} blockage 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async createBlockage(blockage: Blockage, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Blockage>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createBlockage(blockage, options);
+        async create5(blockage: Blockage, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Blockage>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.create5(blockage, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BlockagesApi.createBlockage']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BlockageControllerApi.create5']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Elimina un bloqueo del sistema
-         * @summary Eliminar bloqueo
-         * @param {number} id ID del bloqueo a eliminar
+         * 
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async deleteBlockage(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteBlockage(id, options);
+        async delete4(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.delete4(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BlockagesApi.deleteBlockage']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BlockageControllerApi.delete4']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Retorna todos los bloqueos actualmente activos
-         * @summary Obtener bloqueos activos
+         * 
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getActiveBlockages(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Blockage>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getActiveBlockages(options);
+        async getById5(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Blockage>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getById5(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BlockagesApi.getActiveBlockages']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BlockageControllerApi.getById5']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Retorna bloqueos activos en una fecha y hora específica
-         * @summary Obtener bloqueos activos en fecha específica
-         * @param {string} dateTime Fecha y hora para consultar (ISO 8601)
+         * 
+         * @param {string} [activeAt] 
+         * @param {string} [startTime] 
+         * @param {string} [endTime] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getActiveBlockagesAt(dateTime: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Blockage>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getActiveBlockagesAt(dateTime, options);
+        async list5(activeAt?: string, startTime?: string, endTime?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Blockage>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.list5(activeAt, startTime, endTime, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BlockagesApi.getActiveBlockagesAt']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BlockageControllerApi.list5']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Retorna la lista completa de bloqueos registrados
-         * @summary Obtener todos los bloqueos
+         * 
+         * @param {number} id 
+         * @param {Blockage} blockage 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllBlockages(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Blockage>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllBlockages(options);
+        async update3(id: number, blockage: Blockage, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Blockage>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.update3(id, blockage, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BlockagesApi.getAllBlockages']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna un bloqueo específico
-         * @summary Obtener bloqueo por ID
-         * @param {number} id ID del bloqueo
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getBlockageById(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Blockage>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getBlockageById(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BlockagesApi.getBlockageById']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna bloqueos en un rango de fechas específico
-         * @summary Obtener bloqueos por rango de fechas
-         * @param {string} startDate Fecha de inicio (ISO 8601)
-         * @param {string} endDate Fecha de fin (ISO 8601)
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getBlockagesByDateRange(startDate: string, endDate: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Blockage>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getBlockagesByDateRange(startDate, endDate, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BlockagesApi.getBlockagesByDateRange']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna bloqueos que afectan un segmento específico de ruta
-         * @summary Obtener bloqueos en segmento
-         * @param {number} x1 Coordenada X del punto inicial
-         * @param {number} y1 Coordenada Y del punto inicial
-         * @param {number} x2 Coordenada X del punto final
-         * @param {number} y2 Coordenada Y del punto final
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getBlockagesForSegment(x1: number, y1: number, x2: number, y2: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Blockage>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getBlockagesForSegment(x1, y1, x2, y2, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['BlockagesApi.getBlockagesForSegment']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['BlockageControllerApi.update3']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
 };
 
 /**
- * BlockagesApi - factory interface
+ * BlockageControllerApi - factory interface
  * @export
  */
-export const BlockagesApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = BlockagesApiFp(configuration)
+export const BlockageControllerApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = BlockageControllerApiFp(configuration)
     return {
         /**
-         * Registra un nuevo bloqueo en el sistema
-         * @summary Crear nuevo bloqueo
+         * 
          * @param {Blockage} blockage 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createBlockage(blockage: Blockage, options?: RawAxiosRequestConfig): AxiosPromise<Blockage> {
-            return localVarFp.createBlockage(blockage, options).then((request) => request(axios, basePath));
+        create5(blockage: Blockage, options?: RawAxiosRequestConfig): AxiosPromise<Blockage> {
+            return localVarFp.create5(blockage, options).then((request) => request(axios, basePath));
         },
         /**
-         * Elimina un bloqueo del sistema
-         * @summary Eliminar bloqueo
-         * @param {number} id ID del bloqueo a eliminar
+         * 
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteBlockage(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteBlockage(id, options).then((request) => request(axios, basePath));
+        delete4(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.delete4(id, options).then((request) => request(axios, basePath));
         },
         /**
-         * Retorna todos los bloqueos actualmente activos
-         * @summary Obtener bloqueos activos
+         * 
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getActiveBlockages(options?: RawAxiosRequestConfig): AxiosPromise<Array<Blockage>> {
-            return localVarFp.getActiveBlockages(options).then((request) => request(axios, basePath));
+        getById5(id: number, options?: RawAxiosRequestConfig): AxiosPromise<Blockage> {
+            return localVarFp.getById5(id, options).then((request) => request(axios, basePath));
         },
         /**
-         * Retorna bloqueos activos en una fecha y hora específica
-         * @summary Obtener bloqueos activos en fecha específica
-         * @param {string} dateTime Fecha y hora para consultar (ISO 8601)
+         * 
+         * @param {string} [activeAt] 
+         * @param {string} [startTime] 
+         * @param {string} [endTime] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getActiveBlockagesAt(dateTime: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<Blockage>> {
-            return localVarFp.getActiveBlockagesAt(dateTime, options).then((request) => request(axios, basePath));
+        list5(activeAt?: string, startTime?: string, endTime?: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<Blockage>> {
+            return localVarFp.list5(activeAt, startTime, endTime, options).then((request) => request(axios, basePath));
         },
         /**
-         * Retorna la lista completa de bloqueos registrados
-         * @summary Obtener todos los bloqueos
+         * 
+         * @param {number} id 
+         * @param {Blockage} blockage 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllBlockages(options?: RawAxiosRequestConfig): AxiosPromise<Blockage> {
-            return localVarFp.getAllBlockages(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna un bloqueo específico
-         * @summary Obtener bloqueo por ID
-         * @param {number} id ID del bloqueo
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getBlockageById(id: number, options?: RawAxiosRequestConfig): AxiosPromise<Blockage> {
-            return localVarFp.getBlockageById(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna bloqueos en un rango de fechas específico
-         * @summary Obtener bloqueos por rango de fechas
-         * @param {string} startDate Fecha de inicio (ISO 8601)
-         * @param {string} endDate Fecha de fin (ISO 8601)
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getBlockagesByDateRange(startDate: string, endDate: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<Blockage>> {
-            return localVarFp.getBlockagesByDateRange(startDate, endDate, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna bloqueos que afectan un segmento específico de ruta
-         * @summary Obtener bloqueos en segmento
-         * @param {number} x1 Coordenada X del punto inicial
-         * @param {number} y1 Coordenada Y del punto inicial
-         * @param {number} x2 Coordenada X del punto final
-         * @param {number} y2 Coordenada Y del punto final
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getBlockagesForSegment(x1: number, y1: number, x2: number, y2: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<Blockage>> {
-            return localVarFp.getBlockagesForSegment(x1, y1, x2, y2, options).then((request) => request(axios, basePath));
+        update3(id: number, blockage: Blockage, options?: RawAxiosRequestConfig): AxiosPromise<Blockage> {
+            return localVarFp.update3(id, blockage, options).then((request) => request(axios, basePath));
         },
     };
 };
 
 /**
- * BlockagesApi - object-oriented interface
+ * BlockageControllerApi - object-oriented interface
  * @export
- * @class BlockagesApi
+ * @class BlockageControllerApi
  * @extends {BaseAPI}
  */
-export class BlockagesApi extends BaseAPI {
+export class BlockageControllerApi extends BaseAPI {
     /**
-     * Registra un nuevo bloqueo en el sistema
-     * @summary Crear nuevo bloqueo
+     * 
      * @param {Blockage} blockage 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof BlockagesApi
+     * @memberof BlockageControllerApi
      */
-    public createBlockage(blockage: Blockage, options?: RawAxiosRequestConfig) {
-        return BlockagesApiFp(this.configuration).createBlockage(blockage, options).then((request) => request(this.axios, this.basePath));
+    public create5(blockage: Blockage, options?: RawAxiosRequestConfig) {
+        return BlockageControllerApiFp(this.configuration).create5(blockage, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Elimina un bloqueo del sistema
-     * @summary Eliminar bloqueo
-     * @param {number} id ID del bloqueo a eliminar
+     * 
+     * @param {number} id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof BlockagesApi
+     * @memberof BlockageControllerApi
      */
-    public deleteBlockage(id: number, options?: RawAxiosRequestConfig) {
-        return BlockagesApiFp(this.configuration).deleteBlockage(id, options).then((request) => request(this.axios, this.basePath));
+    public delete4(id: number, options?: RawAxiosRequestConfig) {
+        return BlockageControllerApiFp(this.configuration).delete4(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Retorna todos los bloqueos actualmente activos
-     * @summary Obtener bloqueos activos
+     * 
+     * @param {number} id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof BlockagesApi
+     * @memberof BlockageControllerApi
      */
-    public getActiveBlockages(options?: RawAxiosRequestConfig) {
-        return BlockagesApiFp(this.configuration).getActiveBlockages(options).then((request) => request(this.axios, this.basePath));
+    public getById5(id: number, options?: RawAxiosRequestConfig) {
+        return BlockageControllerApiFp(this.configuration).getById5(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Retorna bloqueos activos en una fecha y hora específica
-     * @summary Obtener bloqueos activos en fecha específica
-     * @param {string} dateTime Fecha y hora para consultar (ISO 8601)
+     * 
+     * @param {string} [activeAt] 
+     * @param {string} [startTime] 
+     * @param {string} [endTime] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof BlockagesApi
+     * @memberof BlockageControllerApi
      */
-    public getActiveBlockagesAt(dateTime: string, options?: RawAxiosRequestConfig) {
-        return BlockagesApiFp(this.configuration).getActiveBlockagesAt(dateTime, options).then((request) => request(this.axios, this.basePath));
+    public list5(activeAt?: string, startTime?: string, endTime?: string, options?: RawAxiosRequestConfig) {
+        return BlockageControllerApiFp(this.configuration).list5(activeAt, startTime, endTime, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Retorna la lista completa de bloqueos registrados
-     * @summary Obtener todos los bloqueos
+     * 
+     * @param {number} id 
+     * @param {Blockage} blockage 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof BlockagesApi
+     * @memberof BlockageControllerApi
      */
-    public getAllBlockages(options?: RawAxiosRequestConfig) {
-        return BlockagesApiFp(this.configuration).getAllBlockages(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna un bloqueo específico
-     * @summary Obtener bloqueo por ID
-     * @param {number} id ID del bloqueo
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof BlockagesApi
-     */
-    public getBlockageById(id: number, options?: RawAxiosRequestConfig) {
-        return BlockagesApiFp(this.configuration).getBlockageById(id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna bloqueos en un rango de fechas específico
-     * @summary Obtener bloqueos por rango de fechas
-     * @param {string} startDate Fecha de inicio (ISO 8601)
-     * @param {string} endDate Fecha de fin (ISO 8601)
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof BlockagesApi
-     */
-    public getBlockagesByDateRange(startDate: string, endDate: string, options?: RawAxiosRequestConfig) {
-        return BlockagesApiFp(this.configuration).getBlockagesByDateRange(startDate, endDate, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna bloqueos que afectan un segmento específico de ruta
-     * @summary Obtener bloqueos en segmento
-     * @param {number} x1 Coordenada X del punto inicial
-     * @param {number} y1 Coordenada Y del punto inicial
-     * @param {number} x2 Coordenada X del punto final
-     * @param {number} y2 Coordenada Y del punto final
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof BlockagesApi
-     */
-    public getBlockagesForSegment(x1: number, y1: number, x2: number, y2: number, options?: RawAxiosRequestConfig) {
-        return BlockagesApiFp(this.configuration).getBlockagesForSegment(x1, y1, x2, y2, options).then((request) => request(this.axios, this.basePath));
+    public update3(id: number, blockage: Blockage, options?: RawAxiosRequestConfig) {
+        return BlockageControllerApiFp(this.configuration).update3(id, blockage, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
@@ -1229,7 +1112,7 @@ export const DashboardApiAxiosParamCreator = function (configuration?: Configura
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getUrgentOrders1: async (hoursAhead?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getUrgentOrders: async (hoursAhead?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/dashboard/urgent-orders`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1328,10 +1211,10 @@ export const DashboardApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getUrgentOrders1(hoursAhead?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Order>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getUrgentOrders1(hoursAhead, options);
+        async getUrgentOrders(hoursAhead?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Order>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getUrgentOrders(hoursAhead, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DashboardApi.getUrgentOrders1']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['DashboardApi.getUrgentOrders']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -1381,8 +1264,8 @@ export const DashboardApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getUrgentOrders1(hoursAhead?: number, options?: RawAxiosRequestConfig): AxiosPromise<Order> {
-            return localVarFp.getUrgentOrders1(hoursAhead, options).then((request) => request(axios, basePath));
+        getUrgentOrders(hoursAhead?: number, options?: RawAxiosRequestConfig): AxiosPromise<Order> {
+            return localVarFp.getUrgentOrders(hoursAhead, options).then((request) => request(axios, basePath));
         },
         /**
          * Devuelve un desglose de vehículos agrupados por su estado operativo
@@ -1433,8 +1316,8 @@ export class DashboardApi extends BaseAPI {
      * @throws {RequiredError}
      * @memberof DashboardApi
      */
-    public getUrgentOrders1(hoursAhead?: number, options?: RawAxiosRequestConfig) {
-        return DashboardApiFp(this.configuration).getUrgentOrders1(hoursAhead, options).then((request) => request(this.axios, this.basePath));
+    public getUrgentOrders(hoursAhead?: number, options?: RawAxiosRequestConfig) {
+        return DashboardApiFp(this.configuration).getUrgentOrders(hoursAhead, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -1452,21 +1335,20 @@ export class DashboardApi extends BaseAPI {
 
 
 /**
- * DepotsApi - axios parameter creator
+ * DepotControllerApi - axios parameter creator
  * @export
  */
-export const DepotsApiAxiosParamCreator = function (configuration?: Configuration) {
+export const DepotControllerApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Registra un nuevo depósito en el sistema
-         * @summary Crear nuevo depósito
+         * 
          * @param {Depot} depot 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createDepot: async (depot: Depot, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        create4: async (depot: Depot, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'depot' is not null or undefined
-            assertParamExists('createDepot', 'depot', depot)
+            assertParamExists('create4', 'depot', depot)
             const localVarPath = `/api/depots`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1494,15 +1376,14 @@ export const DepotsApiAxiosParamCreator = function (configuration?: Configuratio
             };
         },
         /**
-         * Elimina un depósito del sistema
-         * @summary Eliminar depósito
-         * @param {string} id ID del depósito a eliminar
+         * 
+         * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteDepot: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        delete3: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('deleteDepot', 'id', id)
+            assertParamExists('delete3', 'id', id)
             const localVarPath = `/api/depots/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -1528,12 +1409,47 @@ export const DepotsApiAxiosParamCreator = function (configuration?: Configuratio
             };
         },
         /**
-         * Retorna la lista completa de depósitos registrados
-         * @summary Obtener todos los depósitos
+         * 
+         * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllDepots: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getById4: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getById4', 'id', id)
+            const localVarPath = `/api/depots/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {boolean} [canRefuel] 
+         * @param {number} [minGlpCapacity] 
+         * @param {number} [minCurrentGlp] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        list4: async (canRefuel?: boolean, minGlpCapacity?: number, minCurrentGlp?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             const localVarPath = `/api/depots`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -1546,35 +1462,17 @@ export const DepotsApiAxiosParamCreator = function (configuration?: Configuratio
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna la cantidad total de GLP actualmente almacenada en todos los depósitos
-         * @summary Obtener GLP total actual
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getCurrentTotalGLP: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/depots/glp/current-total`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
+            if (canRefuel !== undefined) {
+                localVarQueryParameter['canRefuel'] = canRefuel;
             }
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
+            if (minGlpCapacity !== undefined) {
+                localVarQueryParameter['minGlpCapacity'] = minGlpCapacity;
+            }
+
+            if (minCurrentGlp !== undefined) {
+                localVarQueryParameter['minCurrentGlp'] = minCurrentGlp;
+            }
 
 
     
@@ -1588,15 +1486,17 @@ export const DepotsApiAxiosParamCreator = function (configuration?: Configuratio
             };
         },
         /**
-         * Retorna un depósito específico
-         * @summary Obtener depósito por ID
-         * @param {string} id ID del depósito
+         * 
+         * @param {string} id 
+         * @param {Depot} depot 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getDepotById: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        update2: async (id: string, depot: Depot, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('getDepotById', 'id', id)
+            assertParamExists('update2', 'id', id)
+            // verify required parameter 'depot' is not null or undefined
+            assertParamExists('update2', 'depot', depot)
             const localVarPath = `/api/depots/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -1606,382 +1506,18 @@ export const DepotsApiAxiosParamCreator = function (configuration?: Configuratio
                 baseOptions = configuration.baseOptions;
             }
 
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna depósitos dentro de un rango geográfico específico
-         * @summary Obtener depósitos por rango de ubicación
-         * @param {number} minX Coordenada X mínima
-         * @param {number} maxX Coordenada X máxima
-         * @param {number} minY Coordenada Y mínima
-         * @param {number} maxY Coordenada Y máxima
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getDepotsByLocationRange: async (minX: number, maxX: number, minY: number, maxY: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'minX' is not null or undefined
-            assertParamExists('getDepotsByLocationRange', 'minX', minX)
-            // verify required parameter 'maxX' is not null or undefined
-            assertParamExists('getDepotsByLocationRange', 'maxX', maxX)
-            // verify required parameter 'minY' is not null or undefined
-            assertParamExists('getDepotsByLocationRange', 'minY', minY)
-            // verify required parameter 'maxY' is not null or undefined
-            assertParamExists('getDepotsByLocationRange', 'maxY', maxY)
-            const localVarPath = `/api/depots/location-range`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (minX !== undefined) {
-                localVarQueryParameter['minX'] = minX;
-            }
-
-            if (maxX !== undefined) {
-                localVarQueryParameter['maxX'] = maxX;
-            }
-
-            if (minY !== undefined) {
-                localVarQueryParameter['minY'] = minY;
-            }
-
-            if (maxY !== undefined) {
-                localVarQueryParameter['maxY'] = maxY;
-            }
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna depósitos dentro de un radio específico desde una posición
-         * @summary Obtener depósitos por radio
-         * @param {number} x Coordenada X del centro
-         * @param {number} y Coordenada Y del centro
-         * @param {number} radius Radio de búsqueda
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getDepotsByRadius: async (x: number, y: number, radius: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'x' is not null or undefined
-            assertParamExists('getDepotsByRadius', 'x', x)
-            // verify required parameter 'y' is not null or undefined
-            assertParamExists('getDepotsByRadius', 'y', y)
-            // verify required parameter 'radius' is not null or undefined
-            assertParamExists('getDepotsByRadius', 'radius', radius)
-            const localVarPath = `/api/depots/radius`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (x !== undefined) {
-                localVarQueryParameter['x'] = x;
-            }
-
-            if (y !== undefined) {
-                localVarQueryParameter['y'] = y;
-            }
-
-            if (radius !== undefined) {
-                localVarQueryParameter['radius'] = radius;
-            }
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna depósitos que tienen al menos la capacidad libre mínima especificada
-         * @summary Obtener depósitos con capacidad disponible
-         * @param {number} minCapacity Capacidad mínima libre requerida
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getDepotsWithAvailableCapacity: async (minCapacity: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'minCapacity' is not null or undefined
-            assertParamExists('getDepotsWithAvailableCapacity', 'minCapacity', minCapacity)
-            const localVarPath = `/api/depots/available`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (minCapacity !== undefined) {
-                localVarQueryParameter['minCapacity'] = minCapacity;
-            }
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna depósitos que tienen al menos la cantidad requerida de GLP
-         * @summary Obtener depósitos con GLP suficiente
-         * @param {number} requiredGLP Cantidad mínima de GLP requerida
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getDepotsWithSufficientGLP: async (requiredGLP: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'requiredGLP' is not null or undefined
-            assertParamExists('getDepotsWithSufficientGLP', 'requiredGLP', requiredGLP)
-            const localVarPath = `/api/depots/sufficient-glp/{requiredGLP}`
-                .replace(`{${"requiredGLP"}}`, encodeURIComponent(String(requiredGLP)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna la capacidad total de almacenamiento de todos los depósitos
-         * @summary Obtener capacidad total de almacenamiento
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getTotalStorageCapacity: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/depots/capacity/total`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Rellena un depósito a su capacidad máxima
-         * @summary Rellenar depósito
-         * @param {string} id ID del depósito
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        refillDepot: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('refillDepot', 'id', id)
-            const localVarPath = `/api/depots/{id}/refill`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
             const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
 
     
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retira una cantidad específica de GLP del depósito
-         * @summary Servir GLP desde depósito
-         * @param {string} id ID del depósito
-         * @param {number} requestedGLP Cantidad de GLP solicitada
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        serveFromDepot: async (id: string, requestedGLP: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('serveFromDepot', 'id', id)
-            // verify required parameter 'requestedGLP' is not null or undefined
-            assertParamExists('serveFromDepot', 'requestedGLP', requestedGLP)
-            const localVarPath = `/api/depots/{id}/serve`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (requestedGLP !== undefined) {
-                localVarQueryParameter['requestedGLP'] = requestedGLP;
-            }
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Ajusta el nivel de GLP de un depósito (puede ser positivo o negativo)
-         * @summary Actualizar nivel de GLP
-         * @param {string} id ID del depósito
-         * @param {number} amount Cantidad a agregar/restar al nivel actual
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        updateGLPLevel1: async (id: string, amount: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('updateGLPLevel1', 'id', id)
-            // verify required parameter 'amount' is not null or undefined
-            assertParamExists('updateGLPLevel1', 'amount', amount)
-            const localVarPath = `/api/depots/{id}/glp`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (amount !== undefined) {
-                localVarQueryParameter['amount'] = amount;
-            }
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Actualiza el umbral mínimo de GLP para un depósito
-         * @summary Actualizar umbral mínimo
-         * @param {string} id ID del depósito
-         * @param {number} threshold Nuevo umbral mínimo
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        updateMinimumThreshold: async (id: string, threshold: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('updateMinimumThreshold', 'id', id)
-            // verify required parameter 'threshold' is not null or undefined
-            assertParamExists('updateMinimumThreshold', 'threshold', threshold)
-            const localVarPath = `/api/depots/{id}/threshold`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (threshold !== undefined) {
-                localVarQueryParameter['threshold'] = threshold;
-            }
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(depot, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -1992,556 +1528,219 @@ export const DepotsApiAxiosParamCreator = function (configuration?: Configuratio
 };
 
 /**
- * DepotsApi - functional programming interface
+ * DepotControllerApi - functional programming interface
  * @export
  */
-export const DepotsApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = DepotsApiAxiosParamCreator(configuration)
+export const DepotControllerApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = DepotControllerApiAxiosParamCreator(configuration)
     return {
         /**
-         * Registra un nuevo depósito en el sistema
-         * @summary Crear nuevo depósito
+         * 
          * @param {Depot} depot 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async createDepot(depot: Depot, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Depot>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createDepot(depot, options);
+        async create4(depot: Depot, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Depot>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.create4(depot, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DepotsApi.createDepot']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['DepotControllerApi.create4']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Elimina un depósito del sistema
-         * @summary Eliminar depósito
-         * @param {string} id ID del depósito a eliminar
+         * 
+         * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async deleteDepot(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteDepot(id, options);
+        async delete3(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.delete3(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DepotsApi.deleteDepot']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['DepotControllerApi.delete3']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Retorna la lista completa de depósitos registrados
-         * @summary Obtener todos los depósitos
+         * 
+         * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllDepots(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Depot>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllDepots(options);
+        async getById4(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Depot>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getById4(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DepotsApi.getAllDepots']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['DepotControllerApi.getById4']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Retorna la cantidad total de GLP actualmente almacenada en todos los depósitos
-         * @summary Obtener GLP total actual
+         * 
+         * @param {boolean} [canRefuel] 
+         * @param {number} [minGlpCapacity] 
+         * @param {number} [minCurrentGlp] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getCurrentTotalGLP(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<number>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getCurrentTotalGLP(options);
+        async list4(canRefuel?: boolean, minGlpCapacity?: number, minCurrentGlp?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Depot>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.list4(canRefuel, minGlpCapacity, minCurrentGlp, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DepotsApi.getCurrentTotalGLP']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['DepotControllerApi.list4']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Retorna un depósito específico
-         * @summary Obtener depósito por ID
-         * @param {string} id ID del depósito
+         * 
+         * @param {string} id 
+         * @param {Depot} depot 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getDepotById(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Depot>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getDepotById(id, options);
+        async update2(id: string, depot: Depot, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Depot>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.update2(id, depot, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DepotsApi.getDepotById']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna depósitos dentro de un rango geográfico específico
-         * @summary Obtener depósitos por rango de ubicación
-         * @param {number} minX Coordenada X mínima
-         * @param {number} maxX Coordenada X máxima
-         * @param {number} minY Coordenada Y mínima
-         * @param {number} maxY Coordenada Y máxima
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getDepotsByLocationRange(minX: number, maxX: number, minY: number, maxY: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Depot>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getDepotsByLocationRange(minX, maxX, minY, maxY, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DepotsApi.getDepotsByLocationRange']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna depósitos dentro de un radio específico desde una posición
-         * @summary Obtener depósitos por radio
-         * @param {number} x Coordenada X del centro
-         * @param {number} y Coordenada Y del centro
-         * @param {number} radius Radio de búsqueda
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getDepotsByRadius(x: number, y: number, radius: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Depot>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getDepotsByRadius(x, y, radius, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DepotsApi.getDepotsByRadius']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna depósitos que tienen al menos la capacidad libre mínima especificada
-         * @summary Obtener depósitos con capacidad disponible
-         * @param {number} minCapacity Capacidad mínima libre requerida
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getDepotsWithAvailableCapacity(minCapacity: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Depot>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getDepotsWithAvailableCapacity(minCapacity, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DepotsApi.getDepotsWithAvailableCapacity']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna depósitos que tienen al menos la cantidad requerida de GLP
-         * @summary Obtener depósitos con GLP suficiente
-         * @param {number} requiredGLP Cantidad mínima de GLP requerida
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getDepotsWithSufficientGLP(requiredGLP: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Depot>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getDepotsWithSufficientGLP(requiredGLP, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DepotsApi.getDepotsWithSufficientGLP']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna la capacidad total de almacenamiento de todos los depósitos
-         * @summary Obtener capacidad total de almacenamiento
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getTotalStorageCapacity(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<number>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getTotalStorageCapacity(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DepotsApi.getTotalStorageCapacity']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Rellena un depósito a su capacidad máxima
-         * @summary Rellenar depósito
-         * @param {string} id ID del depósito
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async refillDepot(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Depot>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.refillDepot(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DepotsApi.refillDepot']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retira una cantidad específica de GLP del depósito
-         * @summary Servir GLP desde depósito
-         * @param {string} id ID del depósito
-         * @param {number} requestedGLP Cantidad de GLP solicitada
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async serveFromDepot(id: string, requestedGLP: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Depot>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.serveFromDepot(id, requestedGLP, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DepotsApi.serveFromDepot']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Ajusta el nivel de GLP de un depósito (puede ser positivo o negativo)
-         * @summary Actualizar nivel de GLP
-         * @param {string} id ID del depósito
-         * @param {number} amount Cantidad a agregar/restar al nivel actual
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async updateGLPLevel1(id: string, amount: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Depot>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateGLPLevel1(id, amount, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DepotsApi.updateGLPLevel1']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Actualiza el umbral mínimo de GLP para un depósito
-         * @summary Actualizar umbral mínimo
-         * @param {string} id ID del depósito
-         * @param {number} threshold Nuevo umbral mínimo
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async updateMinimumThreshold(id: string, threshold: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Depot>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateMinimumThreshold(id, threshold, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['DepotsApi.updateMinimumThreshold']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['DepotControllerApi.update2']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
 };
 
 /**
- * DepotsApi - factory interface
+ * DepotControllerApi - factory interface
  * @export
  */
-export const DepotsApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = DepotsApiFp(configuration)
+export const DepotControllerApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = DepotControllerApiFp(configuration)
     return {
         /**
-         * Registra un nuevo depósito en el sistema
-         * @summary Crear nuevo depósito
+         * 
          * @param {Depot} depot 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createDepot(depot: Depot, options?: RawAxiosRequestConfig): AxiosPromise<Depot> {
-            return localVarFp.createDepot(depot, options).then((request) => request(axios, basePath));
+        create4(depot: Depot, options?: RawAxiosRequestConfig): AxiosPromise<Depot> {
+            return localVarFp.create4(depot, options).then((request) => request(axios, basePath));
         },
         /**
-         * Elimina un depósito del sistema
-         * @summary Eliminar depósito
-         * @param {string} id ID del depósito a eliminar
+         * 
+         * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteDepot(id: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteDepot(id, options).then((request) => request(axios, basePath));
+        delete3(id: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.delete3(id, options).then((request) => request(axios, basePath));
         },
         /**
-         * Retorna la lista completa de depósitos registrados
-         * @summary Obtener todos los depósitos
+         * 
+         * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllDepots(options?: RawAxiosRequestConfig): AxiosPromise<Depot> {
-            return localVarFp.getAllDepots(options).then((request) => request(axios, basePath));
+        getById4(id: string, options?: RawAxiosRequestConfig): AxiosPromise<Depot> {
+            return localVarFp.getById4(id, options).then((request) => request(axios, basePath));
         },
         /**
-         * Retorna la cantidad total de GLP actualmente almacenada en todos los depósitos
-         * @summary Obtener GLP total actual
+         * 
+         * @param {boolean} [canRefuel] 
+         * @param {number} [minGlpCapacity] 
+         * @param {number} [minCurrentGlp] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getCurrentTotalGLP(options?: RawAxiosRequestConfig): AxiosPromise<number> {
-            return localVarFp.getCurrentTotalGLP(options).then((request) => request(axios, basePath));
+        list4(canRefuel?: boolean, minGlpCapacity?: number, minCurrentGlp?: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<Depot>> {
+            return localVarFp.list4(canRefuel, minGlpCapacity, minCurrentGlp, options).then((request) => request(axios, basePath));
         },
         /**
-         * Retorna un depósito específico
-         * @summary Obtener depósito por ID
-         * @param {string} id ID del depósito
+         * 
+         * @param {string} id 
+         * @param {Depot} depot 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getDepotById(id: string, options?: RawAxiosRequestConfig): AxiosPromise<Depot> {
-            return localVarFp.getDepotById(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna depósitos dentro de un rango geográfico específico
-         * @summary Obtener depósitos por rango de ubicación
-         * @param {number} minX Coordenada X mínima
-         * @param {number} maxX Coordenada X máxima
-         * @param {number} minY Coordenada Y mínima
-         * @param {number} maxY Coordenada Y máxima
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getDepotsByLocationRange(minX: number, maxX: number, minY: number, maxY: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<Depot>> {
-            return localVarFp.getDepotsByLocationRange(minX, maxX, minY, maxY, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna depósitos dentro de un radio específico desde una posición
-         * @summary Obtener depósitos por radio
-         * @param {number} x Coordenada X del centro
-         * @param {number} y Coordenada Y del centro
-         * @param {number} radius Radio de búsqueda
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getDepotsByRadius(x: number, y: number, radius: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<Depot>> {
-            return localVarFp.getDepotsByRadius(x, y, radius, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna depósitos que tienen al menos la capacidad libre mínima especificada
-         * @summary Obtener depósitos con capacidad disponible
-         * @param {number} minCapacity Capacidad mínima libre requerida
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getDepotsWithAvailableCapacity(minCapacity: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<Depot>> {
-            return localVarFp.getDepotsWithAvailableCapacity(minCapacity, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna depósitos que tienen al menos la cantidad requerida de GLP
-         * @summary Obtener depósitos con GLP suficiente
-         * @param {number} requiredGLP Cantidad mínima de GLP requerida
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getDepotsWithSufficientGLP(requiredGLP: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<Depot>> {
-            return localVarFp.getDepotsWithSufficientGLP(requiredGLP, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna la capacidad total de almacenamiento de todos los depósitos
-         * @summary Obtener capacidad total de almacenamiento
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getTotalStorageCapacity(options?: RawAxiosRequestConfig): AxiosPromise<number> {
-            return localVarFp.getTotalStorageCapacity(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Rellena un depósito a su capacidad máxima
-         * @summary Rellenar depósito
-         * @param {string} id ID del depósito
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        refillDepot(id: string, options?: RawAxiosRequestConfig): AxiosPromise<Depot> {
-            return localVarFp.refillDepot(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retira una cantidad específica de GLP del depósito
-         * @summary Servir GLP desde depósito
-         * @param {string} id ID del depósito
-         * @param {number} requestedGLP Cantidad de GLP solicitada
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        serveFromDepot(id: string, requestedGLP: number, options?: RawAxiosRequestConfig): AxiosPromise<Depot> {
-            return localVarFp.serveFromDepot(id, requestedGLP, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Ajusta el nivel de GLP de un depósito (puede ser positivo o negativo)
-         * @summary Actualizar nivel de GLP
-         * @param {string} id ID del depósito
-         * @param {number} amount Cantidad a agregar/restar al nivel actual
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        updateGLPLevel1(id: string, amount: number, options?: RawAxiosRequestConfig): AxiosPromise<Depot> {
-            return localVarFp.updateGLPLevel1(id, amount, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Actualiza el umbral mínimo de GLP para un depósito
-         * @summary Actualizar umbral mínimo
-         * @param {string} id ID del depósito
-         * @param {number} threshold Nuevo umbral mínimo
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        updateMinimumThreshold(id: string, threshold: number, options?: RawAxiosRequestConfig): AxiosPromise<Depot> {
-            return localVarFp.updateMinimumThreshold(id, threshold, options).then((request) => request(axios, basePath));
+        update2(id: string, depot: Depot, options?: RawAxiosRequestConfig): AxiosPromise<Depot> {
+            return localVarFp.update2(id, depot, options).then((request) => request(axios, basePath));
         },
     };
 };
 
 /**
- * DepotsApi - object-oriented interface
+ * DepotControllerApi - object-oriented interface
  * @export
- * @class DepotsApi
+ * @class DepotControllerApi
  * @extends {BaseAPI}
  */
-export class DepotsApi extends BaseAPI {
+export class DepotControllerApi extends BaseAPI {
     /**
-     * Registra un nuevo depósito en el sistema
-     * @summary Crear nuevo depósito
+     * 
      * @param {Depot} depot 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof DepotsApi
+     * @memberof DepotControllerApi
      */
-    public createDepot(depot: Depot, options?: RawAxiosRequestConfig) {
-        return DepotsApiFp(this.configuration).createDepot(depot, options).then((request) => request(this.axios, this.basePath));
+    public create4(depot: Depot, options?: RawAxiosRequestConfig) {
+        return DepotControllerApiFp(this.configuration).create4(depot, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Elimina un depósito del sistema
-     * @summary Eliminar depósito
-     * @param {string} id ID del depósito a eliminar
+     * 
+     * @param {string} id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof DepotsApi
+     * @memberof DepotControllerApi
      */
-    public deleteDepot(id: string, options?: RawAxiosRequestConfig) {
-        return DepotsApiFp(this.configuration).deleteDepot(id, options).then((request) => request(this.axios, this.basePath));
+    public delete3(id: string, options?: RawAxiosRequestConfig) {
+        return DepotControllerApiFp(this.configuration).delete3(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Retorna la lista completa de depósitos registrados
-     * @summary Obtener todos los depósitos
+     * 
+     * @param {string} id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof DepotsApi
+     * @memberof DepotControllerApi
      */
-    public getAllDepots(options?: RawAxiosRequestConfig) {
-        return DepotsApiFp(this.configuration).getAllDepots(options).then((request) => request(this.axios, this.basePath));
+    public getById4(id: string, options?: RawAxiosRequestConfig) {
+        return DepotControllerApiFp(this.configuration).getById4(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Retorna la cantidad total de GLP actualmente almacenada en todos los depósitos
-     * @summary Obtener GLP total actual
+     * 
+     * @param {boolean} [canRefuel] 
+     * @param {number} [minGlpCapacity] 
+     * @param {number} [minCurrentGlp] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof DepotsApi
+     * @memberof DepotControllerApi
      */
-    public getCurrentTotalGLP(options?: RawAxiosRequestConfig) {
-        return DepotsApiFp(this.configuration).getCurrentTotalGLP(options).then((request) => request(this.axios, this.basePath));
+    public list4(canRefuel?: boolean, minGlpCapacity?: number, minCurrentGlp?: number, options?: RawAxiosRequestConfig) {
+        return DepotControllerApiFp(this.configuration).list4(canRefuel, minGlpCapacity, minCurrentGlp, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Retorna un depósito específico
-     * @summary Obtener depósito por ID
-     * @param {string} id ID del depósito
+     * 
+     * @param {string} id 
+     * @param {Depot} depot 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof DepotsApi
+     * @memberof DepotControllerApi
      */
-    public getDepotById(id: string, options?: RawAxiosRequestConfig) {
-        return DepotsApiFp(this.configuration).getDepotById(id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna depósitos dentro de un rango geográfico específico
-     * @summary Obtener depósitos por rango de ubicación
-     * @param {number} minX Coordenada X mínima
-     * @param {number} maxX Coordenada X máxima
-     * @param {number} minY Coordenada Y mínima
-     * @param {number} maxY Coordenada Y máxima
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DepotsApi
-     */
-    public getDepotsByLocationRange(minX: number, maxX: number, minY: number, maxY: number, options?: RawAxiosRequestConfig) {
-        return DepotsApiFp(this.configuration).getDepotsByLocationRange(minX, maxX, minY, maxY, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna depósitos dentro de un radio específico desde una posición
-     * @summary Obtener depósitos por radio
-     * @param {number} x Coordenada X del centro
-     * @param {number} y Coordenada Y del centro
-     * @param {number} radius Radio de búsqueda
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DepotsApi
-     */
-    public getDepotsByRadius(x: number, y: number, radius: number, options?: RawAxiosRequestConfig) {
-        return DepotsApiFp(this.configuration).getDepotsByRadius(x, y, radius, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna depósitos que tienen al menos la capacidad libre mínima especificada
-     * @summary Obtener depósitos con capacidad disponible
-     * @param {number} minCapacity Capacidad mínima libre requerida
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DepotsApi
-     */
-    public getDepotsWithAvailableCapacity(minCapacity: number, options?: RawAxiosRequestConfig) {
-        return DepotsApiFp(this.configuration).getDepotsWithAvailableCapacity(minCapacity, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna depósitos que tienen al menos la cantidad requerida de GLP
-     * @summary Obtener depósitos con GLP suficiente
-     * @param {number} requiredGLP Cantidad mínima de GLP requerida
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DepotsApi
-     */
-    public getDepotsWithSufficientGLP(requiredGLP: number, options?: RawAxiosRequestConfig) {
-        return DepotsApiFp(this.configuration).getDepotsWithSufficientGLP(requiredGLP, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna la capacidad total de almacenamiento de todos los depósitos
-     * @summary Obtener capacidad total de almacenamiento
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DepotsApi
-     */
-    public getTotalStorageCapacity(options?: RawAxiosRequestConfig) {
-        return DepotsApiFp(this.configuration).getTotalStorageCapacity(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Rellena un depósito a su capacidad máxima
-     * @summary Rellenar depósito
-     * @param {string} id ID del depósito
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DepotsApi
-     */
-    public refillDepot(id: string, options?: RawAxiosRequestConfig) {
-        return DepotsApiFp(this.configuration).refillDepot(id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retira una cantidad específica de GLP del depósito
-     * @summary Servir GLP desde depósito
-     * @param {string} id ID del depósito
-     * @param {number} requestedGLP Cantidad de GLP solicitada
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DepotsApi
-     */
-    public serveFromDepot(id: string, requestedGLP: number, options?: RawAxiosRequestConfig) {
-        return DepotsApiFp(this.configuration).serveFromDepot(id, requestedGLP, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Ajusta el nivel de GLP de un depósito (puede ser positivo o negativo)
-     * @summary Actualizar nivel de GLP
-     * @param {string} id ID del depósito
-     * @param {number} amount Cantidad a agregar/restar al nivel actual
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DepotsApi
-     */
-    public updateGLPLevel1(id: string, amount: number, options?: RawAxiosRequestConfig) {
-        return DepotsApiFp(this.configuration).updateGLPLevel1(id, amount, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Actualiza el umbral mínimo de GLP para un depósito
-     * @summary Actualizar umbral mínimo
-     * @param {string} id ID del depósito
-     * @param {number} threshold Nuevo umbral mínimo
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof DepotsApi
-     */
-    public updateMinimumThreshold(id: string, threshold: number, options?: RawAxiosRequestConfig) {
-        return DepotsApiFp(this.configuration).updateMinimumThreshold(id, threshold, options).then((request) => request(this.axios, this.basePath));
+    public update2(id: string, depot: Depot, options?: RawAxiosRequestConfig) {
+        return DepotControllerApiFp(this.configuration).update2(id, depot, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
 
 
 /**
- * IncidentsApi - axios parameter creator
+ * IncidentControllerApi - axios parameter creator
  * @export
  */
-export const IncidentsApiAxiosParamCreator = function (configuration?: Configuration) {
+export const IncidentControllerApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Registra un nuevo incidente en el sistema
-         * @summary Crear nuevo incidente
-         * @param {Incident} incident 
+         * 
+         * @param {IncidentCreateDTO} incidentCreateDTO 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createIncident: async (incident: Incident, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'incident' is not null or undefined
-            assertParamExists('createIncident', 'incident', incident)
+        create3: async (incidentCreateDTO: IncidentCreateDTO, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'incidentCreateDTO' is not null or undefined
+            assertParamExists('create3', 'incidentCreateDTO', incidentCreateDTO)
             const localVarPath = `/api/incidents`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -2561,7 +1760,7 @@ export const IncidentsApiAxiosParamCreator = function (configuration?: Configura
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(incident, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(incidentCreateDTO, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -2569,143 +1768,14 @@ export const IncidentsApiAxiosParamCreator = function (configuration?: Configura
             };
         },
         /**
-         * Elimina un incidente del sistema
-         * @summary Eliminar incidente
-         * @param {string} id ID del incidente a eliminar
+         * 
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteIncident: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getById3: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('deleteIncident', 'id', id)
-            const localVarPath = `/api/incidents/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna todos los incidentes actualmente activos (no resueltos)
-         * @summary Obtener incidentes activos
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getActiveIncidents: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/incidents/active`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna incidentes activos de un vehículo específico
-         * @summary Obtener incidentes activos por vehículo
-         * @param {string} vehicleId ID del vehículo
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getActiveIncidentsForVehicle: async (vehicleId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'vehicleId' is not null or undefined
-            assertParamExists('getActiveIncidentsForVehicle', 'vehicleId', vehicleId)
-            const localVarPath = `/api/incidents/active/vehicle/{vehicleId}`
-                .replace(`{${"vehicleId"}}`, encodeURIComponent(String(vehicleId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna la lista completa de incidentes registrados
-         * @summary Obtener todos los incidentes
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getAllIncidents: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/incidents`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna un incidente específico
-         * @summary Obtener incidente por ID
-         * @param {string} id ID del incidente
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getIncidentById: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('getIncidentById', 'id', id)
+            assertParamExists('getById3', 'id', id)
             const localVarPath = `/api/incidents/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -2731,19 +1801,15 @@ export const IncidentsApiAxiosParamCreator = function (configuration?: Configura
             };
         },
         /**
-         * Retorna incidentes en un rango de fechas específico
-         * @summary Obtener incidentes por rango de fechas
-         * @param {string} startDate Fecha de inicio (ISO 8601)
-         * @param {string} endDate Fecha de fin (ISO 8601)
+         * 
+         * @param {string} [vehicleId] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getIncidentsByDateRange: async (startDate: string, endDate: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'startDate' is not null or undefined
-            assertParamExists('getIncidentsByDateRange', 'startDate', startDate)
-            // verify required parameter 'endDate' is not null or undefined
-            assertParamExists('getIncidentsByDateRange', 'endDate', endDate)
-            const localVarPath = `/api/incidents/date-range`;
+        list3: async (vehicleId?: string, startDate?: string, endDate?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/incidents`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -2752,853 +1818,6 @@ export const IncidentsApiAxiosParamCreator = function (configuration?: Configura
             }
 
             const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (startDate !== undefined) {
-                localVarQueryParameter['startDate'] = startDate;
-            }
-
-            if (endDate !== undefined) {
-                localVarQueryParameter['endDate'] = endDate;
-            }
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna incidentes filtrados por tipo
-         * @summary Obtener incidentes por tipo
-         * @param {GetIncidentsByTypeTypeEnum} type Tipo de incidente
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getIncidentsByType: async (type: GetIncidentsByTypeTypeEnum, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'type' is not null or undefined
-            assertParamExists('getIncidentsByType', 'type', type)
-            const localVarPath = `/api/incidents/type/{type}`
-                .replace(`{${"type"}}`, encodeURIComponent(String(type)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna todos los incidentes de un vehículo específico
-         * @summary Obtener incidentes por vehículo
-         * @param {string} vehicleId ID del vehículo
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getIncidentsByVehicle: async (vehicleId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'vehicleId' is not null or undefined
-            assertParamExists('getIncidentsByVehicle', 'vehicleId', vehicleId)
-            const localVarPath = `/api/incidents/vehicle/{vehicleId}`
-                .replace(`{${"vehicleId"}}`, encodeURIComponent(String(vehicleId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna todos los incidentes que han sido resueltos
-         * @summary Obtener incidentes resueltos
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getResolvedIncidents: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/incidents/resolved`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-    }
-};
-
-/**
- * IncidentsApi - functional programming interface
- * @export
- */
-export const IncidentsApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = IncidentsApiAxiosParamCreator(configuration)
-    return {
-        /**
-         * Registra un nuevo incidente en el sistema
-         * @summary Crear nuevo incidente
-         * @param {Incident} incident 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async createIncident(incident: Incident, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Incident>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createIncident(incident, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['IncidentsApi.createIncident']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Elimina un incidente del sistema
-         * @summary Eliminar incidente
-         * @param {string} id ID del incidente a eliminar
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async deleteIncident(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteIncident(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['IncidentsApi.deleteIncident']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna todos los incidentes actualmente activos (no resueltos)
-         * @summary Obtener incidentes activos
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getActiveIncidents(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Incident>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getActiveIncidents(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['IncidentsApi.getActiveIncidents']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna incidentes activos de un vehículo específico
-         * @summary Obtener incidentes activos por vehículo
-         * @param {string} vehicleId ID del vehículo
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getActiveIncidentsForVehicle(vehicleId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Incident>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getActiveIncidentsForVehicle(vehicleId, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['IncidentsApi.getActiveIncidentsForVehicle']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna la lista completa de incidentes registrados
-         * @summary Obtener todos los incidentes
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getAllIncidents(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Incident>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllIncidents(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['IncidentsApi.getAllIncidents']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna un incidente específico
-         * @summary Obtener incidente por ID
-         * @param {string} id ID del incidente
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getIncidentById(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Incident>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getIncidentById(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['IncidentsApi.getIncidentById']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna incidentes en un rango de fechas específico
-         * @summary Obtener incidentes por rango de fechas
-         * @param {string} startDate Fecha de inicio (ISO 8601)
-         * @param {string} endDate Fecha de fin (ISO 8601)
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getIncidentsByDateRange(startDate: string, endDate: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Incident>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getIncidentsByDateRange(startDate, endDate, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['IncidentsApi.getIncidentsByDateRange']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna incidentes filtrados por tipo
-         * @summary Obtener incidentes por tipo
-         * @param {GetIncidentsByTypeTypeEnum} type Tipo de incidente
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getIncidentsByType(type: GetIncidentsByTypeTypeEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Incident>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getIncidentsByType(type, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['IncidentsApi.getIncidentsByType']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna todos los incidentes de un vehículo específico
-         * @summary Obtener incidentes por vehículo
-         * @param {string} vehicleId ID del vehículo
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getIncidentsByVehicle(vehicleId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Incident>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getIncidentsByVehicle(vehicleId, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['IncidentsApi.getIncidentsByVehicle']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna todos los incidentes que han sido resueltos
-         * @summary Obtener incidentes resueltos
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getResolvedIncidents(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Incident>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getResolvedIncidents(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['IncidentsApi.getResolvedIncidents']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-    }
-};
-
-/**
- * IncidentsApi - factory interface
- * @export
- */
-export const IncidentsApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = IncidentsApiFp(configuration)
-    return {
-        /**
-         * Registra un nuevo incidente en el sistema
-         * @summary Crear nuevo incidente
-         * @param {Incident} incident 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        createIncident(incident: Incident, options?: RawAxiosRequestConfig): AxiosPromise<Incident> {
-            return localVarFp.createIncident(incident, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Elimina un incidente del sistema
-         * @summary Eliminar incidente
-         * @param {string} id ID del incidente a eliminar
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        deleteIncident(id: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteIncident(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna todos los incidentes actualmente activos (no resueltos)
-         * @summary Obtener incidentes activos
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getActiveIncidents(options?: RawAxiosRequestConfig): AxiosPromise<Array<Incident>> {
-            return localVarFp.getActiveIncidents(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna incidentes activos de un vehículo específico
-         * @summary Obtener incidentes activos por vehículo
-         * @param {string} vehicleId ID del vehículo
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getActiveIncidentsForVehicle(vehicleId: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<Incident>> {
-            return localVarFp.getActiveIncidentsForVehicle(vehicleId, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna la lista completa de incidentes registrados
-         * @summary Obtener todos los incidentes
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getAllIncidents(options?: RawAxiosRequestConfig): AxiosPromise<Incident> {
-            return localVarFp.getAllIncidents(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna un incidente específico
-         * @summary Obtener incidente por ID
-         * @param {string} id ID del incidente
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getIncidentById(id: string, options?: RawAxiosRequestConfig): AxiosPromise<Incident> {
-            return localVarFp.getIncidentById(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna incidentes en un rango de fechas específico
-         * @summary Obtener incidentes por rango de fechas
-         * @param {string} startDate Fecha de inicio (ISO 8601)
-         * @param {string} endDate Fecha de fin (ISO 8601)
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getIncidentsByDateRange(startDate: string, endDate: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<Incident>> {
-            return localVarFp.getIncidentsByDateRange(startDate, endDate, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna incidentes filtrados por tipo
-         * @summary Obtener incidentes por tipo
-         * @param {GetIncidentsByTypeTypeEnum} type Tipo de incidente
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getIncidentsByType(type: GetIncidentsByTypeTypeEnum, options?: RawAxiosRequestConfig): AxiosPromise<Array<Incident>> {
-            return localVarFp.getIncidentsByType(type, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna todos los incidentes de un vehículo específico
-         * @summary Obtener incidentes por vehículo
-         * @param {string} vehicleId ID del vehículo
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getIncidentsByVehicle(vehicleId: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<Incident>> {
-            return localVarFp.getIncidentsByVehicle(vehicleId, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna todos los incidentes que han sido resueltos
-         * @summary Obtener incidentes resueltos
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getResolvedIncidents(options?: RawAxiosRequestConfig): AxiosPromise<Array<Incident>> {
-            return localVarFp.getResolvedIncidents(options).then((request) => request(axios, basePath));
-        },
-    };
-};
-
-/**
- * IncidentsApi - object-oriented interface
- * @export
- * @class IncidentsApi
- * @extends {BaseAPI}
- */
-export class IncidentsApi extends BaseAPI {
-    /**
-     * Registra un nuevo incidente en el sistema
-     * @summary Crear nuevo incidente
-     * @param {Incident} incident 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof IncidentsApi
-     */
-    public createIncident(incident: Incident, options?: RawAxiosRequestConfig) {
-        return IncidentsApiFp(this.configuration).createIncident(incident, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Elimina un incidente del sistema
-     * @summary Eliminar incidente
-     * @param {string} id ID del incidente a eliminar
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof IncidentsApi
-     */
-    public deleteIncident(id: string, options?: RawAxiosRequestConfig) {
-        return IncidentsApiFp(this.configuration).deleteIncident(id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna todos los incidentes actualmente activos (no resueltos)
-     * @summary Obtener incidentes activos
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof IncidentsApi
-     */
-    public getActiveIncidents(options?: RawAxiosRequestConfig) {
-        return IncidentsApiFp(this.configuration).getActiveIncidents(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna incidentes activos de un vehículo específico
-     * @summary Obtener incidentes activos por vehículo
-     * @param {string} vehicleId ID del vehículo
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof IncidentsApi
-     */
-    public getActiveIncidentsForVehicle(vehicleId: string, options?: RawAxiosRequestConfig) {
-        return IncidentsApiFp(this.configuration).getActiveIncidentsForVehicle(vehicleId, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna la lista completa de incidentes registrados
-     * @summary Obtener todos los incidentes
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof IncidentsApi
-     */
-    public getAllIncidents(options?: RawAxiosRequestConfig) {
-        return IncidentsApiFp(this.configuration).getAllIncidents(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna un incidente específico
-     * @summary Obtener incidente por ID
-     * @param {string} id ID del incidente
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof IncidentsApi
-     */
-    public getIncidentById(id: string, options?: RawAxiosRequestConfig) {
-        return IncidentsApiFp(this.configuration).getIncidentById(id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna incidentes en un rango de fechas específico
-     * @summary Obtener incidentes por rango de fechas
-     * @param {string} startDate Fecha de inicio (ISO 8601)
-     * @param {string} endDate Fecha de fin (ISO 8601)
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof IncidentsApi
-     */
-    public getIncidentsByDateRange(startDate: string, endDate: string, options?: RawAxiosRequestConfig) {
-        return IncidentsApiFp(this.configuration).getIncidentsByDateRange(startDate, endDate, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna incidentes filtrados por tipo
-     * @summary Obtener incidentes por tipo
-     * @param {GetIncidentsByTypeTypeEnum} type Tipo de incidente
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof IncidentsApi
-     */
-    public getIncidentsByType(type: GetIncidentsByTypeTypeEnum, options?: RawAxiosRequestConfig) {
-        return IncidentsApiFp(this.configuration).getIncidentsByType(type, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna todos los incidentes de un vehículo específico
-     * @summary Obtener incidentes por vehículo
-     * @param {string} vehicleId ID del vehículo
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof IncidentsApi
-     */
-    public getIncidentsByVehicle(vehicleId: string, options?: RawAxiosRequestConfig) {
-        return IncidentsApiFp(this.configuration).getIncidentsByVehicle(vehicleId, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna todos los incidentes que han sido resueltos
-     * @summary Obtener incidentes resueltos
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof IncidentsApi
-     */
-    public getResolvedIncidents(options?: RawAxiosRequestConfig) {
-        return IncidentsApiFp(this.configuration).getResolvedIncidents(options).then((request) => request(this.axios, this.basePath));
-    }
-}
-
-/**
- * @export
- */
-export const GetIncidentsByTypeTypeEnum = {
-    Type1: 'TYPE_1',
-    Type2: 'TYPE_2',
-    Type3: 'TYPE_3'
-} as const;
-export type GetIncidentsByTypeTypeEnum = typeof GetIncidentsByTypeTypeEnum[keyof typeof GetIncidentsByTypeTypeEnum];
-
-
-/**
- * MaintenanceApi - axios parameter creator
- * @export
- */
-export const MaintenanceApiAxiosParamCreator = function (configuration?: Configuration) {
-    return {
-        /**
-         * Marca un mantenimiento como completado
-         * @summary Completar mantenimiento
-         * @param {number} id ID del mantenimiento
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        completeMaintenance: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('completeMaintenance', 'id', id)
-            const localVarPath = `/api/maintenance/{id}/complete`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Registra un nuevo mantenimiento en el sistema
-         * @summary Crear nuevo mantenimiento
-         * @param {Maintenance} maintenance 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        createMaintenance: async (maintenance: Maintenance, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'maintenance' is not null or undefined
-            assertParamExists('createMaintenance', 'maintenance', maintenance)
-            const localVarPath = `/api/maintenance`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(maintenance, localVarRequestOptions, configuration)
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna todos los mantenimientos actualmente en curso
-         * @summary Obtener mantenimientos activos
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getActiveMaintenance: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/maintenance/active`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna mantenimientos activos de un vehículo específico
-         * @summary Obtener mantenimientos activos por vehículo
-         * @param {string} vehicleId ID del vehículo
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getActiveMaintenanceForVehicle: async (vehicleId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'vehicleId' is not null or undefined
-            assertParamExists('getActiveMaintenanceForVehicle', 'vehicleId', vehicleId)
-            const localVarPath = `/api/maintenance/active/vehicle/{vehicleId}`
-                .replace(`{${"vehicleId"}}`, encodeURIComponent(String(vehicleId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna la lista completa de mantenimientos registrados
-         * @summary Obtener todos los mantenimientos
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getAllMaintenance: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/maintenance`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna un mantenimiento específico
-         * @summary Obtener mantenimiento por ID
-         * @param {number} id ID del mantenimiento
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getMaintenanceById: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('getMaintenanceById', 'id', id)
-            const localVarPath = `/api/maintenance/{id}`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna mantenimientos filtrados por tipo
-         * @summary Obtener mantenimientos por tipo
-         * @param {GetMaintenanceByTypeTypeEnum} type Tipo de mantenimiento
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getMaintenanceByType: async (type: GetMaintenanceByTypeTypeEnum, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'type' is not null or undefined
-            assertParamExists('getMaintenanceByType', 'type', type)
-            const localVarPath = `/api/maintenance/type/{type}`
-                .replace(`{${"type"}}`, encodeURIComponent(String(type)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna todos los mantenimientos de un vehículo específico
-         * @summary Obtener mantenimientos por vehículo
-         * @param {string} vehicleId ID del vehículo
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getMaintenanceByVehicle: async (vehicleId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'vehicleId' is not null or undefined
-            assertParamExists('getMaintenanceByVehicle', 'vehicleId', vehicleId)
-            const localVarPath = `/api/maintenance/vehicle/{vehicleId}`
-                .replace(`{${"vehicleId"}}`, encodeURIComponent(String(vehicleId)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna mantenimientos programados en un rango de fechas
-         * @summary Obtener mantenimientos próximos
-         * @param {string} startDate Fecha de inicio (ISO 8601)
-         * @param {string} endDate Fecha de fin (ISO 8601)
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getUpcomingMaintenance: async (startDate: string, endDate: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'startDate' is not null or undefined
-            assertParamExists('getUpcomingMaintenance', 'startDate', startDate)
-            // verify required parameter 'endDate' is not null or undefined
-            assertParamExists('getUpcomingMaintenance', 'endDate', endDate)
-            const localVarPath = `/api/maintenance/upcoming`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-            if (startDate !== undefined) {
-                localVarQueryParameter['startDate'] = startDate;
-            }
-
-            if (endDate !== undefined) {
-                localVarQueryParameter['endDate'] = endDate;
-            }
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Programa un nuevo mantenimiento para un vehículo
-         * @summary Programar mantenimiento
-         * @param {string} vehicleId ID del vehículo
-         * @param {string} startDate Fecha de inicio (ISO 8601)
-         * @param {ScheduleMaintenanceTypeEnum} type Tipo de mantenimiento
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        scheduleMaintenance: async (vehicleId: string, startDate: string, type: ScheduleMaintenanceTypeEnum, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'vehicleId' is not null or undefined
-            assertParamExists('scheduleMaintenance', 'vehicleId', vehicleId)
-            // verify required parameter 'startDate' is not null or undefined
-            assertParamExists('scheduleMaintenance', 'startDate', startDate)
-            // verify required parameter 'type' is not null or undefined
-            assertParamExists('scheduleMaintenance', 'type', type)
-            const localVarPath = `/api/maintenance/schedule`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
@@ -3607,12 +1826,49 @@ export const MaintenanceApiAxiosParamCreator = function (configuration?: Configu
             }
 
             if (startDate !== undefined) {
-                localVarQueryParameter['startDate'] = startDate;
+                localVarQueryParameter['startDate'] = (startDate as any instanceof Date) ?
+                    (startDate as any).toISOString() :
+                    startDate;
             }
 
-            if (type !== undefined) {
-                localVarQueryParameter['type'] = type;
+            if (endDate !== undefined) {
+                localVarQueryParameter['endDate'] = (endDate as any instanceof Date) ?
+                    (endDate as any).toISOString() :
+                    endDate;
             }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        resolveIncident: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('resolveIncident', 'id', id)
+            const localVarPath = `/api/incidents/{id}/resolve`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PATCH', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
 
 
     
@@ -3629,1493 +1885,185 @@ export const MaintenanceApiAxiosParamCreator = function (configuration?: Configu
 };
 
 /**
- * MaintenanceApi - functional programming interface
+ * IncidentControllerApi - functional programming interface
  * @export
  */
-export const MaintenanceApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = MaintenanceApiAxiosParamCreator(configuration)
+export const IncidentControllerApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = IncidentControllerApiAxiosParamCreator(configuration)
     return {
         /**
-         * Marca un mantenimiento como completado
-         * @summary Completar mantenimiento
-         * @param {number} id ID del mantenimiento
+         * 
+         * @param {IncidentCreateDTO} incidentCreateDTO 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async completeMaintenance(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Maintenance>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.completeMaintenance(id, options);
+        async create3(incidentCreateDTO: IncidentCreateDTO, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<IncidentDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.create3(incidentCreateDTO, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['MaintenanceApi.completeMaintenance']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['IncidentControllerApi.create3']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Registra un nuevo mantenimiento en el sistema
-         * @summary Crear nuevo mantenimiento
-         * @param {Maintenance} maintenance 
+         * 
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async createMaintenance(maintenance: Maintenance, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Maintenance>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createMaintenance(maintenance, options);
+        async getById3(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<IncidentDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getById3(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['MaintenanceApi.createMaintenance']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['IncidentControllerApi.getById3']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Retorna todos los mantenimientos actualmente en curso
-         * @summary Obtener mantenimientos activos
+         * 
+         * @param {string} [vehicleId] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getActiveMaintenance(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Maintenance>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getActiveMaintenance(options);
+        async list3(vehicleId?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<IncidentDTO>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.list3(vehicleId, startDate, endDate, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['MaintenanceApi.getActiveMaintenance']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['IncidentControllerApi.list3']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Retorna mantenimientos activos de un vehículo específico
-         * @summary Obtener mantenimientos activos por vehículo
-         * @param {string} vehicleId ID del vehículo
+         * 
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getActiveMaintenanceForVehicle(vehicleId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Maintenance>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getActiveMaintenanceForVehicle(vehicleId, options);
+        async resolveIncident(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<IncidentDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.resolveIncident(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['MaintenanceApi.getActiveMaintenanceForVehicle']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna la lista completa de mantenimientos registrados
-         * @summary Obtener todos los mantenimientos
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getAllMaintenance(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Maintenance>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllMaintenance(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['MaintenanceApi.getAllMaintenance']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna un mantenimiento específico
-         * @summary Obtener mantenimiento por ID
-         * @param {number} id ID del mantenimiento
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getMaintenanceById(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Maintenance>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getMaintenanceById(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['MaintenanceApi.getMaintenanceById']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna mantenimientos filtrados por tipo
-         * @summary Obtener mantenimientos por tipo
-         * @param {GetMaintenanceByTypeTypeEnum} type Tipo de mantenimiento
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getMaintenanceByType(type: GetMaintenanceByTypeTypeEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Maintenance>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getMaintenanceByType(type, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['MaintenanceApi.getMaintenanceByType']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna todos los mantenimientos de un vehículo específico
-         * @summary Obtener mantenimientos por vehículo
-         * @param {string} vehicleId ID del vehículo
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getMaintenanceByVehicle(vehicleId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Maintenance>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getMaintenanceByVehicle(vehicleId, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['MaintenanceApi.getMaintenanceByVehicle']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna mantenimientos programados en un rango de fechas
-         * @summary Obtener mantenimientos próximos
-         * @param {string} startDate Fecha de inicio (ISO 8601)
-         * @param {string} endDate Fecha de fin (ISO 8601)
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getUpcomingMaintenance(startDate: string, endDate: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Maintenance>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getUpcomingMaintenance(startDate, endDate, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['MaintenanceApi.getUpcomingMaintenance']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Programa un nuevo mantenimiento para un vehículo
-         * @summary Programar mantenimiento
-         * @param {string} vehicleId ID del vehículo
-         * @param {string} startDate Fecha de inicio (ISO 8601)
-         * @param {ScheduleMaintenanceTypeEnum} type Tipo de mantenimiento
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async scheduleMaintenance(vehicleId: string, startDate: string, type: ScheduleMaintenanceTypeEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Maintenance>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.scheduleMaintenance(vehicleId, startDate, type, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['MaintenanceApi.scheduleMaintenance']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['IncidentControllerApi.resolveIncident']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
 };
 
 /**
- * MaintenanceApi - factory interface
+ * IncidentControllerApi - factory interface
  * @export
  */
-export const MaintenanceApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = MaintenanceApiFp(configuration)
+export const IncidentControllerApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = IncidentControllerApiFp(configuration)
     return {
         /**
-         * Marca un mantenimiento como completado
-         * @summary Completar mantenimiento
-         * @param {number} id ID del mantenimiento
+         * 
+         * @param {IncidentCreateDTO} incidentCreateDTO 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        completeMaintenance(id: number, options?: RawAxiosRequestConfig): AxiosPromise<Maintenance> {
-            return localVarFp.completeMaintenance(id, options).then((request) => request(axios, basePath));
+        create3(incidentCreateDTO: IncidentCreateDTO, options?: RawAxiosRequestConfig): AxiosPromise<IncidentDTO> {
+            return localVarFp.create3(incidentCreateDTO, options).then((request) => request(axios, basePath));
         },
         /**
-         * Registra un nuevo mantenimiento en el sistema
-         * @summary Crear nuevo mantenimiento
-         * @param {Maintenance} maintenance 
+         * 
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createMaintenance(maintenance: Maintenance, options?: RawAxiosRequestConfig): AxiosPromise<Maintenance> {
-            return localVarFp.createMaintenance(maintenance, options).then((request) => request(axios, basePath));
+        getById3(id: number, options?: RawAxiosRequestConfig): AxiosPromise<IncidentDTO> {
+            return localVarFp.getById3(id, options).then((request) => request(axios, basePath));
         },
         /**
-         * Retorna todos los mantenimientos actualmente en curso
-         * @summary Obtener mantenimientos activos
+         * 
+         * @param {string} [vehicleId] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getActiveMaintenance(options?: RawAxiosRequestConfig): AxiosPromise<Array<Maintenance>> {
-            return localVarFp.getActiveMaintenance(options).then((request) => request(axios, basePath));
+        list3(vehicleId?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<IncidentDTO>> {
+            return localVarFp.list3(vehicleId, startDate, endDate, options).then((request) => request(axios, basePath));
         },
         /**
-         * Retorna mantenimientos activos de un vehículo específico
-         * @summary Obtener mantenimientos activos por vehículo
-         * @param {string} vehicleId ID del vehículo
+         * 
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getActiveMaintenanceForVehicle(vehicleId: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<Maintenance>> {
-            return localVarFp.getActiveMaintenanceForVehicle(vehicleId, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna la lista completa de mantenimientos registrados
-         * @summary Obtener todos los mantenimientos
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getAllMaintenance(options?: RawAxiosRequestConfig): AxiosPromise<Maintenance> {
-            return localVarFp.getAllMaintenance(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna un mantenimiento específico
-         * @summary Obtener mantenimiento por ID
-         * @param {number} id ID del mantenimiento
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getMaintenanceById(id: number, options?: RawAxiosRequestConfig): AxiosPromise<Maintenance> {
-            return localVarFp.getMaintenanceById(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna mantenimientos filtrados por tipo
-         * @summary Obtener mantenimientos por tipo
-         * @param {GetMaintenanceByTypeTypeEnum} type Tipo de mantenimiento
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getMaintenanceByType(type: GetMaintenanceByTypeTypeEnum, options?: RawAxiosRequestConfig): AxiosPromise<Array<Maintenance>> {
-            return localVarFp.getMaintenanceByType(type, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna todos los mantenimientos de un vehículo específico
-         * @summary Obtener mantenimientos por vehículo
-         * @param {string} vehicleId ID del vehículo
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getMaintenanceByVehicle(vehicleId: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<Maintenance>> {
-            return localVarFp.getMaintenanceByVehicle(vehicleId, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna mantenimientos programados en un rango de fechas
-         * @summary Obtener mantenimientos próximos
-         * @param {string} startDate Fecha de inicio (ISO 8601)
-         * @param {string} endDate Fecha de fin (ISO 8601)
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getUpcomingMaintenance(startDate: string, endDate: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<Maintenance>> {
-            return localVarFp.getUpcomingMaintenance(startDate, endDate, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Programa un nuevo mantenimiento para un vehículo
-         * @summary Programar mantenimiento
-         * @param {string} vehicleId ID del vehículo
-         * @param {string} startDate Fecha de inicio (ISO 8601)
-         * @param {ScheduleMaintenanceTypeEnum} type Tipo de mantenimiento
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        scheduleMaintenance(vehicleId: string, startDate: string, type: ScheduleMaintenanceTypeEnum, options?: RawAxiosRequestConfig): AxiosPromise<Maintenance> {
-            return localVarFp.scheduleMaintenance(vehicleId, startDate, type, options).then((request) => request(axios, basePath));
+        resolveIncident(id: number, options?: RawAxiosRequestConfig): AxiosPromise<IncidentDTO> {
+            return localVarFp.resolveIncident(id, options).then((request) => request(axios, basePath));
         },
     };
 };
 
 /**
- * MaintenanceApi - object-oriented interface
+ * IncidentControllerApi - object-oriented interface
  * @export
- * @class MaintenanceApi
+ * @class IncidentControllerApi
  * @extends {BaseAPI}
  */
-export class MaintenanceApi extends BaseAPI {
+export class IncidentControllerApi extends BaseAPI {
     /**
-     * Marca un mantenimiento como completado
-     * @summary Completar mantenimiento
-     * @param {number} id ID del mantenimiento
+     * 
+     * @param {IncidentCreateDTO} incidentCreateDTO 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof MaintenanceApi
+     * @memberof IncidentControllerApi
      */
-    public completeMaintenance(id: number, options?: RawAxiosRequestConfig) {
-        return MaintenanceApiFp(this.configuration).completeMaintenance(id, options).then((request) => request(this.axios, this.basePath));
+    public create3(incidentCreateDTO: IncidentCreateDTO, options?: RawAxiosRequestConfig) {
+        return IncidentControllerApiFp(this.configuration).create3(incidentCreateDTO, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Registra un nuevo mantenimiento en el sistema
-     * @summary Crear nuevo mantenimiento
-     * @param {Maintenance} maintenance 
+     * 
+     * @param {number} id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof MaintenanceApi
+     * @memberof IncidentControllerApi
      */
-    public createMaintenance(maintenance: Maintenance, options?: RawAxiosRequestConfig) {
-        return MaintenanceApiFp(this.configuration).createMaintenance(maintenance, options).then((request) => request(this.axios, this.basePath));
+    public getById3(id: number, options?: RawAxiosRequestConfig) {
+        return IncidentControllerApiFp(this.configuration).getById3(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Retorna todos los mantenimientos actualmente en curso
-     * @summary Obtener mantenimientos activos
+     * 
+     * @param {string} [vehicleId] 
+     * @param {string} [startDate] 
+     * @param {string} [endDate] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof MaintenanceApi
+     * @memberof IncidentControllerApi
      */
-    public getActiveMaintenance(options?: RawAxiosRequestConfig) {
-        return MaintenanceApiFp(this.configuration).getActiveMaintenance(options).then((request) => request(this.axios, this.basePath));
+    public list3(vehicleId?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig) {
+        return IncidentControllerApiFp(this.configuration).list3(vehicleId, startDate, endDate, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Retorna mantenimientos activos de un vehículo específico
-     * @summary Obtener mantenimientos activos por vehículo
-     * @param {string} vehicleId ID del vehículo
+     * 
+     * @param {number} id 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof MaintenanceApi
+     * @memberof IncidentControllerApi
      */
-    public getActiveMaintenanceForVehicle(vehicleId: string, options?: RawAxiosRequestConfig) {
-        return MaintenanceApiFp(this.configuration).getActiveMaintenanceForVehicle(vehicleId, options).then((request) => request(this.axios, this.basePath));
+    public resolveIncident(id: number, options?: RawAxiosRequestConfig) {
+        return IncidentControllerApiFp(this.configuration).resolveIncident(id, options).then((request) => request(this.axios, this.basePath));
     }
-
-    /**
-     * Retorna la lista completa de mantenimientos registrados
-     * @summary Obtener todos los mantenimientos
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof MaintenanceApi
-     */
-    public getAllMaintenance(options?: RawAxiosRequestConfig) {
-        return MaintenanceApiFp(this.configuration).getAllMaintenance(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna un mantenimiento específico
-     * @summary Obtener mantenimiento por ID
-     * @param {number} id ID del mantenimiento
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof MaintenanceApi
-     */
-    public getMaintenanceById(id: number, options?: RawAxiosRequestConfig) {
-        return MaintenanceApiFp(this.configuration).getMaintenanceById(id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna mantenimientos filtrados por tipo
-     * @summary Obtener mantenimientos por tipo
-     * @param {GetMaintenanceByTypeTypeEnum} type Tipo de mantenimiento
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof MaintenanceApi
-     */
-    public getMaintenanceByType(type: GetMaintenanceByTypeTypeEnum, options?: RawAxiosRequestConfig) {
-        return MaintenanceApiFp(this.configuration).getMaintenanceByType(type, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna todos los mantenimientos de un vehículo específico
-     * @summary Obtener mantenimientos por vehículo
-     * @param {string} vehicleId ID del vehículo
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof MaintenanceApi
-     */
-    public getMaintenanceByVehicle(vehicleId: string, options?: RawAxiosRequestConfig) {
-        return MaintenanceApiFp(this.configuration).getMaintenanceByVehicle(vehicleId, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna mantenimientos programados en un rango de fechas
-     * @summary Obtener mantenimientos próximos
-     * @param {string} startDate Fecha de inicio (ISO 8601)
-     * @param {string} endDate Fecha de fin (ISO 8601)
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof MaintenanceApi
-     */
-    public getUpcomingMaintenance(startDate: string, endDate: string, options?: RawAxiosRequestConfig) {
-        return MaintenanceApiFp(this.configuration).getUpcomingMaintenance(startDate, endDate, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Programa un nuevo mantenimiento para un vehículo
-     * @summary Programar mantenimiento
-     * @param {string} vehicleId ID del vehículo
-     * @param {string} startDate Fecha de inicio (ISO 8601)
-     * @param {ScheduleMaintenanceTypeEnum} type Tipo de mantenimiento
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof MaintenanceApi
-     */
-    public scheduleMaintenance(vehicleId: string, startDate: string, type: ScheduleMaintenanceTypeEnum, options?: RawAxiosRequestConfig) {
-        return MaintenanceApiFp(this.configuration).scheduleMaintenance(vehicleId, startDate, type, options).then((request) => request(this.axios, this.basePath));
-    }
-}
-
-/**
- * @export
- */
-export const GetMaintenanceByTypeTypeEnum = {
-    Preventive: 'PREVENTIVE',
-    Corrective: 'CORRECTIVE'
-} as const;
-export type GetMaintenanceByTypeTypeEnum = typeof GetMaintenanceByTypeTypeEnum[keyof typeof GetMaintenanceByTypeTypeEnum];
-/**
- * @export
- */
-export const ScheduleMaintenanceTypeEnum = {
-    Preventive: 'PREVENTIVE',
-    Corrective: 'CORRECTIVE'
-} as const;
-export type ScheduleMaintenanceTypeEnum = typeof ScheduleMaintenanceTypeEnum[keyof typeof ScheduleMaintenanceTypeEnum];
-
-
-/**
- * OrdersApi - axios parameter creator
- * @export
- */
-export const OrdersApiAxiosParamCreator = function (configuration?: Configuration) {
-    return {
-      /**
-       * Registra una nueva orden en el sistema
-       * @summary Crear nueva orden
-       * @param {Order} order
-       * @param {*} [options] Override http request option.
-       * @throws {RequiredError}
-       */
-      createOrder: async (
-        order: Order,
-        options: RawAxiosRequestConfig = {}
-      ): Promise<RequestArgs> => {
-        // verify required parameter 'order' is not null or undefined
-        assertParamExists("createOrder", "order", order);
-        const localVarPath = `/api/orders`;
-        // use dummy base URL string because the URL constructor only accepts absolute URLs.
-        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-        let baseOptions;
-        if (configuration) {
-          baseOptions = configuration.baseOptions;
-        }
-
-        const localVarRequestOptions = {
-          method: "POST",
-          ...baseOptions,
-          ...options,
-        };
-        const localVarHeaderParameter = {} as any;
-        const localVarQueryParameter = {} as any;
-
-        localVarHeaderParameter["Content-Type"] = "application/json";
-
-        setSearchParams(localVarUrlObj, localVarQueryParameter);
-        let headersFromBaseOptions =
-          baseOptions && baseOptions.headers ? baseOptions.headers : {};
-        localVarRequestOptions.headers = {
-          ...localVarHeaderParameter,
-          ...headersFromBaseOptions,
-          ...options.headers,
-        };
-        localVarRequestOptions.data = serializeDataIfNeeded(
-          order,
-          localVarRequestOptions,
-          configuration
-        );
-
-        return {
-          url: toPathString(localVarUrlObj),
-          options: localVarRequestOptions,
-        };
-      },
-      /**
-       * Elimina una orden del sistema
-       * @summary Eliminar orden
-       * @param {string} id ID de la orden a eliminar
-       * @param {*} [options] Override http request option.
-       * @throws {RequiredError}
-       */
-      deleteOrder: async (
-        id: string,
-        options: RawAxiosRequestConfig = {}
-      ): Promise<RequestArgs> => {
-        // verify required parameter 'id' is not null or undefined
-        assertParamExists("deleteOrder", "id", id);
-        const localVarPath = `/api/orders/{id}`.replace(
-          `{${"id"}}`,
-          encodeURIComponent(String(id))
-        );
-        // use dummy base URL string because the URL constructor only accepts absolute URLs.
-        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-        let baseOptions;
-        if (configuration) {
-          baseOptions = configuration.baseOptions;
-        }
-
-        const localVarRequestOptions = {
-          method: "DELETE",
-          ...baseOptions,
-          ...options,
-        };
-        const localVarHeaderParameter = {} as any;
-        const localVarQueryParameter = {} as any;
-
-        setSearchParams(localVarUrlObj, localVarQueryParameter);
-        let headersFromBaseOptions =
-          baseOptions && baseOptions.headers ? baseOptions.headers : {};
-        localVarRequestOptions.headers = {
-          ...localVarHeaderParameter,
-          ...headersFromBaseOptions,
-          ...options.headers,
-        };
-
-        return {
-          url: toPathString(localVarUrlObj),
-          options: localVarRequestOptions,
-        };
-      },
-      /**
-       * Retorna la lista completa de órdenes registradas
-       * @summary Obtener todas las órdenes
-       * @param {*} [options] Override http request option.
-       * @throws {RequiredError}
-       */
-      getAllOrders: async (
-        options: RawAxiosRequestConfig = {}
-      ): Promise<RequestArgs> => {
-        const localVarPath = `/api/orders`;
-        // use dummy base URL string because the URL constructor only accepts absolute URLs.
-        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-        let baseOptions;
-        if (configuration) {
-          baseOptions = configuration.baseOptions;
-        }
-
-        const localVarRequestOptions = {
-          method: "GET",
-          ...baseOptions,
-          ...options,
-        };
-        const localVarHeaderParameter = {} as any;
-        const localVarQueryParameter = {} as any;
-
-        setSearchParams(localVarUrlObj, localVarQueryParameter);
-        let headersFromBaseOptions =
-          baseOptions && baseOptions.headers ? baseOptions.headers : {};
-        localVarRequestOptions.headers = {
-          ...localVarHeaderParameter,
-          ...headersFromBaseOptions,
-          ...options.headers,
-        };
-
-        return {
-          url: toPathString(localVarUrlObj),
-          options: localVarRequestOptions,
-        };
-      },
-      /**
-       * Retorna todas las órdenes que han sido completadas
-       * @summary Obtener órdenes completadas
-       * @param {*} [options] Override http request option.
-       * @throws {RequiredError}
-       */
-      getCompletedOrders: async (
-        options: RawAxiosRequestConfig = {}
-      ): Promise<RequestArgs> => {
-        const localVarPath = `/api/orders/completed`;
-        // use dummy base URL string because the URL constructor only accepts absolute URLs.
-        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-        let baseOptions;
-        if (configuration) {
-          baseOptions = configuration.baseOptions;
-        }
-
-        const localVarRequestOptions = {
-          method: "GET",
-          ...baseOptions,
-          ...options,
-        };
-        const localVarHeaderParameter = {} as any;
-        const localVarQueryParameter = {} as any;
-
-        setSearchParams(localVarUrlObj, localVarQueryParameter);
-        let headersFromBaseOptions =
-          baseOptions && baseOptions.headers ? baseOptions.headers : {};
-        localVarRequestOptions.headers = {
-          ...localVarHeaderParameter,
-          ...headersFromBaseOptions,
-          ...options.headers,
-        };
-
-        return {
-          url: toPathString(localVarUrlObj),
-          options: localVarRequestOptions,
-        };
-      },
-      /**
-       * Retorna una orden específica
-       * @summary Obtener orden por ID
-       * @param {string} id ID de la orden
-       * @param {*} [options] Override http request option.
-       * @throws {RequiredError}
-       */
-      getOrderById: async (
-        id: string,
-        options: RawAxiosRequestConfig = {}
-      ): Promise<RequestArgs> => {
-        // verify required parameter 'id' is not null or undefined
-        assertParamExists("getOrderById", "id", id);
-        const localVarPath = `/api/orders/{id}`.replace(
-          `{${"id"}}`,
-          encodeURIComponent(String(id))
-        );
-        // use dummy base URL string because the URL constructor only accepts absolute URLs.
-        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-        let baseOptions;
-        if (configuration) {
-          baseOptions = configuration.baseOptions;
-        }
-
-        const localVarRequestOptions = {
-          method: "GET",
-          ...baseOptions,
-          ...options,
-        };
-        const localVarHeaderParameter = {} as any;
-        const localVarQueryParameter = {} as any;
-
-        setSearchParams(localVarUrlObj, localVarQueryParameter);
-        let headersFromBaseOptions =
-          baseOptions && baseOptions.headers ? baseOptions.headers : {};
-        localVarRequestOptions.headers = {
-          ...localVarHeaderParameter,
-          ...headersFromBaseOptions,
-          ...options.headers,
-        };
-
-        return {
-          url: toPathString(localVarUrlObj),
-          options: localVarRequestOptions,
-        };
-      },
-      /**
-       * Retorna órdenes en un rango de fechas específico
-       * @summary Obtener órdenes por rango de fechas
-       * @param {string} startDate Fecha de inicio (ISO 8601)
-       * @param {string} endDate Fecha de fin (ISO 8601)
-       * @param {*} [options] Override http request option.
-       * @throws {RequiredError}
-       */
-      getOrdersByDateRange: async (
-        startDate: string,
-        endDate: string,
-        options: RawAxiosRequestConfig = {}
-      ): Promise<RequestArgs> => {
-        // verify required parameter 'startDate' is not null or undefined
-        assertParamExists("getOrdersByDateRange", "startDate", startDate);
-        // verify required parameter 'endDate' is not null or undefined
-        assertParamExists("getOrdersByDateRange", "endDate", endDate);
-        const localVarPath = `/api/orders/date-range`;
-        // use dummy base URL string because the URL constructor only accepts absolute URLs.
-        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-        let baseOptions;
-        if (configuration) {
-          baseOptions = configuration.baseOptions;
-        }
-
-        const localVarRequestOptions = {
-          method: "GET",
-          ...baseOptions,
-          ...options,
-        };
-        const localVarHeaderParameter = {} as any;
-        const localVarQueryParameter = {} as any;
-
-        if (startDate !== undefined) {
-          localVarQueryParameter["startDate"] = startDate;
-        }
-
-        if (endDate !== undefined) {
-          localVarQueryParameter["endDate"] = endDate;
-        }
-
-        setSearchParams(localVarUrlObj, localVarQueryParameter);
-        let headersFromBaseOptions =
-          baseOptions && baseOptions.headers ? baseOptions.headers : {};
-        localVarRequestOptions.headers = {
-          ...localVarHeaderParameter,
-          ...headersFromBaseOptions,
-          ...options.headers,
-        };
-
-        return {
-          url: toPathString(localVarUrlObj),
-          options: localVarRequestOptions,
-        };
-      },
-      /**
-       * Retorna órdenes que deben ser entregadas antes de una fecha específica
-       * @summary Obtener órdenes por fecha límite
-       * @param {string} time Fecha límite (ISO 8601)
-       * @param {*} [options] Override http request option.
-       * @throws {RequiredError}
-       */
-      getOrdersByDueTime: async (
-        time: string,
-        options: RawAxiosRequestConfig = {}
-      ): Promise<RequestArgs> => {
-        // verify required parameter 'time' is not null or undefined
-        assertParamExists("getOrdersByDueTime", "time", time);
-        const localVarPath = `/api/orders/due-by`;
-        // use dummy base URL string because the URL constructor only accepts absolute URLs.
-        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-        let baseOptions;
-        if (configuration) {
-          baseOptions = configuration.baseOptions;
-        }
-
-        const localVarRequestOptions = {
-          method: "GET",
-          ...baseOptions,
-          ...options,
-        };
-        const localVarHeaderParameter = {} as any;
-        const localVarQueryParameter = {} as any;
-
-        if (time !== undefined) {
-          localVarQueryParameter["time"] = time;
-        }
-
-        setSearchParams(localVarUrlObj, localVarQueryParameter);
-        let headersFromBaseOptions =
-          baseOptions && baseOptions.headers ? baseOptions.headers : {};
-        localVarRequestOptions.headers = {
-          ...localVarHeaderParameter,
-          ...headersFromBaseOptions,
-          ...options.headers,
-        };
-
-        return {
-          url: toPathString(localVarUrlObj),
-          options: localVarRequestOptions,
-        };
-      },
-      /**
-       * Retorna órdenes dentro de un radio específico desde una posición
-       * @summary Obtener órdenes por radio
-       * @param {number} x Coordenada X del centro
-       * @param {number} y Coordenada Y del centro
-       * @param {number} radius Radio de búsqueda
-       * @param {*} [options] Override http request option.
-       * @throws {RequiredError}
-       */
-      getOrdersByRadius: async (
-        x: number,
-        y: number,
-        radius: number,
-        options: RawAxiosRequestConfig = {}
-      ): Promise<RequestArgs> => {
-        // verify required parameter 'x' is not null or undefined
-        assertParamExists("getOrdersByRadius", "x", x);
-        // verify required parameter 'y' is not null or undefined
-        assertParamExists("getOrdersByRadius", "y", y);
-        // verify required parameter 'radius' is not null or undefined
-        assertParamExists("getOrdersByRadius", "radius", radius);
-        const localVarPath = `/api/orders/radius`;
-        // use dummy base URL string because the URL constructor only accepts absolute URLs.
-        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-        let baseOptions;
-        if (configuration) {
-          baseOptions = configuration.baseOptions;
-        }
-
-        const localVarRequestOptions = {
-          method: "GET",
-          ...baseOptions,
-          ...options,
-        };
-        const localVarHeaderParameter = {} as any;
-        const localVarQueryParameter = {} as any;
-
-        if (x !== undefined) {
-          localVarQueryParameter["x"] = x;
-        }
-
-        if (y !== undefined) {
-          localVarQueryParameter["y"] = y;
-        }
-
-        if (radius !== undefined) {
-          localVarQueryParameter["radius"] = radius;
-        }
-
-        setSearchParams(localVarUrlObj, localVarQueryParameter);
-        let headersFromBaseOptions =
-          baseOptions && baseOptions.headers ? baseOptions.headers : {};
-        localVarRequestOptions.headers = {
-          ...localVarHeaderParameter,
-          ...headersFromBaseOptions,
-          ...options.headers,
-        };
-
-        return {
-          url: toPathString(localVarUrlObj),
-          options: localVarRequestOptions,
-        };
-      },
-      /**
-       * Retorna todas las órdenes que han superado su fecha límite
-       * @summary Obtener órdenes vencidas
-       * @param {*} [options] Override http request option.
-       * @throws {RequiredError}
-       */
-      getOverdueOrders: async (
-        options: RawAxiosRequestConfig = {}
-      ): Promise<RequestArgs> => {
-        const localVarPath = `/api/orders/overdue`;
-        // use dummy base URL string because the URL constructor only accepts absolute URLs.
-        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-        let baseOptions;
-        if (configuration) {
-          baseOptions = configuration.baseOptions;
-        }
-
-        const localVarRequestOptions = {
-          method: "GET",
-          ...baseOptions,
-          ...options,
-        };
-        const localVarHeaderParameter = {} as any;
-        const localVarQueryParameter = {} as any;
-
-        setSearchParams(localVarUrlObj, localVarQueryParameter);
-        let headersFromBaseOptions =
-          baseOptions && baseOptions.headers ? baseOptions.headers : {};
-        localVarRequestOptions.headers = {
-          ...localVarHeaderParameter,
-          ...headersFromBaseOptions,
-          ...options.headers,
-        };
-
-        return {
-          url: toPathString(localVarUrlObj),
-          options: localVarRequestOptions,
-        };
-      },
-      /**
-       * Retorna todas las órdenes que están pendientes de entrega
-       * @summary Obtener órdenes pendientes
-       * @param {*} [options] Override http request option.
-       * @throws {RequiredError}
-       */
-      getPendingOrders: async (
-        options: RawAxiosRequestConfig = {}
-      ): Promise<RequestArgs> => {
-        const localVarPath = `/api/orders/pending`;
-        // use dummy base URL string because the URL constructor only accepts absolute URLs.
-        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-        let baseOptions;
-        if (configuration) {
-          baseOptions = configuration.baseOptions;
-        }
-
-        const localVarRequestOptions = {
-          method: "GET",
-          ...baseOptions,
-          ...options,
-        };
-        const localVarHeaderParameter = {} as any;
-        const localVarQueryParameter = {} as any;
-
-        setSearchParams(localVarUrlObj, localVarQueryParameter);
-        let headersFromBaseOptions =
-          baseOptions && baseOptions.headers ? baseOptions.headers : {};
-        localVarRequestOptions.headers = {
-          ...localVarHeaderParameter,
-          ...headersFromBaseOptions,
-          ...options.headers,
-        };
-
-        return {
-          url: toPathString(localVarUrlObj),
-          options: localVarRequestOptions,
-        };
-      },
-      /**
-       * Retorna órdenes que deben ser entregadas en las próximas horas
-       * @summary Obtener órdenes urgentes
-       * @param {number} [hoursAhead] Horas hacia adelante para considerar urgente
-       * @param {*} [options] Override http request option.
-       * @throws {RequiredError}
-       */
-      getUrgentOrders: async (
-        hoursAhead?: number,
-        options: RawAxiosRequestConfig = {}
-      ): Promise<RequestArgs> => {
-        const localVarPath = `/api/orders/urgent`;
-        // use dummy base URL string because the URL constructor only accepts absolute URLs.
-        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-        let baseOptions;
-        if (configuration) {
-          baseOptions = configuration.baseOptions;
-        }
-
-        const localVarRequestOptions = {
-          method: "GET",
-          ...baseOptions,
-          ...options,
-        };
-        const localVarHeaderParameter = {} as any;
-        const localVarQueryParameter = {} as any;
-
-        if (hoursAhead !== undefined) {
-          localVarQueryParameter["hoursAhead"] = hoursAhead;
-        }
-
-        setSearchParams(localVarUrlObj, localVarQueryParameter);
-        let headersFromBaseOptions =
-          baseOptions && baseOptions.headers ? baseOptions.headers : {};
-        localVarRequestOptions.headers = {
-          ...localVarHeaderParameter,
-          ...headersFromBaseOptions,
-          ...options.headers,
-        };
-
-        return {
-          url: toPathString(localVarUrlObj),
-          options: localVarRequestOptions,
-        };
-      },
-      /**
-       * Registra la entrega de una cantidad específica de GLP para una orden
-       * @summary Registrar entrega
-       * @param {string} id ID de la orden
-       * @param {number} amount Volumen entregado
-       * @param {*} [options] Override http request option.
-       * @throws {RequiredError}
-       */
-      recordDelivery: async (
-        id: string,
-        amount: number,
-        options: RawAxiosRequestConfig = {}
-      ): Promise<RequestArgs> => {
-        // verify required parameter 'id' is not null or undefined
-        assertParamExists("recordDelivery", "id", id);
-        // verify required parameter 'amount' is not null or undefined
-        assertParamExists("recordDelivery", "amount", amount);
-        const localVarPath = `/api/orders/{id}/deliver`.replace(
-          `{${"id"}}`,
-          encodeURIComponent(String(id))
-        );
-        // use dummy base URL string because the URL constructor only accepts absolute URLs.
-        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-        let baseOptions;
-        if (configuration) {
-          baseOptions = configuration.baseOptions;
-        }
-
-        const localVarRequestOptions = {
-          method: "PUT",
-          ...baseOptions,
-          ...options,
-        };
-        const localVarHeaderParameter = {} as any;
-        const localVarQueryParameter = {} as any;
-
-        if (amount !== undefined) {
-          localVarQueryParameter["amount"] = amount;
-        }
-
-        setSearchParams(localVarUrlObj, localVarQueryParameter);
-        let headersFromBaseOptions =
-          baseOptions && baseOptions.headers ? baseOptions.headers : {};
-        localVarRequestOptions.headers = {
-          ...localVarHeaderParameter,
-          ...headersFromBaseOptions,
-          ...options.headers,
-        };
-
-        return {
-          url: toPathString(localVarUrlObj),
-          options: localVarRequestOptions,
-        };
-      },
-      getOrdersByStatus: async (
-        status: GetOrdersByStatusStatusEnum,
-        options: RawAxiosRequestConfig = {}
-      ): Promise<RequestArgs> => {
-        // verify required parameter 'status' is not null or undefined
-        assertParamExists("getOrdersByStatus", "status", status);
-        const localVarPath = `/api/orders/status/{status}`.replace(
-          `{${"status"}}`,
-          encodeURIComponent(String(status))
-        );
-        // use dummy base URL string because the URL constructor only accepts absolute URLs.
-        const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-        let baseOptions;
-        if (configuration) {
-          baseOptions = configuration.baseOptions;
-        }
-
-        const localVarRequestOptions = {
-          method: "GET",
-          ...baseOptions,
-          ...options,
-        };
-        const localVarHeaderParameter = {} as any;
-        const localVarQueryParameter = {} as any;
-
-        setSearchParams(localVarUrlObj, localVarQueryParameter);
-        let headersFromBaseOptions =
-          baseOptions && baseOptions.headers ? baseOptions.headers : {};
-        localVarRequestOptions.headers = {
-          ...localVarHeaderParameter,
-          ...headersFromBaseOptions,
-          ...options.headers,
-        };
-
-        return {
-          url: toPathString(localVarUrlObj),
-          options: localVarRequestOptions,
-        };
-      },
-    };
-};
-
-/**
- * OrdersApi - functional programming interface
- * @export
- */
-export const OrdersApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = OrdersApiAxiosParamCreator(configuration)
-    return {
-        /**
-         * Registra una nueva orden en el sistema
-         * @summary Crear nueva orden
-         * @param {Order} order 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async createOrder(order: Order, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Order>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createOrder(order, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['OrdersApi.createOrder']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Elimina una orden del sistema
-         * @summary Eliminar orden
-         * @param {string} id ID de la orden a eliminar
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async deleteOrder(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteOrder(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['OrdersApi.deleteOrder']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna la lista completa de órdenes registradas
-         * @summary Obtener todas las órdenes
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getAllOrders(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Order>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllOrders(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['OrdersApi.getAllOrders']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna todas las órdenes que han sido completadas
-         * @summary Obtener órdenes completadas
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getCompletedOrders(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Order>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getCompletedOrders(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['OrdersApi.getCompletedOrders']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna una orden específica
-         * @summary Obtener orden por ID
-         * @param {string} id ID de la orden
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getOrderById(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Order>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrderById(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['OrdersApi.getOrderById']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna órdenes en un rango de fechas específico
-         * @summary Obtener órdenes por rango de fechas
-         * @param {string} startDate Fecha de inicio (ISO 8601)
-         * @param {string} endDate Fecha de fin (ISO 8601)
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getOrdersByDateRange(startDate: string, endDate: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Order>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrdersByDateRange(startDate, endDate, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['OrdersApi.getOrdersByDateRange']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna órdenes que deben ser entregadas antes de una fecha específica
-         * @summary Obtener órdenes por fecha límite
-         * @param {string} time Fecha límite (ISO 8601)
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getOrdersByDueTime(time: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Order>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrdersByDueTime(time, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['OrdersApi.getOrdersByDueTime']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna órdenes dentro de un radio específico desde una posición
-         * @summary Obtener órdenes por radio
-         * @param {number} x Coordenada X del centro
-         * @param {number} y Coordenada Y del centro
-         * @param {number} radius Radio de búsqueda
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getOrdersByRadius(x: number, y: number, radius: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Order>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrdersByRadius(x, y, radius, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['OrdersApi.getOrdersByRadius']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna todas las órdenes que han superado su fecha límite
-         * @summary Obtener órdenes vencidas
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getOverdueOrders(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Order>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getOverdueOrders(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['OrdersApi.getOverdueOrders']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna todas las órdenes que están pendientes de entrega
-         * @summary Obtener órdenes pendientes
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getPendingOrders(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Order>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getPendingOrders(options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['OrdersApi.getPendingOrders']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Retorna órdenes que deben ser entregadas en las próximas horas
-         * @summary Obtener órdenes urgentes
-         * @param {number} [hoursAhead] Horas hacia adelante para considerar urgente
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async getUrgentOrders(hoursAhead?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Order>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getUrgentOrders(hoursAhead, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['OrdersApi.getUrgentOrders']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
-         * Registra la entrega de una cantidad específica de GLP para una orden
-         * @summary Registrar entrega
-         * @param {string} id ID de la orden
-         * @param {number} amount Volumen entregado
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async recordDelivery(id: string, amount: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Order>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.recordDelivery(id, amount, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['OrdersApi.recordDelivery']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        async getOrdersByStatus(status: GetOrdersByStatusStatusEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Order>>> {
-    const localVarAxiosArgs = await localVarAxiosParamCreator.getOrdersByStatus(status, options);
-    const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-    const localVarOperationServerBasePath = operationServerMap['OrdersApi.getOrdersByStatus']?.[localVarOperationServerIndex]?.url;
-    return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-},
-
-    }
-};
-
-/**
- * OrdersApi - factory interface
- * @export
- */
-export const OrdersApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = OrdersApiFp(configuration)
-    return {
-        /**
-         * Registra una nueva orden en el sistema
-         * @summary Crear nueva orden
-         * @param {Order} order 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        createOrder(order: Order, options?: RawAxiosRequestConfig): AxiosPromise<Order> {
-            return localVarFp.createOrder(order, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Elimina una orden del sistema
-         * @summary Eliminar orden
-         * @param {string} id ID de la orden a eliminar
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        deleteOrder(id: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteOrder(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna la lista completa de órdenes registradas
-         * @summary Obtener todas las órdenes
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getAllOrders(options?: RawAxiosRequestConfig): AxiosPromise<Order> {
-            return localVarFp.getAllOrders(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna todas las órdenes que han sido completadas
-         * @summary Obtener órdenes completadas
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getCompletedOrders(options?: RawAxiosRequestConfig): AxiosPromise<Array<Order>> {
-            return localVarFp.getCompletedOrders(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna una orden específica
-         * @summary Obtener orden por ID
-         * @param {string} id ID de la orden
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getOrderById(id: string, options?: RawAxiosRequestConfig): AxiosPromise<Order> {
-            return localVarFp.getOrderById(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna órdenes en un rango de fechas específico
-         * @summary Obtener órdenes por rango de fechas
-         * @param {string} startDate Fecha de inicio (ISO 8601)
-         * @param {string} endDate Fecha de fin (ISO 8601)
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getOrdersByDateRange(startDate: string, endDate: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<Order>> {
-            return localVarFp.getOrdersByDateRange(startDate, endDate, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna órdenes que deben ser entregadas antes de una fecha específica
-         * @summary Obtener órdenes por fecha límite
-         * @param {string} time Fecha límite (ISO 8601)
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getOrdersByDueTime(time: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<Order>> {
-            return localVarFp.getOrdersByDueTime(time, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna órdenes dentro de un radio específico desde una posición
-         * @summary Obtener órdenes por radio
-         * @param {number} x Coordenada X del centro
-         * @param {number} y Coordenada Y del centro
-         * @param {number} radius Radio de búsqueda
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getOrdersByRadius(x: number, y: number, radius: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<Order>> {
-            return localVarFp.getOrdersByRadius(x, y, radius, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna todas las órdenes que han superado su fecha límite
-         * @summary Obtener órdenes vencidas
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getOverdueOrders(options?: RawAxiosRequestConfig): AxiosPromise<Array<Order>> {
-            return localVarFp.getOverdueOrders(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna todas las órdenes que están pendientes de entrega
-         * @summary Obtener órdenes pendientes
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getPendingOrders(options?: RawAxiosRequestConfig): AxiosPromise<Array<Order>> {
-            return localVarFp.getPendingOrders(options).then((request) => request(axios, basePath));
-        },
-        /**
-         * Retorna órdenes que deben ser entregadas en las próximas horas
-         * @summary Obtener órdenes urgentes
-         * @param {number} [hoursAhead] Horas hacia adelante para considerar urgente
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getUrgentOrders(hoursAhead?: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<Order>> {
-            return localVarFp.getUrgentOrders(hoursAhead, options).then((request) => request(axios, basePath));
-        },
-      
-
-
-    };
-};
-
-/**
- * OrdersApi - object-oriented interface
- * @export
- * @class OrdersApi
- * @extends {BaseAPI}
- */
-export class OrdersApi extends BaseAPI {
-    /**
-     * Registra una nueva orden en el sistema
-     * @summary Crear nueva orden
-     * @param {Order} order 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof OrdersApi
-     */
-    public createOrder(order: Order, options?: RawAxiosRequestConfig) {
-        return OrdersApiFp(this.configuration).createOrder(order, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Elimina una orden del sistema
-     * @summary Eliminar orden
-     * @param {string} id ID de la orden a eliminar
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof OrdersApi
-     */
-    public deleteOrder(id: string, options?: RawAxiosRequestConfig) {
-        return OrdersApiFp(this.configuration).deleteOrder(id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna la lista completa de órdenes registradas
-     * @summary Obtener todas las órdenes
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof OrdersApi
-     */
-    public getAllOrders(options?: RawAxiosRequestConfig) {
-        return OrdersApiFp(this.configuration).getAllOrders(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna todas las órdenes que han sido completadas
-     * @summary Obtener órdenes completadas
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof OrdersApi
-     */
-    public getCompletedOrders(options?: RawAxiosRequestConfig) {
-        return OrdersApiFp(this.configuration).getCompletedOrders(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna una orden específica
-     * @summary Obtener orden por ID
-     * @param {string} id ID de la orden
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof OrdersApi
-     */
-    public getOrderById(id: string, options?: RawAxiosRequestConfig) {
-        return OrdersApiFp(this.configuration).getOrderById(id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna órdenes en un rango de fechas específico
-     * @summary Obtener órdenes por rango de fechas
-     * @param {string} startDate Fecha de inicio (ISO 8601)
-     * @param {string} endDate Fecha de fin (ISO 8601)
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof OrdersApi
-     */
-    public getOrdersByDateRange(startDate: string, endDate: string, options?: RawAxiosRequestConfig) {
-        return OrdersApiFp(this.configuration).getOrdersByDateRange(startDate, endDate, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna órdenes que deben ser entregadas antes de una fecha específica
-     * @summary Obtener órdenes por fecha límite
-     * @param {string} time Fecha límite (ISO 8601)
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof OrdersApi
-     */
-    public getOrdersByDueTime(time: string, options?: RawAxiosRequestConfig) {
-        return OrdersApiFp(this.configuration).getOrdersByDueTime(time, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna órdenes dentro de un radio específico desde una posición
-     * @summary Obtener órdenes por radio
-     * @param {number} x Coordenada X del centro
-     * @param {number} y Coordenada Y del centro
-     * @param {number} radius Radio de búsqueda
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof OrdersApi
-     */
-    public getOrdersByRadius(x: number, y: number, radius: number, options?: RawAxiosRequestConfig) {
-        return OrdersApiFp(this.configuration).getOrdersByRadius(x, y, radius, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna todas las órdenes que han superado su fecha límite
-     * @summary Obtener órdenes vencidas
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof OrdersApi
-     */
-    public getOverdueOrders(options?: RawAxiosRequestConfig) {
-        return OrdersApiFp(this.configuration).getOverdueOrders(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna todas las órdenes que están pendientes de entrega
-     * @summary Obtener órdenes pendientes
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof OrdersApi
-     */
-    public getPendingOrders(options?: RawAxiosRequestConfig) {
-        return OrdersApiFp(this.configuration).getPendingOrders(options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Retorna órdenes que deben ser entregadas en las próximas horas
-     * @summary Obtener órdenes urgentes
-     * @param {number} [hoursAhead] Horas hacia adelante para considerar urgente
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof OrdersApi
-     */
-    public getUrgentOrders(hoursAhead?: number, options?: RawAxiosRequestConfig) {
-        return OrdersApiFp(this.configuration).getUrgentOrders(hoursAhead, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * Registra la entrega de una cantidad específica de GLP para una orden
-     * @summary Registrar entrega
-     * @param {string} id ID de la orden
-     * @param {number} amount Volumen entregado
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof OrdersApi
-     */
-    public recordDelivery(id: string, amount: number, options?: RawAxiosRequestConfig) {
-        return OrdersApiFp(this.configuration).recordDelivery(id, amount, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
- * Retorna órdenes filtradas por estado
- * @summary Obtener órdenes por estado
- * @param {GetOrdersByStatusStatusEnum} status Estado de la orden
- * @param {*} [options] Override http request option.
- * @throws {RequiredError}
- * @memberof OrdersApi
- */
-public getOrdersByStatus(status: GetOrdersByStatusStatusEnum, options?: RawAxiosRequestConfig) {
-    return OrdersApiFp(this.configuration).getOrdersByStatus(status, options).then((request) => request(this.axios, this.basePath));
-}
-
 }
 
 
 
 /**
- * VehiclesApi - axios parameter creator
+ * MaintenanceControllerApi - axios parameter creator
  * @export
  */
-export const VehiclesApiAxiosParamCreator = function (configuration?: Configuration) {
+export const MaintenanceControllerApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Crea un nuevo vehículo en el sistema
-         * @summary Crear nuevo vehículo
-         * @param {Vehicle} vehicle 
+         * 
+         * @param {MaintenanceCreateDTO} maintenanceCreateDTO 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createVehicle: async (vehicle: Vehicle, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'vehicle' is not null or undefined
-            assertParamExists('createVehicle', 'vehicle', vehicle)
-            const localVarPath = `/api/vehicles`;
+        createMaintenance: async (maintenanceCreateDTO: MaintenanceCreateDTO, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'maintenanceCreateDTO' is not null or undefined
+            assertParamExists('createMaintenance', 'maintenanceCreateDTO', maintenanceCreateDTO)
+            const localVarPath = `/api/maintenances`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -5134,7 +2082,7 @@ export const VehiclesApiAxiosParamCreator = function (configuration?: Configurat
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(vehicle, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(maintenanceCreateDTO, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -5142,16 +2090,275 @@ export const VehiclesApiAxiosParamCreator = function (configuration?: Configurat
             };
         },
         /**
-         * Elimina un vehículo del sistema
-         * @summary Eliminar vehículo
-         * @param {string} id ID del vehículo a eliminar
+         * 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteVehicle: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        listActiveMaintenances: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/maintenances/active`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} [vehicleId] 
+         * @param {string} [date] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listMaintenances: async (vehicleId?: string, date?: string, startDate?: string, endDate?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/maintenances`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (vehicleId !== undefined) {
+                localVarQueryParameter['vehicleId'] = vehicleId;
+            }
+
+            if (date !== undefined) {
+                localVarQueryParameter['date'] = (date as any instanceof Date) ?
+                    (date as any).toISOString().substring(0,10) :
+                    date;
+            }
+
+            if (startDate !== undefined) {
+                localVarQueryParameter['startDate'] = (startDate as any instanceof Date) ?
+                    (startDate as any).toISOString().substring(0,10) :
+                    startDate;
+            }
+
+            if (endDate !== undefined) {
+                localVarQueryParameter['endDate'] = (endDate as any instanceof Date) ?
+                    (endDate as any).toISOString().substring(0,10) :
+                    endDate;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * MaintenanceControllerApi - functional programming interface
+ * @export
+ */
+export const MaintenanceControllerApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = MaintenanceControllerApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {MaintenanceCreateDTO} maintenanceCreateDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async createMaintenance(maintenanceCreateDTO: MaintenanceCreateDTO, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MaintenanceDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.createMaintenance(maintenanceCreateDTO, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['MaintenanceControllerApi.createMaintenance']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async listActiveMaintenances(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<MaintenanceDTO>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listActiveMaintenances(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['MaintenanceControllerApi.listActiveMaintenances']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} [vehicleId] 
+         * @param {string} [date] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async listMaintenances(vehicleId?: string, date?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<MaintenanceDTO>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.listMaintenances(vehicleId, date, startDate, endDate, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['MaintenanceControllerApi.listMaintenances']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * MaintenanceControllerApi - factory interface
+ * @export
+ */
+export const MaintenanceControllerApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = MaintenanceControllerApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {MaintenanceCreateDTO} maintenanceCreateDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createMaintenance(maintenanceCreateDTO: MaintenanceCreateDTO, options?: RawAxiosRequestConfig): AxiosPromise<MaintenanceDTO> {
+            return localVarFp.createMaintenance(maintenanceCreateDTO, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listActiveMaintenances(options?: RawAxiosRequestConfig): AxiosPromise<Array<MaintenanceDTO>> {
+            return localVarFp.listActiveMaintenances(options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} [vehicleId] 
+         * @param {string} [date] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        listMaintenances(vehicleId?: string, date?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<MaintenanceDTO>> {
+            return localVarFp.listMaintenances(vehicleId, date, startDate, endDate, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * MaintenanceControllerApi - object-oriented interface
+ * @export
+ * @class MaintenanceControllerApi
+ * @extends {BaseAPI}
+ */
+export class MaintenanceControllerApi extends BaseAPI {
+    /**
+     * 
+     * @param {MaintenanceCreateDTO} maintenanceCreateDTO 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof MaintenanceControllerApi
+     */
+    public createMaintenance(maintenanceCreateDTO: MaintenanceCreateDTO, options?: RawAxiosRequestConfig) {
+        return MaintenanceControllerApiFp(this.configuration).createMaintenance(maintenanceCreateDTO, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof MaintenanceControllerApi
+     */
+    public listActiveMaintenances(options?: RawAxiosRequestConfig) {
+        return MaintenanceControllerApiFp(this.configuration).listActiveMaintenances(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} [vehicleId] 
+     * @param {string} [date] 
+     * @param {string} [startDate] 
+     * @param {string} [endDate] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof MaintenanceControllerApi
+     */
+    public listMaintenances(vehicleId?: string, date?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig) {
+        return MaintenanceControllerApiFp(this.configuration).listMaintenances(vehicleId, date, startDate, endDate, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * OrderControllerApi - axios parameter creator
+ * @export
+ */
+export const OrderControllerApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {OrderDTO} orderDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        create2: async (orderDTO: OrderDTO, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'orderDTO' is not null or undefined
+            assertParamExists('create2', 'orderDTO', orderDTO)
+            const localVarPath = `/api/orders`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(orderDTO, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        delete2: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('deleteVehicle', 'id', id)
-            const localVarPath = `/api/vehicles/{id}`
+            assertParamExists('delete2', 'id', id)
+            const localVarPath = `/api/orders/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -5176,136 +2383,15 @@ export const VehiclesApiAxiosParamCreator = function (configuration?: Configurat
             };
         },
         /**
-         * Retorna una lista de todos los vehículos en el sistema
-         * @summary Obtener todos los vehículos
+         * 
+         * @param {string} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllVehicles: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/vehicles`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna el total de GLP disponible en vehículos disponibles
-         * @summary Obtener GLP disponible en la flota
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getAvailableFleetGLP: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/vehicles/fleet/available-glp`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna todos los vehículos disponibles
-         * @summary Obtener vehículos disponibles
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getAvailableVehicles: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/vehicles/available`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna la capacidad total de GLP de todos los vehículos
-         * @summary Obtener capacidad total de la flota
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getTotalFleetCapacity: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            const localVarPath = `/api/vehicles/fleet/capacity`;
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna un vehículo específico por su ID
-         * @summary Obtener vehículo por ID
-         * @param {string} id ID del vehículo
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getVehicleById: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getById2: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('getVehicleById', 'id', id)
-            const localVarPath = `/api/vehicles/{id}`
+            assertParamExists('getById2', 'id', id)
+            const localVarPath = `/api/orders/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -5330,22 +2416,15 @@ export const VehiclesApiAxiosParamCreator = function (configuration?: Configurat
             };
         },
         /**
-         * Retorna vehículos dentro de un radio específico
-         * @summary Obtener vehículos por radio
-         * @param {number} x Coordenada X del centro
-         * @param {number} y Coordenada Y del centro
-         * @param {number} radius Radio de búsqueda
+         * 
+         * @param {boolean} [pending] 
+         * @param {string} [overdueAt] 
+         * @param {string} [availableAt] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getVehiclesByRadius: async (x: number, y: number, radius: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'x' is not null or undefined
-            assertParamExists('getVehiclesByRadius', 'x', x)
-            // verify required parameter 'y' is not null or undefined
-            assertParamExists('getVehiclesByRadius', 'y', y)
-            // verify required parameter 'radius' is not null or undefined
-            assertParamExists('getVehiclesByRadius', 'radius', radius)
-            const localVarPath = `/api/vehicles/radius`;
+        list2: async (pending?: boolean, overdueAt?: string, availableAt?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/orders`;
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
             let baseOptions;
@@ -5357,16 +2436,20 @@ export const VehiclesApiAxiosParamCreator = function (configuration?: Configurat
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-            if (x !== undefined) {
-                localVarQueryParameter['x'] = x;
+            if (pending !== undefined) {
+                localVarQueryParameter['pending'] = pending;
             }
 
-            if (y !== undefined) {
-                localVarQueryParameter['y'] = y;
+            if (overdueAt !== undefined) {
+                localVarQueryParameter['overdueAt'] = (overdueAt as any instanceof Date) ?
+                    (overdueAt as any).toISOString() :
+                    overdueAt;
             }
 
-            if (radius !== undefined) {
-                localVarQueryParameter['radius'] = radius;
+            if (availableAt !== undefined) {
+                localVarQueryParameter['availableAt'] = (availableAt as any instanceof Date) ?
+                    (availableAt as any).toISOString() :
+                    availableAt;
             }
 
 
@@ -5381,87 +2464,18 @@ export const VehiclesApiAxiosParamCreator = function (configuration?: Configurat
             };
         },
         /**
-         * Retorna vehículos filtrados por estado
-         * @summary Obtener vehículos por estado
-         * @param {GetVehiclesByStatusStatusEnum} status Estado del vehículo
+         * 
+         * @param {string} id 
+         * @param {DeliveryRecordDTO} deliveryRecordDTO 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getVehiclesByStatus: async (status: GetVehiclesByStatusStatusEnum, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'status' is not null or undefined
-            assertParamExists('getVehiclesByStatus', 'status', status)
-            const localVarPath = `/api/vehicles/status/{status}`
-                .replace(`{${"status"}}`, encodeURIComponent(String(status)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Retorna vehículos filtrados por tipo
-         * @summary Obtener vehículos por tipo
-         * @param {GetVehiclesByTypeTypeEnum} type Tipo de vehículo
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        getVehiclesByType: async (type: GetVehiclesByTypeTypeEnum, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'type' is not null or undefined
-            assertParamExists('getVehiclesByType', 'type', type)
-            const localVarPath = `/api/vehicles/type/{type}`
-                .replace(`{${"type"}}`, encodeURIComponent(String(type)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
-         * Actualiza el nivel de GLP del vehículo (cantidad a agregar/quitar)
-         * @summary Actualizar nivel de GLP
-         * @param {string} id ID del vehículo
-         * @param {number} amount Cantidad de GLP a agregar (positivo) o quitar (negativo)
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        updateGLPLevel: async (id: string, amount: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        recordDelivery: async (id: string, deliveryRecordDTO: DeliveryRecordDTO, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('updateGLPLevel', 'id', id)
-            // verify required parameter 'amount' is not null or undefined
-            assertParamExists('updateGLPLevel', 'amount', amount)
-            const localVarPath = `/api/vehicles/{id}/glp`
+            assertParamExists('recordDelivery', 'id', id)
+            // verify required parameter 'deliveryRecordDTO' is not null or undefined
+            assertParamExists('recordDelivery', 'deliveryRecordDTO', deliveryRecordDTO)
+            const localVarPath = `/api/orders/{id}/deliver`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -5470,19 +2484,18 @@ export const VehiclesApiAxiosParamCreator = function (configuration?: Configurat
                 baseOptions = configuration.baseOptions;
             }
 
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
-            if (amount !== undefined) {
-                localVarQueryParameter['amount'] = amount;
-            }
-
 
     
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(deliveryRecordDTO, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -5490,19 +2503,18 @@ export const VehiclesApiAxiosParamCreator = function (configuration?: Configurat
             };
         },
         /**
-         * Actualiza la posición actual del vehículo
-         * @summary Actualizar posición del vehículo
-         * @param {string} id ID del vehículo
-         * @param {Position} position 
+         * 
+         * @param {string} id 
+         * @param {OrderDTO} orderDTO 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateVehiclePosition: async (id: string, position: Position, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        update1: async (id: string, orderDTO: OrderDTO, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('updateVehiclePosition', 'id', id)
-            // verify required parameter 'position' is not null or undefined
-            assertParamExists('updateVehiclePosition', 'position', position)
-            const localVarPath = `/api/vehicles/{id}/position`
+            assertParamExists('update1', 'id', id)
+            // verify required parameter 'orderDTO' is not null or undefined
+            assertParamExists('update1', 'orderDTO', orderDTO)
+            const localVarPath = `/api/orders/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -5522,7 +2534,285 @@ export const VehiclesApiAxiosParamCreator = function (configuration?: Configurat
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(position, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = serializeDataIfNeeded(orderDTO, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * OrderControllerApi - functional programming interface
+ * @export
+ */
+export const OrderControllerApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = OrderControllerApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {OrderDTO} orderDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async create2(orderDTO: OrderDTO, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.create2(orderDTO, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['OrderControllerApi.create2']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async delete2(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.delete2(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['OrderControllerApi.delete2']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getById2(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getById2(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['OrderControllerApi.getById2']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {boolean} [pending] 
+         * @param {string} [overdueAt] 
+         * @param {string} [availableAt] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async list2(pending?: boolean, overdueAt?: string, availableAt?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<OrderDTO>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.list2(pending, overdueAt, availableAt, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['OrderControllerApi.list2']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {DeliveryRecordDTO} deliveryRecordDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async recordDelivery(id: string, deliveryRecordDTO: DeliveryRecordDTO, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ServeRecordDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.recordDelivery(id, deliveryRecordDTO, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['OrderControllerApi.recordDelivery']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {OrderDTO} orderDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async update1(id: string, orderDTO: OrderDTO, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.update1(id, orderDTO, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['OrderControllerApi.update1']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * OrderControllerApi - factory interface
+ * @export
+ */
+export const OrderControllerApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = OrderControllerApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {OrderDTO} orderDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        create2(orderDTO: OrderDTO, options?: RawAxiosRequestConfig): AxiosPromise<OrderDTO> {
+            return localVarFp.create2(orderDTO, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        delete2(id: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.delete2(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getById2(id: string, options?: RawAxiosRequestConfig): AxiosPromise<OrderDTO> {
+            return localVarFp.getById2(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {boolean} [pending] 
+         * @param {string} [overdueAt] 
+         * @param {string} [availableAt] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        list2(pending?: boolean, overdueAt?: string, availableAt?: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<OrderDTO>> {
+            return localVarFp.list2(pending, overdueAt, availableAt, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {DeliveryRecordDTO} deliveryRecordDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        recordDelivery(id: string, deliveryRecordDTO: DeliveryRecordDTO, options?: RawAxiosRequestConfig): AxiosPromise<ServeRecordDTO> {
+            return localVarFp.recordDelivery(id, deliveryRecordDTO, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {OrderDTO} orderDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        update1(id: string, orderDTO: OrderDTO, options?: RawAxiosRequestConfig): AxiosPromise<OrderDTO> {
+            return localVarFp.update1(id, orderDTO, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * OrderControllerApi - object-oriented interface
+ * @export
+ * @class OrderControllerApi
+ * @extends {BaseAPI}
+ */
+export class OrderControllerApi extends BaseAPI {
+    /**
+     * 
+     * @param {OrderDTO} orderDTO 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof OrderControllerApi
+     */
+    public create2(orderDTO: OrderDTO, options?: RawAxiosRequestConfig) {
+        return OrderControllerApiFp(this.configuration).create2(orderDTO, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof OrderControllerApi
+     */
+    public delete2(id: string, options?: RawAxiosRequestConfig) {
+        return OrderControllerApiFp(this.configuration).delete2(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof OrderControllerApi
+     */
+    public getById2(id: string, options?: RawAxiosRequestConfig) {
+        return OrderControllerApiFp(this.configuration).getById2(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {boolean} [pending] 
+     * @param {string} [overdueAt] 
+     * @param {string} [availableAt] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof OrderControllerApi
+     */
+    public list2(pending?: boolean, overdueAt?: string, availableAt?: string, options?: RawAxiosRequestConfig) {
+        return OrderControllerApiFp(this.configuration).list2(pending, overdueAt, availableAt, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} id 
+     * @param {DeliveryRecordDTO} deliveryRecordDTO 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof OrderControllerApi
+     */
+    public recordDelivery(id: string, deliveryRecordDTO: DeliveryRecordDTO, options?: RawAxiosRequestConfig) {
+        return OrderControllerApiFp(this.configuration).recordDelivery(id, deliveryRecordDTO, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} id 
+     * @param {OrderDTO} orderDTO 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof OrderControllerApi
+     */
+    public update1(id: string, orderDTO: OrderDTO, options?: RawAxiosRequestConfig) {
+        return OrderControllerApiFp(this.configuration).update1(id, orderDTO, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * ServeRecordControllerApi - axios parameter creator
+ * @export
+ */
+export const ServeRecordControllerApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {ServeRecordDTO} serveRecordDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        create1: async (serveRecordDTO: ServeRecordDTO, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'serveRecordDTO' is not null or undefined
+            assertParamExists('create1', 'serveRecordDTO', serveRecordDTO)
+            const localVarPath = `/api/serve-records`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(serveRecordDTO, localVarRequestOptions, configuration)
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -5530,19 +2820,15 @@ export const VehiclesApiAxiosParamCreator = function (configuration?: Configurat
             };
         },
         /**
-         * Actualiza el estado operacional del vehículo
-         * @summary Actualizar estado del vehículo
-         * @param {string} id ID del vehículo
-         * @param {UpdateVehicleStatusStatusEnum} status Nuevo estado del vehículo
+         * 
+         * @param {number} id 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateVehicleStatus: async (id: string, status: UpdateVehicleStatusStatusEnum, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        delete1: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
-            assertParamExists('updateVehicleStatus', 'id', id)
-            // verify required parameter 'status' is not null or undefined
-            assertParamExists('updateVehicleStatus', 'status', status)
-            const localVarPath = `/api/vehicles/{id}/status`
+            assertParamExists('delete1', 'id', id)
+            const localVarPath = `/api/serve-records/{id}`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -5551,7 +2837,564 @@ export const VehiclesApiAxiosParamCreator = function (configuration?: Configurat
                 baseOptions = configuration.baseOptions;
             }
 
-            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getById1: async (id: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getById1', 'id', id)
+            const localVarPath = `/api/serve-records/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} [orderId] 
+         * @param {string} [vehicleId] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        list1: async (orderId?: string, vehicleId?: string, startDate?: string, endDate?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/serve-records`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (orderId !== undefined) {
+                localVarQueryParameter['orderId'] = orderId;
+            }
+
+            if (vehicleId !== undefined) {
+                localVarQueryParameter['vehicleId'] = vehicleId;
+            }
+
+            if (startDate !== undefined) {
+                localVarQueryParameter['startDate'] = (startDate as any instanceof Date) ?
+                    (startDate as any).toISOString() :
+                    startDate;
+            }
+
+            if (endDate !== undefined) {
+                localVarQueryParameter['endDate'] = (endDate as any instanceof Date) ?
+                    (endDate as any).toISOString() :
+                    endDate;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * ServeRecordControllerApi - functional programming interface
+ * @export
+ */
+export const ServeRecordControllerApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = ServeRecordControllerApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {ServeRecordDTO} serveRecordDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async create1(serveRecordDTO: ServeRecordDTO, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ServeRecordDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.create1(serveRecordDTO, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ServeRecordControllerApi.create1']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async delete1(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.delete1(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ServeRecordControllerApi.delete1']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getById1(id: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ServeRecordDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getById1(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ServeRecordControllerApi.getById1']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} [orderId] 
+         * @param {string} [vehicleId] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async list1(orderId?: string, vehicleId?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<ServeRecordDTO>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.list1(orderId, vehicleId, startDate, endDate, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ServeRecordControllerApi.list1']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * ServeRecordControllerApi - factory interface
+ * @export
+ */
+export const ServeRecordControllerApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = ServeRecordControllerApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {ServeRecordDTO} serveRecordDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        create1(serveRecordDTO: ServeRecordDTO, options?: RawAxiosRequestConfig): AxiosPromise<ServeRecordDTO> {
+            return localVarFp.create1(serveRecordDTO, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        delete1(id: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.delete1(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {number} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getById1(id: number, options?: RawAxiosRequestConfig): AxiosPromise<ServeRecordDTO> {
+            return localVarFp.getById1(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} [orderId] 
+         * @param {string} [vehicleId] 
+         * @param {string} [startDate] 
+         * @param {string} [endDate] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        list1(orderId?: string, vehicleId?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig): AxiosPromise<Array<ServeRecordDTO>> {
+            return localVarFp.list1(orderId, vehicleId, startDate, endDate, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * ServeRecordControllerApi - object-oriented interface
+ * @export
+ * @class ServeRecordControllerApi
+ * @extends {BaseAPI}
+ */
+export class ServeRecordControllerApi extends BaseAPI {
+    /**
+     * 
+     * @param {ServeRecordDTO} serveRecordDTO 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ServeRecordControllerApi
+     */
+    public create1(serveRecordDTO: ServeRecordDTO, options?: RawAxiosRequestConfig) {
+        return ServeRecordControllerApiFp(this.configuration).create1(serveRecordDTO, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ServeRecordControllerApi
+     */
+    public delete1(id: number, options?: RawAxiosRequestConfig) {
+        return ServeRecordControllerApiFp(this.configuration).delete1(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {number} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ServeRecordControllerApi
+     */
+    public getById1(id: number, options?: RawAxiosRequestConfig) {
+        return ServeRecordControllerApiFp(this.configuration).getById1(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} [orderId] 
+     * @param {string} [vehicleId] 
+     * @param {string} [startDate] 
+     * @param {string} [endDate] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof ServeRecordControllerApi
+     */
+    public list1(orderId?: string, vehicleId?: string, startDate?: string, endDate?: string, options?: RawAxiosRequestConfig) {
+        return ServeRecordControllerApiFp(this.configuration).list1(orderId, vehicleId, startDate, endDate, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
+ * SimulationApi - axios parameter creator
+ * @export
+ */
+export const SimulationApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * Crea una nueva instancia de simulación
+         * @summary Crear nueva simulación
+         * @param {string} [name] 
+         * @param {string} [description] 
+         * @param {string} [startDate] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createSimulation: async (name?: string, description?: string, startDate?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/simulation`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (name !== undefined) {
+                localVarQueryParameter['name'] = name;
+            }
+
+            if (description !== undefined) {
+                localVarQueryParameter['description'] = description;
+            }
+
+            if (startDate !== undefined) {
+                localVarQueryParameter['startDate'] = startDate;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Elimina una simulación existente
+         * @summary Eliminar simulación
+         * @param {string} id ID de la simulación
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteSimulation: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('deleteSimulation', 'id', id)
+            const localVarPath = `/api/simulation/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Obtiene una lista de todas las simulaciones disponibles
+         * @summary Listar todas las simulaciones
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getAllSimulations: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/simulation`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Obtiene la lista de bloqueos activos en la simulación
+         * @summary Listar bloqueos
+         * @param {string} id ID de la simulación
+         * @param {boolean} [activeOnly] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getBlockages: async (id: string, activeOnly?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getBlockages', 'id', id)
+            const localVarPath = `/api/simulation/{id}/blockages`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (activeOnly !== undefined) {
+                localVarQueryParameter['activeOnly'] = activeOnly;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Obtiene información detallada del entorno de simulación
+         * @summary Obtener detalles del entorno
+         * @param {string} id ID de la simulación
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getEnvironment: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getEnvironment', 'id', id)
+            const localVarPath = `/api/simulation/{id}/environment`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Obtiene la lista de órdenes en la simulación
+         * @summary Listar órdenes
+         * @param {string} id ID de la simulación
+         * @param {boolean} [pendingOnly] 
+         * @param {boolean} [overdueOnly] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getOrders: async (id: string, pendingOnly?: boolean, overdueOnly?: boolean, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getOrders', 'id', id)
+            const localVarPath = `/api/simulation/{id}/orders`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (pendingOnly !== undefined) {
+                localVarQueryParameter['pendingOnly'] = pendingOnly;
+            }
+
+            if (overdueOnly !== undefined) {
+                localVarQueryParameter['overdueOnly'] = overdueOnly;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Obtiene el estado actual de una simulación específica
+         * @summary Obtener estado de una simulación
+         * @param {string} id ID de la simulación
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getSimulationStatus: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getSimulationStatus', 'id', id)
+            const localVarPath = `/api/simulation/{id}/status`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Obtiene la lista de vehículos en la simulación
+         * @summary Listar vehículos
+         * @param {string} id ID de la simulación
+         * @param {GetVehiclesStatusEnum} [status] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getVehicles: async (id: string, status?: GetVehiclesStatusEnum, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getVehicles', 'id', id)
+            const localVarPath = `/api/simulation/{id}/vehicles`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
 
@@ -5570,532 +3413,1437 @@ export const VehiclesApiAxiosParamCreator = function (configuration?: Configurat
                 options: localVarRequestOptions,
             };
         },
+        /**
+         * Pausa la ejecución de una simulación
+         * @summary Pausar simulación
+         * @param {string} id ID de la simulación
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        pauseSimulation: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('pauseSimulation', 'id', id)
+            const localVarPath = `/api/simulation/{id}/pause`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Simula la reparación de un vehículo averiado
+         * @summary Reparar vehículo
+         * @param {string} id ID de la simulación
+         * @param {string} vehicleId ID del vehículo
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        repairVehicle: async (id: string, vehicleId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('repairVehicle', 'id', id)
+            // verify required parameter 'vehicleId' is not null or undefined
+            assertParamExists('repairVehicle', 'vehicleId', vehicleId)
+            const localVarPath = `/api/simulation/{id}/vehicle/{vehicleId}/repair`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)))
+                .replace(`{${"vehicleId"}}`, encodeURIComponent(String(vehicleId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Ajusta la velocidad de ejecución de la simulación
+         * @summary Ajustar velocidad de simulación
+         * @param {string} id ID de la simulación
+         * @param {number} speedFactor 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        setSimulationSpeed: async (id: string, speedFactor: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('setSimulationSpeed', 'id', id)
+            // verify required parameter 'speedFactor' is not null or undefined
+            assertParamExists('setSimulationSpeed', 'speedFactor', speedFactor)
+            const localVarPath = `/api/simulation/{id}/speed`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (speedFactor !== undefined) {
+                localVarQueryParameter['speedFactor'] = speedFactor;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Simula una avería en un vehículo específico
+         * @summary Simular avería de vehículo
+         * @param {string} id ID de la simulación
+         * @param {string} vehicleId ID del vehículo
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        simulateVehicleBreakdown: async (id: string, vehicleId: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('simulateVehicleBreakdown', 'id', id)
+            // verify required parameter 'vehicleId' is not null or undefined
+            assertParamExists('simulateVehicleBreakdown', 'vehicleId', vehicleId)
+            const localVarPath = `/api/simulation/{id}/vehicle/{vehicleId}/breakdown`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)))
+                .replace(`{${"vehicleId"}}`, encodeURIComponent(String(vehicleId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Inicia o reanuda la ejecución de una simulación
+         * @summary Iniciar simulación
+         * @param {string} id ID de la simulación
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        startSimulation: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('startSimulation', 'id', id)
+            const localVarPath = `/api/simulation/{id}/start`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
     }
 };
 
 /**
- * VehiclesApi - functional programming interface
+ * SimulationApi - functional programming interface
  * @export
  */
-export const VehiclesApiFp = function(configuration?: Configuration) {
-    const localVarAxiosParamCreator = VehiclesApiAxiosParamCreator(configuration)
+export const SimulationApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = SimulationApiAxiosParamCreator(configuration)
     return {
         /**
-         * Crea un nuevo vehículo en el sistema
-         * @summary Crear nuevo vehículo
-         * @param {Vehicle} vehicle 
+         * Crea una nueva instancia de simulación
+         * @summary Crear nueva simulación
+         * @param {string} [name] 
+         * @param {string} [description] 
+         * @param {string} [startDate] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async createVehicle(vehicle: Vehicle, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Vehicle>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createVehicle(vehicle, options);
+        async createSimulation(name?: string, description?: string, startDate?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<{ [key: string]: object; }>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.createSimulation(name, description, startDate, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['VehiclesApi.createVehicle']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SimulationApi.createSimulation']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Elimina un vehículo del sistema
-         * @summary Eliminar vehículo
-         * @param {string} id ID del vehículo a eliminar
+         * Elimina una simulación existente
+         * @summary Eliminar simulación
+         * @param {string} id ID de la simulación
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async deleteVehicle(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteVehicle(id, options);
+        async deleteSimulation(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteSimulation(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['VehiclesApi.deleteVehicle']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SimulationApi.deleteSimulation']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Retorna una lista de todos los vehículos en el sistema
-         * @summary Obtener todos los vehículos
+         * Obtiene una lista de todas las simulaciones disponibles
+         * @summary Listar todas las simulaciones
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAllVehicles(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Vehicle>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllVehicles(options);
+        async getAllSimulations(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<{ [key: string]: object; }>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getAllSimulations(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['VehiclesApi.getAllVehicles']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SimulationApi.getAllSimulations']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Retorna el total de GLP disponible en vehículos disponibles
-         * @summary Obtener GLP disponible en la flota
+         * Obtiene la lista de bloqueos activos en la simulación
+         * @summary Listar bloqueos
+         * @param {string} id ID de la simulación
+         * @param {boolean} [activeOnly] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAvailableFleetGLP(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<number>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAvailableFleetGLP(options);
+        async getBlockages(id: string, activeOnly?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Blockage>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getBlockages(id, activeOnly, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['VehiclesApi.getAvailableFleetGLP']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SimulationApi.getBlockages']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Retorna todos los vehículos disponibles
-         * @summary Obtener vehículos disponibles
+         * Obtiene información detallada del entorno de simulación
+         * @summary Obtener detalles del entorno
+         * @param {string} id ID de la simulación
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getAvailableVehicles(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Vehicle>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getAvailableVehicles(options);
+        async getEnvironment(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<{ [key: string]: object; }>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getEnvironment(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['VehiclesApi.getAvailableVehicles']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SimulationApi.getEnvironment']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Retorna la capacidad total de GLP de todos los vehículos
-         * @summary Obtener capacidad total de la flota
+         * Obtiene la lista de órdenes en la simulación
+         * @summary Listar órdenes
+         * @param {string} id ID de la simulación
+         * @param {boolean} [pendingOnly] 
+         * @param {boolean} [overdueOnly] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getTotalFleetCapacity(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<number>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getTotalFleetCapacity(options);
+        async getOrders(id: string, pendingOnly?: boolean, overdueOnly?: boolean, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Order>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getOrders(id, pendingOnly, overdueOnly, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['VehiclesApi.getTotalFleetCapacity']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SimulationApi.getOrders']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Retorna un vehículo específico por su ID
-         * @summary Obtener vehículo por ID
-         * @param {string} id ID del vehículo
+         * Obtiene el estado actual de una simulación específica
+         * @summary Obtener estado de una simulación
+         * @param {string} id ID de la simulación
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getVehicleById(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Vehicle>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getVehicleById(id, options);
+        async getSimulationStatus(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<{ [key: string]: object; }>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getSimulationStatus(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['VehiclesApi.getVehicleById']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SimulationApi.getSimulationStatus']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Retorna vehículos dentro de un radio específico
-         * @summary Obtener vehículos por radio
-         * @param {number} x Coordenada X del centro
-         * @param {number} y Coordenada Y del centro
-         * @param {number} radius Radio de búsqueda
+         * Obtiene la lista de vehículos en la simulación
+         * @summary Listar vehículos
+         * @param {string} id ID de la simulación
+         * @param {GetVehiclesStatusEnum} [status] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getVehiclesByRadius(x: number, y: number, radius: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Vehicle>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getVehiclesByRadius(x, y, radius, options);
+        async getVehicles(id: string, status?: GetVehiclesStatusEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Vehicle>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getVehicles(id, status, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['VehiclesApi.getVehiclesByRadius']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SimulationApi.getVehicles']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Retorna vehículos filtrados por estado
-         * @summary Obtener vehículos por estado
-         * @param {GetVehiclesByStatusStatusEnum} status Estado del vehículo
+         * Pausa la ejecución de una simulación
+         * @summary Pausar simulación
+         * @param {string} id ID de la simulación
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getVehiclesByStatus(status: GetVehiclesByStatusStatusEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Vehicle>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getVehiclesByStatus(status, options);
+        async pauseSimulation(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<{ [key: string]: object; }>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.pauseSimulation(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['VehiclesApi.getVehiclesByStatus']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SimulationApi.pauseSimulation']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Retorna vehículos filtrados por tipo
-         * @summary Obtener vehículos por tipo
-         * @param {GetVehiclesByTypeTypeEnum} type Tipo de vehículo
+         * Simula la reparación de un vehículo averiado
+         * @summary Reparar vehículo
+         * @param {string} id ID de la simulación
+         * @param {string} vehicleId ID del vehículo
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getVehiclesByType(type: GetVehiclesByTypeTypeEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Vehicle>>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getVehiclesByType(type, options);
+        async repairVehicle(id: string, vehicleId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<{ [key: string]: object; }>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.repairVehicle(id, vehicleId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['VehiclesApi.getVehiclesByType']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SimulationApi.repairVehicle']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Actualiza el nivel de GLP del vehículo (cantidad a agregar/quitar)
-         * @summary Actualizar nivel de GLP
-         * @param {string} id ID del vehículo
-         * @param {number} amount Cantidad de GLP a agregar (positivo) o quitar (negativo)
+         * Ajusta la velocidad de ejecución de la simulación
+         * @summary Ajustar velocidad de simulación
+         * @param {string} id ID de la simulación
+         * @param {number} speedFactor 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateGLPLevel(id: string, amount: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Vehicle>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateGLPLevel(id, amount, options);
+        async setSimulationSpeed(id: string, speedFactor: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<{ [key: string]: object; }>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.setSimulationSpeed(id, speedFactor, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['VehiclesApi.updateGLPLevel']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SimulationApi.setSimulationSpeed']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Actualiza la posición actual del vehículo
-         * @summary Actualizar posición del vehículo
-         * @param {string} id ID del vehículo
-         * @param {Position} position 
+         * Simula una avería en un vehículo específico
+         * @summary Simular avería de vehículo
+         * @param {string} id ID de la simulación
+         * @param {string} vehicleId ID del vehículo
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateVehiclePosition(id: string, position: Position, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Vehicle>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateVehiclePosition(id, position, options);
+        async simulateVehicleBreakdown(id: string, vehicleId: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<{ [key: string]: object; }>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.simulateVehicleBreakdown(id, vehicleId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['VehiclesApi.updateVehiclePosition']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SimulationApi.simulateVehicleBreakdown']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Actualiza el estado operacional del vehículo
-         * @summary Actualizar estado del vehículo
-         * @param {string} id ID del vehículo
-         * @param {UpdateVehicleStatusStatusEnum} status Nuevo estado del vehículo
+         * Inicia o reanuda la ejecución de una simulación
+         * @summary Iniciar simulación
+         * @param {string} id ID de la simulación
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async updateVehicleStatus(id: string, status: UpdateVehicleStatusStatusEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Vehicle>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.updateVehicleStatus(id, status, options);
+        async startSimulation(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<{ [key: string]: object; }>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.startSimulation(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['VehiclesApi.updateVehicleStatus']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['SimulationApi.startSimulation']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
     }
 };
 
 /**
- * VehiclesApi - factory interface
+ * SimulationApi - factory interface
  * @export
  */
-export const VehiclesApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
-    const localVarFp = VehiclesApiFp(configuration)
+export const SimulationApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = SimulationApiFp(configuration)
     return {
         /**
-         * Crea un nuevo vehículo en el sistema
-         * @summary Crear nuevo vehículo
-         * @param {Vehicle} vehicle 
+         * Crea una nueva instancia de simulación
+         * @summary Crear nueva simulación
+         * @param {string} [name] 
+         * @param {string} [description] 
+         * @param {string} [startDate] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createVehicle(vehicle: Vehicle, options?: RawAxiosRequestConfig): AxiosPromise<Vehicle> {
-            return localVarFp.createVehicle(vehicle, options).then((request) => request(axios, basePath));
+        createSimulation(name?: string, description?: string, startDate?: string, options?: RawAxiosRequestConfig): AxiosPromise<{ [key: string]: object; }> {
+            return localVarFp.createSimulation(name, description, startDate, options).then((request) => request(axios, basePath));
         },
         /**
-         * Elimina un vehículo del sistema
-         * @summary Eliminar vehículo
-         * @param {string} id ID del vehículo a eliminar
+         * Elimina una simulación existente
+         * @summary Eliminar simulación
+         * @param {string} id ID de la simulación
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        deleteVehicle(id: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.deleteVehicle(id, options).then((request) => request(axios, basePath));
+        deleteSimulation(id: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.deleteSimulation(id, options).then((request) => request(axios, basePath));
         },
         /**
-         * Retorna una lista de todos los vehículos en el sistema
-         * @summary Obtener todos los vehículos
+         * Obtiene una lista de todas las simulaciones disponibles
+         * @summary Listar todas las simulaciones
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAllVehicles(options?: RawAxiosRequestConfig): AxiosPromise<Vehicle> {
-            return localVarFp.getAllVehicles(options).then((request) => request(axios, basePath));
+        getAllSimulations(options?: RawAxiosRequestConfig): AxiosPromise<Array<{ [key: string]: object; }>> {
+            return localVarFp.getAllSimulations(options).then((request) => request(axios, basePath));
         },
         /**
-         * Retorna el total de GLP disponible en vehículos disponibles
-         * @summary Obtener GLP disponible en la flota
+         * Obtiene la lista de bloqueos activos en la simulación
+         * @summary Listar bloqueos
+         * @param {string} id ID de la simulación
+         * @param {boolean} [activeOnly] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAvailableFleetGLP(options?: RawAxiosRequestConfig): AxiosPromise<number> {
-            return localVarFp.getAvailableFleetGLP(options).then((request) => request(axios, basePath));
+        getBlockages(id: string, activeOnly?: boolean, options?: RawAxiosRequestConfig): AxiosPromise<Array<Blockage>> {
+            return localVarFp.getBlockages(id, activeOnly, options).then((request) => request(axios, basePath));
         },
         /**
-         * Retorna todos los vehículos disponibles
-         * @summary Obtener vehículos disponibles
+         * Obtiene información detallada del entorno de simulación
+         * @summary Obtener detalles del entorno
+         * @param {string} id ID de la simulación
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getAvailableVehicles(options?: RawAxiosRequestConfig): AxiosPromise<Array<Vehicle>> {
-            return localVarFp.getAvailableVehicles(options).then((request) => request(axios, basePath));
+        getEnvironment(id: string, options?: RawAxiosRequestConfig): AxiosPromise<{ [key: string]: object; }> {
+            return localVarFp.getEnvironment(id, options).then((request) => request(axios, basePath));
         },
         /**
-         * Retorna la capacidad total de GLP de todos los vehículos
-         * @summary Obtener capacidad total de la flota
+         * Obtiene la lista de órdenes en la simulación
+         * @summary Listar órdenes
+         * @param {string} id ID de la simulación
+         * @param {boolean} [pendingOnly] 
+         * @param {boolean} [overdueOnly] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getTotalFleetCapacity(options?: RawAxiosRequestConfig): AxiosPromise<number> {
-            return localVarFp.getTotalFleetCapacity(options).then((request) => request(axios, basePath));
+        getOrders(id: string, pendingOnly?: boolean, overdueOnly?: boolean, options?: RawAxiosRequestConfig): AxiosPromise<Array<Order>> {
+            return localVarFp.getOrders(id, pendingOnly, overdueOnly, options).then((request) => request(axios, basePath));
         },
         /**
-         * Retorna un vehículo específico por su ID
-         * @summary Obtener vehículo por ID
-         * @param {string} id ID del vehículo
+         * Obtiene el estado actual de una simulación específica
+         * @summary Obtener estado de una simulación
+         * @param {string} id ID de la simulación
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getVehicleById(id: string, options?: RawAxiosRequestConfig): AxiosPromise<Vehicle> {
-            return localVarFp.getVehicleById(id, options).then((request) => request(axios, basePath));
+        getSimulationStatus(id: string, options?: RawAxiosRequestConfig): AxiosPromise<{ [key: string]: object; }> {
+            return localVarFp.getSimulationStatus(id, options).then((request) => request(axios, basePath));
         },
         /**
-         * Retorna vehículos dentro de un radio específico
-         * @summary Obtener vehículos por radio
-         * @param {number} x Coordenada X del centro
-         * @param {number} y Coordenada Y del centro
-         * @param {number} radius Radio de búsqueda
+         * Obtiene la lista de vehículos en la simulación
+         * @summary Listar vehículos
+         * @param {string} id ID de la simulación
+         * @param {GetVehiclesStatusEnum} [status] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getVehiclesByRadius(x: number, y: number, radius: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<Vehicle>> {
-            return localVarFp.getVehiclesByRadius(x, y, radius, options).then((request) => request(axios, basePath));
+        getVehicles(id: string, status?: GetVehiclesStatusEnum, options?: RawAxiosRequestConfig): AxiosPromise<Array<Vehicle>> {
+            return localVarFp.getVehicles(id, status, options).then((request) => request(axios, basePath));
         },
         /**
-         * Retorna vehículos filtrados por estado
-         * @summary Obtener vehículos por estado
-         * @param {GetVehiclesByStatusStatusEnum} status Estado del vehículo
+         * Pausa la ejecución de una simulación
+         * @summary Pausar simulación
+         * @param {string} id ID de la simulación
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getVehiclesByStatus(status: GetVehiclesByStatusStatusEnum, options?: RawAxiosRequestConfig): AxiosPromise<Array<Vehicle>> {
-            return localVarFp.getVehiclesByStatus(status, options).then((request) => request(axios, basePath));
+        pauseSimulation(id: string, options?: RawAxiosRequestConfig): AxiosPromise<{ [key: string]: object; }> {
+            return localVarFp.pauseSimulation(id, options).then((request) => request(axios, basePath));
         },
         /**
-         * Retorna vehículos filtrados por tipo
-         * @summary Obtener vehículos por tipo
-         * @param {GetVehiclesByTypeTypeEnum} type Tipo de vehículo
+         * Simula la reparación de un vehículo averiado
+         * @summary Reparar vehículo
+         * @param {string} id ID de la simulación
+         * @param {string} vehicleId ID del vehículo
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getVehiclesByType(type: GetVehiclesByTypeTypeEnum, options?: RawAxiosRequestConfig): AxiosPromise<Array<Vehicle>> {
-            return localVarFp.getVehiclesByType(type, options).then((request) => request(axios, basePath));
+        repairVehicle(id: string, vehicleId: string, options?: RawAxiosRequestConfig): AxiosPromise<{ [key: string]: object; }> {
+            return localVarFp.repairVehicle(id, vehicleId, options).then((request) => request(axios, basePath));
         },
         /**
-         * Actualiza el nivel de GLP del vehículo (cantidad a agregar/quitar)
-         * @summary Actualizar nivel de GLP
-         * @param {string} id ID del vehículo
-         * @param {number} amount Cantidad de GLP a agregar (positivo) o quitar (negativo)
+         * Ajusta la velocidad de ejecución de la simulación
+         * @summary Ajustar velocidad de simulación
+         * @param {string} id ID de la simulación
+         * @param {number} speedFactor 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateGLPLevel(id: string, amount: number, options?: RawAxiosRequestConfig): AxiosPromise<Vehicle> {
-            return localVarFp.updateGLPLevel(id, amount, options).then((request) => request(axios, basePath));
+        setSimulationSpeed(id: string, speedFactor: number, options?: RawAxiosRequestConfig): AxiosPromise<{ [key: string]: object; }> {
+            return localVarFp.setSimulationSpeed(id, speedFactor, options).then((request) => request(axios, basePath));
         },
         /**
-         * Actualiza la posición actual del vehículo
-         * @summary Actualizar posición del vehículo
-         * @param {string} id ID del vehículo
-         * @param {Position} position 
+         * Simula una avería en un vehículo específico
+         * @summary Simular avería de vehículo
+         * @param {string} id ID de la simulación
+         * @param {string} vehicleId ID del vehículo
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateVehiclePosition(id: string, position: Position, options?: RawAxiosRequestConfig): AxiosPromise<Vehicle> {
-            return localVarFp.updateVehiclePosition(id, position, options).then((request) => request(axios, basePath));
+        simulateVehicleBreakdown(id: string, vehicleId: string, options?: RawAxiosRequestConfig): AxiosPromise<{ [key: string]: object; }> {
+            return localVarFp.simulateVehicleBreakdown(id, vehicleId, options).then((request) => request(axios, basePath));
         },
         /**
-         * Actualiza el estado operacional del vehículo
-         * @summary Actualizar estado del vehículo
-         * @param {string} id ID del vehículo
-         * @param {UpdateVehicleStatusStatusEnum} status Nuevo estado del vehículo
+         * Inicia o reanuda la ejecución de una simulación
+         * @summary Iniciar simulación
+         * @param {string} id ID de la simulación
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        updateVehicleStatus(id: string, status: UpdateVehicleStatusStatusEnum, options?: RawAxiosRequestConfig): AxiosPromise<Vehicle> {
-            return localVarFp.updateVehicleStatus(id, status, options).then((request) => request(axios, basePath));
+        startSimulation(id: string, options?: RawAxiosRequestConfig): AxiosPromise<{ [key: string]: object; }> {
+            return localVarFp.startSimulation(id, options).then((request) => request(axios, basePath));
         },
     };
 };
 
 /**
- * VehiclesApi - object-oriented interface
+ * SimulationApi - object-oriented interface
  * @export
- * @class VehiclesApi
+ * @class SimulationApi
  * @extends {BaseAPI}
  */
-export class VehiclesApi extends BaseAPI {
+export class SimulationApi extends BaseAPI {
     /**
-     * Crea un nuevo vehículo en el sistema
-     * @summary Crear nuevo vehículo
-     * @param {Vehicle} vehicle 
+     * Crea una nueva instancia de simulación
+     * @summary Crear nueva simulación
+     * @param {string} [name] 
+     * @param {string} [description] 
+     * @param {string} [startDate] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof VehiclesApi
+     * @memberof SimulationApi
      */
-    public createVehicle(vehicle: Vehicle, options?: RawAxiosRequestConfig) {
-        return VehiclesApiFp(this.configuration).createVehicle(vehicle, options).then((request) => request(this.axios, this.basePath));
+    public createSimulation(name?: string, description?: string, startDate?: string, options?: RawAxiosRequestConfig) {
+        return SimulationApiFp(this.configuration).createSimulation(name, description, startDate, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Elimina un vehículo del sistema
-     * @summary Eliminar vehículo
-     * @param {string} id ID del vehículo a eliminar
+     * Elimina una simulación existente
+     * @summary Eliminar simulación
+     * @param {string} id ID de la simulación
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof VehiclesApi
+     * @memberof SimulationApi
      */
-    public deleteVehicle(id: string, options?: RawAxiosRequestConfig) {
-        return VehiclesApiFp(this.configuration).deleteVehicle(id, options).then((request) => request(this.axios, this.basePath));
+    public deleteSimulation(id: string, options?: RawAxiosRequestConfig) {
+        return SimulationApiFp(this.configuration).deleteSimulation(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Retorna una lista de todos los vehículos en el sistema
-     * @summary Obtener todos los vehículos
+     * Obtiene una lista de todas las simulaciones disponibles
+     * @summary Listar todas las simulaciones
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof VehiclesApi
+     * @memberof SimulationApi
      */
-    public getAllVehicles(options?: RawAxiosRequestConfig) {
-        return VehiclesApiFp(this.configuration).getAllVehicles(options).then((request) => request(this.axios, this.basePath));
+    public getAllSimulations(options?: RawAxiosRequestConfig) {
+        return SimulationApiFp(this.configuration).getAllSimulations(options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Retorna el total de GLP disponible en vehículos disponibles
-     * @summary Obtener GLP disponible en la flota
+     * Obtiene la lista de bloqueos activos en la simulación
+     * @summary Listar bloqueos
+     * @param {string} id ID de la simulación
+     * @param {boolean} [activeOnly] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof VehiclesApi
+     * @memberof SimulationApi
      */
-    public getAvailableFleetGLP(options?: RawAxiosRequestConfig) {
-        return VehiclesApiFp(this.configuration).getAvailableFleetGLP(options).then((request) => request(this.axios, this.basePath));
+    public getBlockages(id: string, activeOnly?: boolean, options?: RawAxiosRequestConfig) {
+        return SimulationApiFp(this.configuration).getBlockages(id, activeOnly, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Retorna todos los vehículos disponibles
-     * @summary Obtener vehículos disponibles
+     * Obtiene información detallada del entorno de simulación
+     * @summary Obtener detalles del entorno
+     * @param {string} id ID de la simulación
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof VehiclesApi
+     * @memberof SimulationApi
      */
-    public getAvailableVehicles(options?: RawAxiosRequestConfig) {
-        return VehiclesApiFp(this.configuration).getAvailableVehicles(options).then((request) => request(this.axios, this.basePath));
+    public getEnvironment(id: string, options?: RawAxiosRequestConfig) {
+        return SimulationApiFp(this.configuration).getEnvironment(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Retorna la capacidad total de GLP de todos los vehículos
-     * @summary Obtener capacidad total de la flota
+     * Obtiene la lista de órdenes en la simulación
+     * @summary Listar órdenes
+     * @param {string} id ID de la simulación
+     * @param {boolean} [pendingOnly] 
+     * @param {boolean} [overdueOnly] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof VehiclesApi
+     * @memberof SimulationApi
      */
-    public getTotalFleetCapacity(options?: RawAxiosRequestConfig) {
-        return VehiclesApiFp(this.configuration).getTotalFleetCapacity(options).then((request) => request(this.axios, this.basePath));
+    public getOrders(id: string, pendingOnly?: boolean, overdueOnly?: boolean, options?: RawAxiosRequestConfig) {
+        return SimulationApiFp(this.configuration).getOrders(id, pendingOnly, overdueOnly, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Retorna un vehículo específico por su ID
-     * @summary Obtener vehículo por ID
-     * @param {string} id ID del vehículo
+     * Obtiene el estado actual de una simulación específica
+     * @summary Obtener estado de una simulación
+     * @param {string} id ID de la simulación
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof VehiclesApi
+     * @memberof SimulationApi
      */
-    public getVehicleById(id: string, options?: RawAxiosRequestConfig) {
-        return VehiclesApiFp(this.configuration).getVehicleById(id, options).then((request) => request(this.axios, this.basePath));
+    public getSimulationStatus(id: string, options?: RawAxiosRequestConfig) {
+        return SimulationApiFp(this.configuration).getSimulationStatus(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Retorna vehículos dentro de un radio específico
-     * @summary Obtener vehículos por radio
-     * @param {number} x Coordenada X del centro
-     * @param {number} y Coordenada Y del centro
-     * @param {number} radius Radio de búsqueda
+     * Obtiene la lista de vehículos en la simulación
+     * @summary Listar vehículos
+     * @param {string} id ID de la simulación
+     * @param {GetVehiclesStatusEnum} [status] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof VehiclesApi
+     * @memberof SimulationApi
      */
-    public getVehiclesByRadius(x: number, y: number, radius: number, options?: RawAxiosRequestConfig) {
-        return VehiclesApiFp(this.configuration).getVehiclesByRadius(x, y, radius, options).then((request) => request(this.axios, this.basePath));
+    public getVehicles(id: string, status?: GetVehiclesStatusEnum, options?: RawAxiosRequestConfig) {
+        return SimulationApiFp(this.configuration).getVehicles(id, status, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Retorna vehículos filtrados por estado
-     * @summary Obtener vehículos por estado
-     * @param {GetVehiclesByStatusStatusEnum} status Estado del vehículo
+     * Pausa la ejecución de una simulación
+     * @summary Pausar simulación
+     * @param {string} id ID de la simulación
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof VehiclesApi
+     * @memberof SimulationApi
      */
-    public getVehiclesByStatus(status: GetVehiclesByStatusStatusEnum, options?: RawAxiosRequestConfig) {
-        return VehiclesApiFp(this.configuration).getVehiclesByStatus(status, options).then((request) => request(this.axios, this.basePath));
+    public pauseSimulation(id: string, options?: RawAxiosRequestConfig) {
+        return SimulationApiFp(this.configuration).pauseSimulation(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Retorna vehículos filtrados por tipo
-     * @summary Obtener vehículos por tipo
-     * @param {GetVehiclesByTypeTypeEnum} type Tipo de vehículo
+     * Simula la reparación de un vehículo averiado
+     * @summary Reparar vehículo
+     * @param {string} id ID de la simulación
+     * @param {string} vehicleId ID del vehículo
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof VehiclesApi
+     * @memberof SimulationApi
      */
-    public getVehiclesByType(type: GetVehiclesByTypeTypeEnum, options?: RawAxiosRequestConfig) {
-        return VehiclesApiFp(this.configuration).getVehiclesByType(type, options).then((request) => request(this.axios, this.basePath));
+    public repairVehicle(id: string, vehicleId: string, options?: RawAxiosRequestConfig) {
+        return SimulationApiFp(this.configuration).repairVehicle(id, vehicleId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Actualiza el nivel de GLP del vehículo (cantidad a agregar/quitar)
-     * @summary Actualizar nivel de GLP
-     * @param {string} id ID del vehículo
-     * @param {number} amount Cantidad de GLP a agregar (positivo) o quitar (negativo)
+     * Ajusta la velocidad de ejecución de la simulación
+     * @summary Ajustar velocidad de simulación
+     * @param {string} id ID de la simulación
+     * @param {number} speedFactor 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof VehiclesApi
+     * @memberof SimulationApi
      */
-    public updateGLPLevel(id: string, amount: number, options?: RawAxiosRequestConfig) {
-        return VehiclesApiFp(this.configuration).updateGLPLevel(id, amount, options).then((request) => request(this.axios, this.basePath));
+    public setSimulationSpeed(id: string, speedFactor: number, options?: RawAxiosRequestConfig) {
+        return SimulationApiFp(this.configuration).setSimulationSpeed(id, speedFactor, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Actualiza la posición actual del vehículo
-     * @summary Actualizar posición del vehículo
-     * @param {string} id ID del vehículo
-     * @param {Position} position 
+     * Simula una avería en un vehículo específico
+     * @summary Simular avería de vehículo
+     * @param {string} id ID de la simulación
+     * @param {string} vehicleId ID del vehículo
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof VehiclesApi
+     * @memberof SimulationApi
      */
-    public updateVehiclePosition(id: string, position: Position, options?: RawAxiosRequestConfig) {
-        return VehiclesApiFp(this.configuration).updateVehiclePosition(id, position, options).then((request) => request(this.axios, this.basePath));
+    public simulateVehicleBreakdown(id: string, vehicleId: string, options?: RawAxiosRequestConfig) {
+        return SimulationApiFp(this.configuration).simulateVehicleBreakdown(id, vehicleId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
-     * Actualiza el estado operacional del vehículo
-     * @summary Actualizar estado del vehículo
-     * @param {string} id ID del vehículo
-     * @param {UpdateVehicleStatusStatusEnum} status Nuevo estado del vehículo
+     * Inicia o reanuda la ejecución de una simulación
+     * @summary Iniciar simulación
+     * @param {string} id ID de la simulación
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
-     * @memberof VehiclesApi
+     * @memberof SimulationApi
      */
-    public updateVehicleStatus(id: string, status: UpdateVehicleStatusStatusEnum, options?: RawAxiosRequestConfig) {
-        return VehiclesApiFp(this.configuration).updateVehicleStatus(id, status, options).then((request) => request(this.axios, this.basePath));
+    public startSimulation(id: string, options?: RawAxiosRequestConfig) {
+        return SimulationApiFp(this.configuration).startSimulation(id, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
 /**
  * @export
  */
-export const GetVehiclesByStatusStatusEnum = {
+export const GetVehiclesStatusEnum = {
     Available: 'AVAILABLE',
-    InTransit: 'IN_TRANSIT',
+    Driving: 'DRIVING',
     Maintenance: 'MAINTENANCE',
-    BrokenDown: 'BROKEN_DOWN'
+    Refueling: 'REFUELING',
+    Reloading: 'RELOADING',
+    Serving: 'SERVING',
+    Incident: 'INCIDENT',
+    Idle: 'IDLE'
 } as const;
-export type GetVehiclesByStatusStatusEnum = typeof GetVehiclesByStatusStatusEnum[keyof typeof GetVehiclesByStatusStatusEnum];
+export type GetVehiclesStatusEnum = typeof GetVehiclesStatusEnum[keyof typeof GetVehiclesStatusEnum];
+
+
+/**
+ * VehicleControllerApi - axios parameter creator
+ * @export
+ */
+export const VehicleControllerApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        _delete: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('_delete', 'id', id)
+            const localVarPath = `/api/vehicles/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {VehicleDTO} vehicleDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        create: async (vehicleDTO: VehicleDTO, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'vehicleDTO' is not null or undefined
+            assertParamExists('create', 'vehicleDTO', vehicleDTO)
+            const localVarPath = `/api/vehicles`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(vehicleDTO, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getById: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getById', 'id', id)
+            const localVarPath = `/api/vehicles/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {ListTypeEnum} [type] 
+         * @param {ListStatusEnum} [status] 
+         * @param {number} [minGlp] 
+         * @param {number} [minFuel] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        list: async (type?: ListTypeEnum, status?: ListStatusEnum, minGlp?: number, minFuel?: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/api/vehicles`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (type !== undefined) {
+                localVarQueryParameter['type'] = type;
+            }
+
+            if (status !== undefined) {
+                localVarQueryParameter['status'] = status;
+            }
+
+            if (minGlp !== undefined) {
+                localVarQueryParameter['minGlp'] = minGlp;
+            }
+
+            if (minFuel !== undefined) {
+                localVarQueryParameter['minFuel'] = minFuel;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {number} distanceKm 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        moveVehicle: async (id: string, distanceKm: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('moveVehicle', 'id', id)
+            // verify required parameter 'distanceKm' is not null or undefined
+            assertParamExists('moveVehicle', 'distanceKm', distanceKm)
+            const localVarPath = `/api/vehicles/{id}/move`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (distanceKm !== undefined) {
+                localVarQueryParameter['distanceKm'] = distanceKm;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {number} volumeM3 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        refillGlp: async (id: string, volumeM3: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('refillGlp', 'id', id)
+            // verify required parameter 'volumeM3' is not null or undefined
+            assertParamExists('refillGlp', 'volumeM3', volumeM3)
+            const localVarPath = `/api/vehicles/{id}/refill`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (volumeM3 !== undefined) {
+                localVarQueryParameter['volumeM3'] = volumeM3;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        refuel: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('refuel', 'id', id)
+            const localVarPath = `/api/vehicles/{id}/refuel`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} orderId 
+         * @param {DeliveryRecordDTO} deliveryRecordDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        serveOrder: async (id: string, orderId: string, deliveryRecordDTO: DeliveryRecordDTO, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('serveOrder', 'id', id)
+            // verify required parameter 'orderId' is not null or undefined
+            assertParamExists('serveOrder', 'orderId', orderId)
+            // verify required parameter 'deliveryRecordDTO' is not null or undefined
+            assertParamExists('serveOrder', 'deliveryRecordDTO', deliveryRecordDTO)
+            const localVarPath = `/api/vehicles/{id}/serve`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (orderId !== undefined) {
+                localVarQueryParameter['orderId'] = orderId;
+            }
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(deliveryRecordDTO, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {VehicleDTO} vehicleDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        update: async (id: string, vehicleDTO: VehicleDTO, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('update', 'id', id)
+            // verify required parameter 'vehicleDTO' is not null or undefined
+            assertParamExists('update', 'vehicleDTO', vehicleDTO)
+            const localVarPath = `/api/vehicles/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'PUT', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(vehicleDTO, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * VehicleControllerApi - functional programming interface
+ * @export
+ */
+export const VehicleControllerApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = VehicleControllerApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async _delete(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator._delete(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['VehicleControllerApi._delete']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {VehicleDTO} vehicleDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async create(vehicleDTO: VehicleDTO, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<VehicleDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.create(vehicleDTO, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['VehicleControllerApi.create']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getById(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<VehicleDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getById(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['VehicleControllerApi.getById']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {ListTypeEnum} [type] 
+         * @param {ListStatusEnum} [status] 
+         * @param {number} [minGlp] 
+         * @param {number} [minFuel] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async list(type?: ListTypeEnum, status?: ListStatusEnum, minGlp?: number, minFuel?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<VehicleDTO>>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.list(type, status, minGlp, minFuel, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['VehicleControllerApi.list']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {number} distanceKm 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async moveVehicle(id: string, distanceKm: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<VehicleDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.moveVehicle(id, distanceKm, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['VehicleControllerApi.moveVehicle']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {number} volumeM3 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async refillGlp(id: string, volumeM3: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<VehicleDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.refillGlp(id, volumeM3, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['VehicleControllerApi.refillGlp']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async refuel(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<VehicleDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.refuel(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['VehicleControllerApi.refuel']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} orderId 
+         * @param {DeliveryRecordDTO} deliveryRecordDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async serveOrder(id: string, orderId: string, deliveryRecordDTO: DeliveryRecordDTO, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ServeRecordDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.serveOrder(id, orderId, deliveryRecordDTO, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['VehicleControllerApi.serveOrder']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {VehicleDTO} vehicleDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async update(id: string, vehicleDTO: VehicleDTO, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<VehicleDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.update(id, vehicleDTO, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['VehicleControllerApi.update']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * VehicleControllerApi - factory interface
+ * @export
+ */
+export const VehicleControllerApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = VehicleControllerApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        _delete(id: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp._delete(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {VehicleDTO} vehicleDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        create(vehicleDTO: VehicleDTO, options?: RawAxiosRequestConfig): AxiosPromise<VehicleDTO> {
+            return localVarFp.create(vehicleDTO, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getById(id: string, options?: RawAxiosRequestConfig): AxiosPromise<VehicleDTO> {
+            return localVarFp.getById(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {ListTypeEnum} [type] 
+         * @param {ListStatusEnum} [status] 
+         * @param {number} [minGlp] 
+         * @param {number} [minFuel] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        list(type?: ListTypeEnum, status?: ListStatusEnum, minGlp?: number, minFuel?: number, options?: RawAxiosRequestConfig): AxiosPromise<Array<VehicleDTO>> {
+            return localVarFp.list(type, status, minGlp, minFuel, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {number} distanceKm 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        moveVehicle(id: string, distanceKm: number, options?: RawAxiosRequestConfig): AxiosPromise<VehicleDTO> {
+            return localVarFp.moveVehicle(id, distanceKm, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {number} volumeM3 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        refillGlp(id: string, volumeM3: number, options?: RawAxiosRequestConfig): AxiosPromise<VehicleDTO> {
+            return localVarFp.refillGlp(id, volumeM3, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        refuel(id: string, options?: RawAxiosRequestConfig): AxiosPromise<VehicleDTO> {
+            return localVarFp.refuel(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {string} orderId 
+         * @param {DeliveryRecordDTO} deliveryRecordDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        serveOrder(id: string, orderId: string, deliveryRecordDTO: DeliveryRecordDTO, options?: RawAxiosRequestConfig): AxiosPromise<ServeRecordDTO> {
+            return localVarFp.serveOrder(id, orderId, deliveryRecordDTO, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} id 
+         * @param {VehicleDTO} vehicleDTO 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        update(id: string, vehicleDTO: VehicleDTO, options?: RawAxiosRequestConfig): AxiosPromise<VehicleDTO> {
+            return localVarFp.update(id, vehicleDTO, options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * VehicleControllerApi - object-oriented interface
+ * @export
+ * @class VehicleControllerApi
+ * @extends {BaseAPI}
+ */
+export class VehicleControllerApi extends BaseAPI {
+    /**
+     * 
+     * @param {string} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof VehicleControllerApi
+     */
+    public _delete(id: string, options?: RawAxiosRequestConfig) {
+        return VehicleControllerApiFp(this.configuration)._delete(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {VehicleDTO} vehicleDTO 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof VehicleControllerApi
+     */
+    public create(vehicleDTO: VehicleDTO, options?: RawAxiosRequestConfig) {
+        return VehicleControllerApiFp(this.configuration).create(vehicleDTO, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof VehicleControllerApi
+     */
+    public getById(id: string, options?: RawAxiosRequestConfig) {
+        return VehicleControllerApiFp(this.configuration).getById(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {ListTypeEnum} [type] 
+     * @param {ListStatusEnum} [status] 
+     * @param {number} [minGlp] 
+     * @param {number} [minFuel] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof VehicleControllerApi
+     */
+    public list(type?: ListTypeEnum, status?: ListStatusEnum, minGlp?: number, minFuel?: number, options?: RawAxiosRequestConfig) {
+        return VehicleControllerApiFp(this.configuration).list(type, status, minGlp, minFuel, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} id 
+     * @param {number} distanceKm 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof VehicleControllerApi
+     */
+    public moveVehicle(id: string, distanceKm: number, options?: RawAxiosRequestConfig) {
+        return VehicleControllerApiFp(this.configuration).moveVehicle(id, distanceKm, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} id 
+     * @param {number} volumeM3 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof VehicleControllerApi
+     */
+    public refillGlp(id: string, volumeM3: number, options?: RawAxiosRequestConfig) {
+        return VehicleControllerApiFp(this.configuration).refillGlp(id, volumeM3, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof VehicleControllerApi
+     */
+    public refuel(id: string, options?: RawAxiosRequestConfig) {
+        return VehicleControllerApiFp(this.configuration).refuel(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} id 
+     * @param {string} orderId 
+     * @param {DeliveryRecordDTO} deliveryRecordDTO 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof VehicleControllerApi
+     */
+    public serveOrder(id: string, orderId: string, deliveryRecordDTO: DeliveryRecordDTO, options?: RawAxiosRequestConfig) {
+        return VehicleControllerApiFp(this.configuration).serveOrder(id, orderId, deliveryRecordDTO, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} id 
+     * @param {VehicleDTO} vehicleDTO 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof VehicleControllerApi
+     */
+    public update(id: string, vehicleDTO: VehicleDTO, options?: RawAxiosRequestConfig) {
+        return VehicleControllerApiFp(this.configuration).update(id, vehicleDTO, options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
 /**
  * @export
  */
-export const GetVehiclesByTypeTypeEnum = {
+export const ListTypeEnum = {
     Ta: 'TA',
     Tb: 'TB',
     Tc: 'TC',
     Td: 'TD'
 } as const;
-export type GetVehiclesByTypeTypeEnum = typeof GetVehiclesByTypeTypeEnum[keyof typeof GetVehiclesByTypeTypeEnum];
+export type ListTypeEnum = typeof ListTypeEnum[keyof typeof ListTypeEnum];
 /**
  * @export
  */
-export const UpdateVehicleStatusStatusEnum = {
+export const ListStatusEnum = {
     Available: 'AVAILABLE',
-    InTransit: 'IN_TRANSIT',
+    Driving: 'DRIVING',
     Maintenance: 'MAINTENANCE',
-    BrokenDown: 'BROKEN_DOWN'
+    Refueling: 'REFUELING',
+    Reloading: 'RELOADING',
+    Serving: 'SERVING',
+    Incident: 'INCIDENT',
+    Idle: 'IDLE'
 } as const;
-export type UpdateVehicleStatusStatusEnum = typeof UpdateVehicleStatusStatusEnum[keyof typeof UpdateVehicleStatusStatusEnum];
+export type ListStatusEnum = typeof ListStatusEnum[keyof typeof ListStatusEnum];
 
-export const GetOrdersByStatusStatusEnum = {
-  Pending: 'PENDING',
-  InTransit: 'IN_TRANSIT',
-  Delivered: 'DELIVERED',
-  Cancelled: 'CANCELLED',
-} as const;
-
-export type GetOrdersByStatusStatusEnum = typeof GetOrdersByStatusStatusEnum[keyof typeof GetOrdersByStatusStatusEnum];
 

@@ -120,11 +120,7 @@ export default function PedidosPage() {
                     This will cause OrdersTable to re-mount and re-fetch its data when the key changes.
                     Ensure OrdersTable fetches data on mount or when its props (like this key) change.
                 */}
-                <OrdersTable
-                  key={ordersUpdateKey}
-                  filter={filter}
-                  search={searchQuery}
-                />
+                <OrdersTable key={ordersUpdateKey} />
               </CardContent>
             </Card>
           </TabsContent>

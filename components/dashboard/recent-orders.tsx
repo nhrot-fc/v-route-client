@@ -3,7 +3,10 @@
 import { useState, useEffect } from 'react'
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { ordersApi, Order } from '@/lib/api-client'
+import { ordersApi, OrderDTO } from '@/lib/api-client'
+import { useOrders } from "@/hooks/use-orders"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { formatDate } from "@/lib/utils"
 
 // Interface for processed order data
 interface ProcessedOrder {
@@ -30,115 +33,89 @@ const safeGetOrderProperty = (order: any, path: string[], defaultValue: any = nu
 };
 
 export function RecentOrders() {
-  const [orders, setOrders] = useState<ProcessedOrder[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { orders, loading, error } = useOrders();
+  const [urgentOrders, setUrgentOrders] = useState<OrderDTO[]>([]);
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        setLoading(true);
-        const response = await ordersApi.getAllOrders();
-        
-        if (response.data && Array.isArray(response.data)) {
-          // Solo necesitamos los últimos 5 pedidos y los ordenamos por fecha (más reciente primero)
-          const recentOrders = [...response.data]
-            .sort((a, b) => {
-              const dateA = new Date(safeGetOrderProperty(a, ['creationDate'], '0')).getTime();
-              const dateB = new Date(safeGetOrderProperty(b, ['creationDate'], '0')).getTime();
-              return dateB - dateA; // Orden descendente
-            })
-            .slice(0, 5);
-          
-          // Procesar los pedidos para adaptarlos al formato que necesitamos
-          const processedOrders: ProcessedOrder[] = recentOrders.map((order: any) => {
-            // Determinar estado basado en las propiedades disponibles
-            const isDelivered = safeGetOrderProperty(order, ['deliveryDate'], null) !== null;
-            const vehicleId = safeGetOrderProperty(order, ['assignedVehicle'], null);
-            const isInProgress = vehicleId !== null && !isDelivered;
-            
-            let estado: string;
-            if (isDelivered) {
-              estado = "entregado";
-            } else if (isInProgress) {
-              estado = "en-ruta";
-            } else {
-              estado = "pendiente";
-            }
-
-            const glpRequest = safeGetOrderProperty(order, ['glpRequest'], 0);
-            const glpVolumen = typeof glpRequest === 'number' ? `${glpRequest.toFixed(2)} L` : `${glpRequest} L`;
-
-            return {
-              id: safeGetOrderProperty(order, ['id'], 'sin-id'),
-              cliente: safeGetOrderProperty(order, ['clientName'], 'Cliente sin nombre'),
-              volumen: glpVolumen,
-              fechaRecepcion: safeGetOrderProperty(order, ['creationDate'], new Date().toISOString()),
-              plazoEntrega: safeGetOrderProperty(order, ['dueDate'], new Date().toISOString()),
-              vehiculoAsignado: vehicleId || 'No asignado',
-              estado
-            };
-          });
-          
-          setOrders(processedOrders);
-        }
-      } catch (err) {
-        console.error("Error al cargar pedidos:", err);
-        setError("Error al cargar los datos de pedidos");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchOrders();
-  }, []);
+    if (!loading && !error && orders.length > 0) {
+      // Get orders that are not delivered and sort them by due time
+      const pending = orders
+        .filter((order) => !order.delivered)
+        .sort((a, b) => {
+          if (!a.dueTime) return 1;
+          if (!b.dueTime) return -1;
+          return new Date(a.dueTime).getTime() - new Date(b.dueTime).getTime();
+        });
+      setUrgentOrders(pending.slice(0, 5));
+    }
+  }, [orders, loading, error]);
 
   if (loading) {
-    return <div className="text-center py-4">Cargando pedidos...</div>;
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Pedidos Urgentes</CardTitle>
+        </CardHeader>
+        <CardContent>Cargando pedidos...</CardContent>
+      </Card>
+    );
   }
 
   if (error) {
-    return <div className="text-center py-4 text-red-500">{error}</div>;
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Pedidos Urgentes</CardTitle>
+        </CardHeader>
+        <CardContent className="text-red-500">Error: {error}</CardContent>
+      </Card>
+    );
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>ID</TableHead>
-          <TableHead>Cliente</TableHead>
-          <TableHead>Volumen</TableHead>
-          <TableHead>Vehículo</TableHead>
-          <TableHead>Plazo</TableHead>
-          <TableHead>Estado</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {orders.length === 0 ? (
-          <TableRow>
-            <TableCell colSpan={6} className="text-center">No hay pedidos disponibles</TableCell>
-          </TableRow>
+    <Card>
+      <CardHeader>
+        <CardTitle>Pedidos Urgentes</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {urgentOrders.length === 0 ? (
+          <div className="text-center text-muted-foreground py-4">
+            No hay pedidos pendientes
+          </div>
         ) : (
-          orders.map((order) => (
-            <TableRow key={order.id}>
-              <TableCell className="font-medium">{order.id}</TableCell>
-              <TableCell>{order.cliente}</TableCell>
-              <TableCell>{order.volumen}</TableCell>
-              <TableCell>{order.vehiculoAsignado}</TableCell>
-              <TableCell>{new Date(order.plazoEntrega).toLocaleDateString("es-ES")}</TableCell>
-              <TableCell>
-                <Badge
-                  variant={
-                    order.estado === "entregado" ? "default" : order.estado === "en-ruta" ? "secondary" : "outline"
-                  }
-                >
-                  {order.estado === "entregado" ? "Entregado" : order.estado === "en-ruta" ? "En Ruta" : "Pendiente"}
-                </Badge>
-              </TableCell>
-            </TableRow>
-          ))
+          <div className="space-y-4">
+            {urgentOrders.map((order) => (
+              <div
+                key={order.id}
+                className="flex items-center justify-between pb-3 border-b border-border last:border-0 last:pb-0"
+              >
+                <div className="space-y-1">
+                  <p className="font-medium">{order.id}</p>
+                  <div className="text-sm text-muted-foreground flex items-center gap-2">
+                    <span>
+                      {order.glpRequestM3?.toFixed(2) || "0"} m³ solicitados
+                    </span>
+                    <span>•</span>
+                    <span>
+                      {order.remainingGlpM3?.toFixed(2) || "0"} m³ restantes
+                    </span>
+                  </div>
+                </div>
+                <div className="text-right">
+                  {order.dueTime && (
+                    <p className="text-sm font-medium">
+                      {formatDate(new Date(order.dueTime))}
+                    </p>
+                  )}
+                  <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200 mt-1">
+                    Pendiente
+                  </Badge>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
-      </TableBody>
-    </Table>
-  )
+      </CardContent>
+    </Card>
+  );
 }

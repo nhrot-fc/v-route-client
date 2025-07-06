@@ -21,9 +21,9 @@ export function DeliveryStatusChart() {
         
         // Fetch all types of orders in parallel
         const [completedResponse, pendingResponse, allResponse] = await Promise.all([
-          ordersApi.getCompletedOrders(),
-          ordersApi.getPendingOrders(),
-          ordersApi.getAllOrders(),
+          ordersApi.list2(false),
+          ordersApi.list2(true),
+          ordersApi.list2(),
         ])
         
         const completed = Array.isArray(completedResponse.data) ? completedResponse.data.length : 0

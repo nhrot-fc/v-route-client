@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
 import { FileText, Upload, Download } from "lucide-react";
+import { ordersApi } from "@/lib/api-client";
 
 interface OrderUploadFormProps {
   onOrdersUploaded?: () => void;
@@ -89,24 +90,14 @@ export function OrderUploadForm({ onOrdersUploaded }: OrderUploadFormProps) {
         setProgress(Math.min(currentProgress, 90));
       }, 200);
 
-      const response = await fetch(
-        "http://200.16.7.170/api/api/orders/import-csv",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      // Usar axios del API client para hacer la solicitud
+      const response = await ordersApi.importCsv(formData);
 
       clearInterval(interval);
       setProgress(100);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Error desconocido");
-      }
-
       // Parse the response to get information about the processed orders
-      const result = await response.json();
+      const result = response.data;
 
       toast({
         title: "Carga completada",

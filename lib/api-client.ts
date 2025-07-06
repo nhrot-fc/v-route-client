@@ -1,18 +1,17 @@
 import {
   Configuration,
-  BlockagesApi,
+  BlockageControllerApi,
   DashboardApi,
-  DepotsApi,
-  IncidentsApi,
-  MaintenanceApi,
-  OrdersApi,
-  VehiclesApi,
+  DepotControllerApi,
+  IncidentControllerApi,
+  MaintenanceControllerApi,
+  OrderControllerApi,
+  VehicleControllerApi,
 } from "@/src/shared/api/generated";
 import axios from "axios";
 
 // Configure axios with base URL and default settings
-const BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://200.16.7.170/api";
+const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/api";
 
 // Create axios instance with common configuration
 const axiosInstance = axios.create({
@@ -57,29 +56,40 @@ const configuration = new Configuration({
   basePath: BASE_URL,
 });
 
+// Extend OrderControllerApi to add importCsv method
+class ExtendedOrderControllerApi extends OrderControllerApi {
+  public async importCsv(formData: FormData) {
+    return axiosInstance.post(`${BASE_URL}/orders/import-csv`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  }
+}
+
 // Export API instances
-export const vehiclesApi = new VehiclesApi(
+export const vehiclesApi = new VehicleControllerApi(
   configuration,
   BASE_URL,
   axiosInstance
 );
-export const ordersApi = new OrdersApi(configuration, BASE_URL, axiosInstance);
-export const maintenanceApi = new MaintenanceApi(
+export const ordersApi = new ExtendedOrderControllerApi(configuration, BASE_URL, axiosInstance);
+export const maintenanceApi = new MaintenanceControllerApi(
   configuration,
   BASE_URL,
   axiosInstance
 );
-export const incidentsApi = new IncidentsApi(
+export const incidentsApi = new IncidentControllerApi(
   configuration,
   BASE_URL,
   axiosInstance
 );
-export const blockagesApi = new BlockagesApi(
+export const blockagesApi = new BlockageControllerApi(
   configuration,
   BASE_URL,
   axiosInstance
 );
-export const depotsApi = new DepotsApi(configuration, BASE_URL, axiosInstance);
+export const depotsApi = new DepotControllerApi(configuration, BASE_URL, axiosInstance);
 export const dashboardApi = new DashboardApi(
   configuration,
   BASE_URL,
@@ -90,17 +100,21 @@ export const dashboardApi = new DashboardApi(
 export type {
   Vehicle,
   Order,
-  Maintenance,
-  Incident,
+  MaintenanceDTO,
+  IncidentDTO,
   Blockage,
   Depot,
   Position,
+  OrderDTO,
+  DeliveryRecordDTO,
+  VehicleDTO,
 } from "@/src/shared/api/generated";
 
 // Export enums
 export {
   VehicleTypeEnum,
   VehicleStatusEnum,
-  MaintenanceTypeEnum,
-  IncidentTypeEnum,
+  IncidentDTOTypeEnum,
+  ListStatusEnum,
+  ListTypeEnum,
 } from "@/src/shared/api/generated";

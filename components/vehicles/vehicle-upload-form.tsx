@@ -39,10 +39,6 @@ export function VehicleUploadForm({ onClose }: VehicleUploadFormProps) {
     const headers = [
       "id",
       "type",
-      "glpCapacity",
-      "fuelCapacity",
-      "currentGLP",
-      "currentFuel",
       "currentPosition.x",
       "currentPosition.y"
     ]
@@ -67,21 +63,15 @@ export function VehicleUploadForm({ onClose }: VehicleUploadFormProps) {
     const vehicles: Vehicle[] = []
     for (let i = 1; i < lines.length; i++) {
       const values = lines[i].split(",").map(v => v.trim())
-      if (values.length >= 8) {
+      if (values.length >= 4) {
         vehicles.push({
           id: values[0],
           type: values[1] as VehicleTypeEnum,
-          glpCapacity: parseFloat(values[2]),
-          fuelCapacity: parseFloat(values[3]),
-          currentGLP: parseFloat(values[4]),
-          currentFuel: parseFloat(values[5]),
           currentPosition: {
-            x: parseFloat(values[6]),
-            y: parseFloat(values[7]),
+            x: parseFloat(values[2]),
+            y: parseFloat(values[3]),
           },
           status: VehicleStatusEnum.Available,
-          currentCombinedWeightTon: 0,
-          currentGlpWeightTon: 0,
         })
       }
     }

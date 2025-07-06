@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
+import { ordersApi, OrderDTO } from "@/lib/api-client";
 
 interface OrderFormProps {
   onOrderAdded?: () => void;
@@ -59,31 +60,16 @@ export default function OrderForm({ onOrderAdded }: OrderFormProps) {
       return;
     }
 
-    const data = {
-      id: "", // El backend debería generar el ID
+    const orderData: OrderDTO = {
       position: { x, y },
-      arriveDate: now.toISOString(),
-      dueDate: due.toISOString(),
-      deliveryDate: due.toISOString(), // Esto podría ser diferente o nulo inicialmente
-      status: "PENDING",
-      remainingVolume: volumen,
-      glpRequest: volumen,
-      remainingGLP: volumen,
+      arriveTime: now.toISOString(),
+      dueTime: due.toISOString(),
+      glpRequestM3: volumen,
+      remainingGlpM3: volumen,
     };
 
     try {
-      const response = await fetch("http://200.16.7.170/api/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Error al crear el pedido");
-      }
+      const response = await ordersApi.create2(orderData);
 
       toast({
         title: "Pedido creado",

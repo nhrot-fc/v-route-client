@@ -9,7 +9,7 @@ import { FileText, Upload, AlertCircle, CheckCircle2 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useMaintenance } from "@/hooks/use-maintenance"
-import { Maintenance, MaintenanceTypeEnum } from "@/lib/api-client"
+import { MaintenanceDTO } from "@/lib/api-client"
 import { useVehicles } from "@/hooks/use-vehicles"
 
 export function MaintenanceUploadForm() {
@@ -31,13 +31,13 @@ export function MaintenanceUploadForm() {
     }
   }
 
-  const parseCSV = async (csvText: string): Promise<Maintenance[]> => {
+  const parseCSV = async (csvText: string): Promise<MaintenanceDTO[]> => {
     const lines = csvText.split('\n').filter(line => line.trim())
     const headers = lines[0].split(',').map(h => h.trim().toLowerCase())
-    const result: Maintenance[] = []
+    const result: MaintenanceDTO[] = []
 
     // Check required headers
-    const requiredHeaders = ['vehicle_id', 'start_date', 'end_date', 'type']
+    const requiredHeaders = ['vehicle_id', 'assigned_date']
     const missingHeaders = requiredHeaders.filter(header => !headers.includes(header))
     if (missingHeaders.length > 0) {
       throw new Error(`Columnas faltantes: ${missingHeaders.join(', ')}`)
@@ -60,28 +60,31 @@ export function MaintenanceUploadForm() {
         throw new Error(`El vehículo con ID ${row.vehicle_id} no existe en la línea ${i + 1}`)
       }
 
-      // Validate dates
-      if (!row.start_date || isNaN(Date.parse(row.start_date))) {
-        throw new Error(`Fecha de inicio inválida en línea ${i + 1}`)
-      }
-      if (!row.end_date || isNaN(Date.parse(row.end_date))) {
-        throw new Error(`Fecha de fin inválida en línea ${i + 1}`)
-      }
-      if (new Date(row.start_date) >= new Date(row.end_date)) {
-        throw new Error(`La fecha de fin debe ser posterior a la fecha de inicio en línea ${i + 1}`)
+      // Validate assigned date
+      if (!row.assigned_date || isNaN(Date.parse(row.assigned_date))) {
+        throw new Error(`Fecha de asignación inválida en línea ${i + 1}`)
       }
 
-      // Validate type
-      const type = row.type.toUpperCase()
-      if (type !== MaintenanceTypeEnum.Preventive && type !== MaintenanceTypeEnum.Corrective) {
-        throw new Error(`Tipo de mantenimiento inválido en línea ${i + 1}. Debe ser PREVENTIVE o CORRECTIVE`)
+      // Optional fields validation
+      if (row.real_start && isNaN(Date.parse(row.real_start))) {
+        throw new Error(`Fecha de inicio real inválida en línea ${i + 1}`)
+      }
+      
+      if (row.real_end && isNaN(Date.parse(row.real_end))) {
+        throw new Error(`Fecha de fin real inválida en línea ${i + 1}`)
+      }
+      
+      if (row.real_start && row.real_end && new Date(row.real_start) >= new Date(row.real_end)) {
+        throw new Error(`La fecha de fin debe ser posterior a la fecha de inicio en línea ${i + 1}`)
       }
 
       result.push({
         vehicleId: row.vehicle_id,
-        startDate: new Date(row.start_date).toISOString(),
-        endDate: new Date(row.end_date).toISOString(),
-        type: type as MaintenanceTypeEnum
+        assignedDate: new Date(row.assigned_date).toISOString(),
+        realStart: row.real_start ? new Date(row.real_start).toISOString() : undefined,
+        realEnd: row.real_end ? new Date(row.real_end).toISOString() : undefined,
+        active: row.active ? row.active.toLowerCase() === 'true' : undefined,
+        durationHours: row.duration_hours ? Number(row.duration_hours) : undefined
       })
     }
 
@@ -110,7 +113,11 @@ export function MaintenanceUploadForm() {
       // Create maintenances through API
       let processed = 0
       for (const maintenance of maintenances) {
-        await createMaintenance(maintenance)
+        // We only need vehicleId and assignedDate for creating maintenance
+        await createMaintenance({
+          vehicleId: maintenance.vehicleId,
+          assignedDate: maintenance.assignedDate
+        })
         processed++
         setProgress(Math.round((processed / maintenances.length) * 100))
       }
@@ -160,7 +167,7 @@ export function MaintenanceUploadForm() {
               disabled={isUploading}
             />
             <p className="text-xs text-muted-foreground">
-              El archivo debe contener las columnas: vehicle_id, start_date, end_date, type
+              El archivo debe contener las columnas: vehicle_id, assigned_date
             </p>
           </div>
           

@@ -1,9 +1,18 @@
 import { useState, useEffect, useCallback } from "react";
-import { ordersApi, type Order } from "@/lib/api-client";
+import { ordersApi, type Order, type OrderDTO, type DeliveryRecordDTO } from "@/lib/api-client";
 import { useToast } from "@/components/ui/use-toast";
 
-export function useOrders(filter?: string) {
-  const [orders, setOrders] = useState<Order[]>([]);
+// Define an interface that combines the old field names with the new ones for transition
+interface OrderWithLegacyFields extends Order {
+  glpRequest?: number; // Legacy field mapping to glpRequestM3
+  remainingGLP?: number; // Legacy field mapping to remainingGlpM3
+  arriveDate?: string; // Legacy field mapping to arriveTime
+  dueDate?: string; // Legacy field mapping to dueTime
+  deliveryDate?: string; // Legacy field that might not be in the new API
+}
+
+export function useOrders(status?: string) {
+  const [orders, setOrders] = useState<OrderWithLegacyFields[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -14,31 +23,32 @@ export function useOrders(filter?: string) {
       setError(null);
 
       let response;
-      const statusMap: Record<string, string> = {
-        pendiente: "PENDING",
-        "en-ruta": "IN_TRANSIT",
-        entregado: "DELIVERED",
-      };
-
-      if (filter) {
-        const apiStatus = statusMap[filter];
-        if (apiStatus) {
-          response = await ordersApi.getOrdersByStatus(apiStatus as any);
+      if (status) {
+        // Map Spanish status to API parameters
+        if (status === "pendiente") {
+          response = await ordersApi.list2(true); // pendingOnly = true
+        } else if (status === "entregado") {
+          response = await ordersApi.list2(false); // pendingOnly = false
         } else {
-          response = await ordersApi.getAllOrders();
+          response = await ordersApi.list2(); // Get all
         }
       } else {
-        response = await ordersApi.getAllOrders();
+        response = await ordersApi.list2();
       }
 
-      setOrders(
-        Array.isArray(response.data)
-          ? response.data
-          : [response.data].filter(Boolean)
-      );
+      // Process the data and map legacy fields
+      const ordersData = Array.isArray(response.data) ? response.data : [response.data].filter(Boolean);
+      const mappedOrders = ordersData.map(order => ({
+        ...order,
+        glpRequest: order.glpRequestM3,
+        remainingGLP: order.remainingGlpM3,
+        arriveDate: order.arriveTime,
+        dueDate: order.dueTime,
+      }));
+
+      setOrders(mappedOrders);
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Error al cargar órdenes";
+      const errorMessage = err instanceof Error ? err.message : "Error al cargar pedidos";
       setError(errorMessage);
       toast({
         title: "Error",
@@ -48,24 +58,85 @@ export function useOrders(filter?: string) {
     } finally {
       setLoading(false);
     }
-  }, [filter, toast]); // Aquí está la clave: filter en dependencias
+  }, [status, toast]);
 
   useEffect(() => {
     fetchOrders();
   }, [fetchOrders]);
 
-  const createOrder = async (orderData: Partial<Order>) => {
+  const createOrder = async (orderData: Partial<OrderWithLegacyFields>) => {
     try {
-      const response = await ordersApi.createOrder(orderData as Order);
-      await fetchOrders();
+      // Map the legacy fields to the new API format
+      const orderDTO: OrderDTO = {
+        ...orderData,
+        glpRequestM3: orderData.glpRequest ?? orderData.glpRequestM3,
+        remainingGlpM3: orderData.remainingGLP ?? orderData.remainingGlpM3,
+        arriveTime: orderData.arriveDate ?? orderData.arriveTime,
+        dueTime: orderData.dueDate ?? orderData.dueTime,
+      } as any;
+
+      const response = await ordersApi.create2(orderDTO);
+      await fetchOrders(); // Refresh the list
       toast({
         title: "Éxito",
-        description: "Orden creada exitosamente",
+        description: "Pedido creado exitosamente",
       });
       return response.data;
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Error al crear orden";
+      const errorMessage = err instanceof Error ? err.message : "Error al crear pedido";
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw err;
+    }
+  };
+
+  const updateOrder = async (id: string, orderData: Partial<OrderWithLegacyFields>) => {
+    try {
+      // Map the legacy fields to the new API format
+      const orderDTO: OrderDTO = {
+        ...orderData,
+        glpRequestM3: orderData.glpRequest ?? orderData.glpRequestM3,
+        remainingGlpM3: orderData.remainingGLP ?? orderData.remainingGlpM3,
+        arriveTime: orderData.arriveDate ?? orderData.arriveTime,
+        dueTime: orderData.dueDate ?? orderData.dueTime,
+      } as any;
+
+      await ordersApi.update1(id, orderDTO);
+      await fetchOrders();
+      toast({
+        title: "Éxito",
+        description: "Pedido actualizado exitosamente",
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Error al actualizar pedido";
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw err;
+    }
+  };
+
+  const recordDelivery = async (id: string, amount: number) => {
+    try {
+      const deliveryRecordDTO: DeliveryRecordDTO = {
+        vehicleId: "DEFAULT", // This should be replaced with the actual vehicle ID
+        volumeM3: amount,
+        serveDate: new Date().toISOString()
+      };
+      
+      await ordersApi.recordDelivery(id, deliveryRecordDTO);
+      await fetchOrders();
+      toast({
+        title: "Éxito",
+        description: "Entrega registrada exitosamente",
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Error al registrar entrega";
       toast({
         title: "Error",
         description: errorMessage,
@@ -77,33 +148,14 @@ export function useOrders(filter?: string) {
 
   const deleteOrder = async (id: string) => {
     try {
-      const response = await fetch(`http://200.16.7.170/api/api/orders/${id}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Error al eliminar la orden");
-      }
-
-      // Actualizar el estado local removiendo la orden eliminada
-      setOrders((prevOrders) => prevOrders.filter((order) => order.id !== id));
-    } catch (error) {
-      console.error("Error deleting order:", error);
-      throw error;
-    }
-  };
-
-  const recordDelivery = async (id: string, amount: number) => {
-    try {
-      await ordersApi.recordDelivery(id, amount);
+      await ordersApi.delete2(id);
       await fetchOrders();
       toast({
         title: "Éxito",
-        description: "Entrega registrada exitosamente",
+        description: "Pedido eliminado exitosamente",
       });
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Error al registrar entrega";
+      const errorMessage = err instanceof Error ? err.message : "Error al eliminar pedido";
       toast({
         title: "Error",
         description: errorMessage,
@@ -119,13 +171,14 @@ export function useOrders(filter?: string) {
     error,
     refetch: fetchOrders,
     createOrder,
+    updateOrder,
     deleteOrder,
     recordDelivery,
   };
 }
 
 export function usePendingOrders() {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<OrderWithLegacyFields[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -135,17 +188,21 @@ export function usePendingOrders() {
       try {
         setLoading(true);
         setError(null);
-        const response = await ordersApi.getPendingOrders();
-        setOrders(
-          Array.isArray(response.data)
-            ? response.data
-            : [response.data].filter(Boolean)
-        );
+        const response = await ordersApi.list2(true);
+        
+        // Process the data and map legacy fields
+        const ordersData = Array.isArray(response.data) ? response.data : [response.data].filter(Boolean);
+        const mappedOrders = ordersData.map(order => ({
+          ...order,
+          glpRequest: order.glpRequestM3,
+          remainingGLP: order.remainingGlpM3,
+          arriveDate: order.arriveTime,
+          dueDate: order.dueTime,
+        }));
+        
+        setOrders(mappedOrders);
       } catch (err) {
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : "Error al cargar órdenes pendientes";
+        const errorMessage = err instanceof Error ? err.message : "Error al cargar pedidos pendientes";
         setError(errorMessage);
         toast({
           title: "Error",
@@ -163,8 +220,8 @@ export function usePendingOrders() {
   return { orders, loading, error };
 }
 
-export function useUrgentOrders(hoursAhead: number = 4) {
-  const [orders, setOrders] = useState<Order[]>([]);
+export function useUrgentOrders(hoursAhead: number = 24) {
+  const [orders, setOrders] = useState<OrderWithLegacyFields[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -174,17 +231,24 @@ export function useUrgentOrders(hoursAhead: number = 4) {
       try {
         setLoading(true);
         setError(null);
-        const response = await ordersApi.getUrgentOrders(hoursAhead);
-        setOrders(
-          Array.isArray(response.data)
-            ? response.data
-            : [response.data].filter(Boolean)
-        );
+        // We'll use overdueAt parameter with current time to get urgent orders
+        const now = new Date();
+        const overdueDate = new Date(now.getTime() + hoursAhead * 60 * 60 * 1000);
+        const response = await ordersApi.list2(true, overdueDate.toISOString());
+        
+        // Process the data and map legacy fields
+        const ordersData = Array.isArray(response.data) ? response.data : [response.data].filter(Boolean);
+        const mappedOrders = ordersData.map(order => ({
+          ...order,
+          glpRequest: order.glpRequestM3,
+          remainingGLP: order.remainingGlpM3,
+          arriveDate: order.arriveTime,
+          dueDate: order.dueTime,
+        }));
+        
+        setOrders(mappedOrders);
       } catch (err) {
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : "Error al cargar órdenes urgentes";
+        const errorMessage = err instanceof Error ? err.message : "Error al cargar pedidos urgentes";
         setError(errorMessage);
         toast({
           title: "Error",

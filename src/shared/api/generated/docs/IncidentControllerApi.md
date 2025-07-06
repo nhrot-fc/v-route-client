@@ -1,122 +1,34 @@
-# DashboardApi
+# IncidentControllerApi
 
 All URIs are relative to *http://localhost:8080*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**getDashboardOverview**](#getdashboardoverview) | **GET** /api/dashboard/overview | Obtener resumen del dashboard|
-|[**getSystemHealth**](#getsystemhealth) | **GET** /api/dashboard/system-health | Obtener salud del sistema|
-|[**getUrgentOrders**](#geturgentorders) | **GET** /api/dashboard/urgent-orders | Obtener órdenes urgentes|
-|[**getVehicleStatusBreakdown**](#getvehiclestatusbreakdown) | **GET** /api/dashboard/vehicle-status | Obtener estado de vehículos|
+|[**create3**](#create3) | **POST** /api/incidents | |
+|[**getById3**](#getbyid3) | **GET** /api/incidents/{id} | |
+|[**list3**](#list3) | **GET** /api/incidents | |
+|[**resolveIncident**](#resolveincident) | **PATCH** /api/incidents/{id}/resolve | |
 
-# **getDashboardOverview**
-> getDashboardOverview()
+# **create3**
+> IncidentDTO create3(incidentCreateDTO)
 
-Proporciona estadísticas generales del sistema incluyendo vehículos, órdenes, depósitos y estado operacional
 
 ### Example
 
 ```typescript
 import {
-    DashboardApi,
-    Configuration
+    IncidentControllerApi,
+    Configuration,
+    IncidentCreateDTO
 } from './api';
 
 const configuration = new Configuration();
-const apiInstance = new DashboardApi(configuration);
+const apiInstance = new IncidentControllerApi(configuration);
 
-const { status, data } = await apiInstance.getDashboardOverview();
-```
+let incidentCreateDTO: IncidentCreateDTO; //
 
-### Parameters
-This endpoint does not have any parameters.
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | Resumen del dashboard obtenido exitosamente |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **getSystemHealth**
-> getSystemHealth()
-
-Calcula y devuelve puntuaciones de salud del sistema basadas en vehículos, incidentes y órdenes
-
-### Example
-
-```typescript
-import {
-    DashboardApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DashboardApi(configuration);
-
-const { status, data } = await apiInstance.getSystemHealth();
-```
-
-### Parameters
-This endpoint does not have any parameters.
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: application/json
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | Salud del sistema obtenida exitosamente |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **getUrgentOrders**
-> Order getUrgentOrders()
-
-Devuelve las órdenes que vencen dentro del plazo especificado
-
-### Example
-
-```typescript
-import {
-    DashboardApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new DashboardApi(configuration);
-
-let hoursAhead: number; //Horas de anticipación para considerar urgente (optional) (default to 4)
-
-const { status, data } = await apiInstance.getUrgentOrders(
-    hoursAhead
+const { status, data } = await apiInstance.create3(
+    incidentCreateDTO
 );
 ```
 
@@ -124,12 +36,12 @@ const { status, data } = await apiInstance.getUrgentOrders(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **hoursAhead** | [**number**] | Horas de anticipación para considerar urgente | (optional) defaults to 4|
+| **incidentCreateDTO** | **IncidentCreateDTO**|  | |
 
 
 ### Return type
 
-**Order**
+**IncidentDTO**
 
 ### Authorization
 
@@ -137,43 +49,49 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
- - **Accept**: application/json
+ - **Content-Type**: application/json
+ - **Accept**: */*
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | Órdenes urgentes obtenidas exitosamente |  -  |
+|**200** | OK |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getVehicleStatusBreakdown**
-> Vehicle getVehicleStatusBreakdown()
+# **getById3**
+> IncidentDTO getById3()
 
-Devuelve un desglose de vehículos agrupados por su estado operativo
 
 ### Example
 
 ```typescript
 import {
-    DashboardApi,
+    IncidentControllerApi,
     Configuration
 } from './api';
 
 const configuration = new Configuration();
-const apiInstance = new DashboardApi(configuration);
+const apiInstance = new IncidentControllerApi(configuration);
 
-const { status, data } = await apiInstance.getVehicleStatusBreakdown();
+let id: number; // (default to undefined)
+
+const { status, data } = await apiInstance.getById3(
+    id
+);
 ```
 
 ### Parameters
-This endpoint does not have any parameters.
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**number**] |  | defaults to undefined|
 
 
 ### Return type
 
-**Vehicle**
+**IncidentDTO**
 
 ### Authorization
 
@@ -182,13 +100,119 @@ No authorization required
 ### HTTP request headers
 
  - **Content-Type**: Not defined
- - **Accept**: application/json
+ - **Accept**: */*
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | Estado de vehículos obtenido exitosamente |  -  |
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **list3**
+> Array<IncidentDTO> list3()
+
+
+### Example
+
+```typescript
+import {
+    IncidentControllerApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new IncidentControllerApi(configuration);
+
+let vehicleId: string; // (optional) (default to undefined)
+let startDate: string; // (optional) (default to undefined)
+let endDate: string; // (optional) (default to undefined)
+
+const { status, data } = await apiInstance.list3(
+    vehicleId,
+    startDate,
+    endDate
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **vehicleId** | [**string**] |  | (optional) defaults to undefined|
+| **startDate** | [**string**] |  | (optional) defaults to undefined|
+| **endDate** | [**string**] |  | (optional) defaults to undefined|
+
+
+### Return type
+
+**Array<IncidentDTO>**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **resolveIncident**
+> IncidentDTO resolveIncident()
+
+
+### Example
+
+```typescript
+import {
+    IncidentControllerApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new IncidentControllerApi(configuration);
+
+let id: number; // (default to undefined)
+
+const { status, data } = await apiInstance.resolveIncident(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**number**] |  | defaults to undefined|
+
+
+### Return type
+
+**IncidentDTO**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

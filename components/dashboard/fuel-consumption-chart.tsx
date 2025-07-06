@@ -25,7 +25,7 @@ export function FuelConsumptionChart() {
       try {
         setLoading(true);
         // Fetch all vehicles to calculate fuel consumption
-        const response = await vehiclesApi.getAllVehicles();
+        const response = await vehiclesApi.list();
         
         if (response.data && Array.isArray(response.data)) {
           // Get current date and calculate dates for the past week
@@ -36,11 +36,11 @@ export function FuelConsumptionChart() {
           
           // Get total current fuel and GLP across all vehicles
           const totalCurrentFuel = vehicles.reduce((sum, vehicle) => {
-            return sum + (vehicle.currentFuel || 0);
+            return sum + (vehicle.currentFuelGal || 0);
           }, 0);
           
           const totalCurrentGLP = vehicles.reduce((sum, vehicle) => {
-            return sum + (vehicle.currentGLP || 0);
+            return sum + (vehicle.currentGlpM3 || 0);
           }, 0);
           
           // Create data for the past 7 days with variations
