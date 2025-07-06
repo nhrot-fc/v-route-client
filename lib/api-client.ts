@@ -56,13 +56,24 @@ const configuration = new Configuration({
   basePath: BASE_URL,
 });
 
+// Extend OrderControllerApi to add importCsv method
+class ExtendedOrderControllerApi extends OrderControllerApi {
+  public async importCsv(formData: FormData) {
+    return axiosInstance.post(`${BASE_URL}/orders/import-csv`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+  }
+}
+
 // Export API instances
 export const vehiclesApi = new VehicleControllerApi(
   configuration,
   BASE_URL,
   axiosInstance
 );
-export const ordersApi = new OrderControllerApi(configuration, BASE_URL, axiosInstance);
+export const ordersApi = new ExtendedOrderControllerApi(configuration, BASE_URL, axiosInstance);
 export const maintenanceApi = new MaintenanceControllerApi(
   configuration,
   BASE_URL,
@@ -107,9 +118,3 @@ export {
   ListStatusEnum,
   ListTypeEnum,
 } from "@/src/shared/api/generated";
-
-// Define a maintenance type enum since it seems to be missing from the API
-export enum MaintenanceTypeEnum {
-  PREVENTIVE = 'PREVENTIVE',
-  CORRECTIVE = 'CORRECTIVE'
-}

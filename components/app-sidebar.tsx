@@ -9,6 +9,8 @@ import {
   ClipboardList,
   PlayCircle,
   Menu,
+  Wrench,
+  AlertTriangle
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -105,6 +107,24 @@ export function AppSidebar() {
                 <Link href="/vehiculos">
                   <Truck />
                   <span>Vehículos</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/mantenimientos")}>
+                <Link href="/mantenimientos">
+                  <Wrench />
+                  <span>Mantenimientos</span>
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={isActive("/bloqueos")}>
+                <Link href="/bloqueos">
+                  <AlertTriangle />
+                  <span>Bloqueos</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

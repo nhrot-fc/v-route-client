@@ -27,7 +27,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { useBlockages } from "@/hooks/use-blockages"
-import { Blockage, Position } from "@/lib/api-client"
+import { Blockage } from "@/lib/api-client"
 import {
   Card,
   CardContent,
@@ -103,16 +103,9 @@ export function BlockageForm() {
       const endTime = new Date(data.endDate)
       endTime.setHours(parseInt(data.endHour), parseInt(data.endMinute), 0, 0)
 
-      // Create blockage object
+      // Create blockage object with linePoints format
       const blockageData: Blockage = {
-        startNode: {
-          x: data.startNodeX,
-          y: data.startNodeY
-        },
-        endNode: {
-          x: data.endNodeX,
-          y: data.endNodeY
-        },
+        linePoints: `${data.startNodeX},${data.startNodeY}-${data.endNodeX},${data.endNodeY}`,
         startTime: startTime.toISOString(),
         endTime: endTime.toISOString()
       }
@@ -233,209 +226,201 @@ export function BlockageForm() {
             <div className="grid md:grid-cols-2 gap-4">
               <div className="grid gap-2">
                 <h3 className="text-lg font-medium">Fecha y Hora de Inicio</h3>
-                <div className="grid gap-4">
+                <FormField
+                  control={form.control}
+                  name="startDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Fecha</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP", { locale: es })
+                              ) : (
+                                <span>Seleccione una fecha</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) => date < new Date()}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="startDate"
+                    name="startHour"
                     render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel>Fecha de Inicio</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  "w-full pl-3 text-left font-normal",
-                                  !field.value && "text-muted-foreground"
-                                )}
-                              >
-                                {field.value ? (
-                                  format(field.value, "PPP", { locale: es })
-                                ) : (
-                                  <span>Seleccionar fecha</span>
-                                )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              disabled={(date) =>
-                                date < new Date(new Date().setHours(0, 0, 0, 0))
-                              }
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                      <FormItem>
+                        <FormLabel>Hora</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Hora" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {hourOptions.map((hour) => (
+                              <SelectItem key={`start-hour-${hour}`} value={hour}>
+                                {hour}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="startHour"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Hora</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Hora" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {hourOptions.map((hour) => (
-                                <SelectItem key={`start-hour-${hour}`} value={hour}>
-                                  {hour}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="startMinute"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Minuto</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Minuto" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {minuteOptions.map((minute) => (
-                                <SelectItem key={`start-min-${minute}`} value={minute}>
-                                  {minute}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="startMinute"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Minuto</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Minuto" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {minuteOptions.map((minute) => (
+                              <SelectItem key={`start-min-${minute}`} value={minute}>
+                                {minute}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
               
               <div className="grid gap-2">
                 <h3 className="text-lg font-medium">Fecha y Hora de Fin</h3>
-                <div className="grid gap-4">
+                <FormField
+                  control={form.control}
+                  name="endDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Fecha</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP", { locale: es })
+                              ) : (
+                                <span>Seleccione una fecha</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) => date < new Date()}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
-                    name="endDate"
+                    name="endHour"
                     render={({ field }) => (
-                      <FormItem className="flex flex-col">
-                        <FormLabel>Fecha de Fin</FormLabel>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <FormControl>
-                              <Button
-                                variant="outline"
-                                className={cn(
-                                  "w-full pl-3 text-left font-normal",
-                                  !field.value && "text-muted-foreground"
-                                )}
-                              >
-                                {field.value ? (
-                                  format(field.value, "PPP", { locale: es })
-                                ) : (
-                                  <span>Seleccionar fecha</span>
-                                )}
-                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                              </Button>
-                            </FormControl>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar
-                              mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
-                              disabled={(date) =>
-                                date < new Date(new Date().setHours(0, 0, 0, 0))
-                              }
-                              initialFocus
-                            />
-                          </PopoverContent>
-                        </Popover>
+                      <FormItem>
+                        <FormLabel>Hora</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Hora" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {hourOptions.map((hour) => (
+                              <SelectItem key={`end-hour-${hour}`} value={hour}>
+                                {hour}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="endHour"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Hora</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Hora" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {hourOptions.map((hour) => (
-                                <SelectItem key={`end-hour-${hour}`} value={hour}>
-                                  {hour}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="endMinute"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Minuto</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Minuto" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {minuteOptions.map((minute) => (
-                                <SelectItem key={`end-min-${minute}`} value={minute}>
-                                  {minute}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="endMinute"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Minuto</FormLabel>
+                        <Select 
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Minuto" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {minuteOptions.map((minute) => (
+                              <SelectItem key={`end-min-${minute}`} value={minute}>
+                                {minute}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </div>
             </div>

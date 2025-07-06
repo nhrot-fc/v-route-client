@@ -44,8 +44,7 @@ export function BlockagesTable() {
   // Filter blockages based on search term and selected month
   const filteredBlockages = blockages.filter(blockage => {
     const matchesSearch = searchTerm === "" || 
-      (blockage.startNode && blockage.endNode && 
-       `${blockage.startNode.x},${blockage.startNode.y}-${blockage.endNode.x},${blockage.endNode.y}`.toLowerCase().includes(searchTerm.toLowerCase()))
+      (blockage.linePoints && blockage.linePoints.toLowerCase().includes(searchTerm.toLowerCase()))
     
     if (selectedMonth === "all") return matchesSearch
     
@@ -74,9 +73,18 @@ export function BlockagesTable() {
     })
   }
 
-  const formatCoordinates = (startNode?: { x?: number; y?: number }, endNode?: { x?: number; y?: number }) => {
-    if (!startNode || !endNode) return "-"
-    return `(${startNode.x || 0}, ${startNode.y || 0}) → (${endNode.x || 0}, ${endNode.y || 0})`
+  const formatLinePoints = (linePoints?: string) => {
+    if (!linePoints) return "-"
+    
+    const parts = linePoints.split('-')
+    if (parts.length !== 2) return linePoints
+    
+    const start = parts[0].split(',')
+    const end = parts[1].split(',')
+    
+    if (start.length !== 2 || end.length !== 2) return linePoints
+    
+    return `(${start[0]}, ${start[1]}) → (${end[0]}, ${end[1]})`
   }
 
   if (loading) {
@@ -100,7 +108,7 @@ export function BlockagesTable() {
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar por descripción o nodos..."
+              placeholder="Buscar por coordenadas..."
               className="pl-8"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -177,7 +185,7 @@ export function BlockagesTable() {
                     <TableCell>
                       <div className="flex items-center">
                         <MapPin className="mr-2 h-4 w-4 text-muted-foreground" />
-                        {formatCoordinates(blockage.startNode, blockage.endNode)}
+                        {formatLinePoints(blockage.linePoints)}
                       </div>
                     </TableCell>
                     <TableCell>

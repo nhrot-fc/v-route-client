@@ -283,10 +283,26 @@ type SlideVehicleInfo = {
       // Estado legible
       let statusLabel = "En ruta";
       if (vehicle.status !== "AVAILABLE") statusLabel = "Averiado";
+      
       // Buscar los pedidos que está atendiendo este vehículo
+      // Como no tenemos assignedVehicleId, podemos usar la posición del vehículo y del pedido
+      // para determinar si un vehículo está cerca de un pedido (como aproximación)
       const assignedOrders = data.orders.filter(
-        (order) => order.assignedVehicleId === vehicle.id
+        (order) => {
+          // Si el vehículo tiene una ruta actual y el último punto de la ruta está cerca del pedido
+          if (vehicle.currentPath && vehicle.currentPath.path.length > 0) {
+            const lastPathPoint = vehicle.currentPath.path[vehicle.currentPath.path.length - 1];
+            const distance = Math.sqrt(
+              Math.pow(lastPathPoint.x - order.position.x, 2) + 
+              Math.pow(lastPathPoint.y - order.position.y, 2)
+            );
+            // Si la distancia es menor a 2 unidades, consideramos que el pedido está asignado al vehículo
+            return distance < 2;
+          }
+          return false;
+        }
       );
+      
       return {
         id: vehicle.id,
         type: vehicle.type,
@@ -297,8 +313,7 @@ type SlideVehicleInfo = {
         label: `${vehicle.id} (${vehicle.type})`,
         statusLabel,
         color,
-        assignedOrders, // ¡Aquí!
-
+        assignedOrders,
       };
     });
     setSlideVehicles(vehicles);

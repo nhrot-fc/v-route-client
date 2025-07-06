@@ -2,8 +2,15 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -13,206 +20,195 @@ import {
 } from "@/components/ui/select"
 import { useToast } from "@/components/ui/use-toast"
 import { useVehicles } from "@/hooks/use-vehicles"
-import type { Vehicle, VehicleStatusEnum, VehicleTypeEnum } from "@/lib/api-client"
+import { Vehicle, VehicleStatusEnum, VehicleTypeEnum } from "@/lib/api-client"
+import { Loader2 } from "lucide-react"
 
 interface VehicleFormProps {
-  onSuccess: () => void   // ← añadimos la prop
+  onClose: () => void
+  initialData?: Partial<Vehicle>
 }
 
-export function VehicleForm({ onSuccess }: VehicleFormProps) {
-  const [formData, setFormData] = useState<Partial<Vehicle>>({
-    id: "",
-    type: undefined,
-    glpCapacity: undefined,
-    fuelCapacity: undefined,
-    currentGLP: 0,
-    currentFuel: 0,
-    status: "AVAILABLE",
-    currentPosition: { x: 0, y: 0 },
-  })
-  const { toast } = useToast()
+export function VehicleForm({ onClose, initialData }: VehicleFormProps) {
   const { createVehicle } = useVehicles()
+  const [formData, setFormData] = useState<Partial<Vehicle>>({
+    id: initialData?.id || "",
+    type: initialData?.type || undefined,
+    currentPosition: initialData?.currentPosition || {
+      x: 0,
+      y: 0,
+    },
+    status: VehicleStatusEnum.Available,
+  })
 
-  const handleChange = (field: keyof Vehicle, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-  }
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handlePositionChange = (field: 'x'|'y', value: string) => {
-    const num = parseInt(value) || 0
-    setFormData(prev => ({
+  const handleChange = (
+    field: keyof Vehicle,
+    value: string | number | { x: number; y: number } | undefined
+  ) => {
+    setFormData((prev) => ({
       ...prev,
-      currentPosition: {
-        ...prev.currentPosition!,
-        [field]: num
-      }
+      [field]: value,
     }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setLoading(true)
+    setError(null)
 
-    // Validación básica
-    if (!formData.id || !formData.type || !formData.glpCapacity || !formData.fuelCapacity) {
-      toast({
-        title: "Error",
-        description: "Por favor completa todos los campos requeridos",
-        variant: "destructive",
-      })
+    if (!formData.id || !formData.type) {
+      setError("ID y tipo de vehículo son requeridos")
+      setLoading(false)
       return
     }
 
     try {
-      await createVehicle(formData as Vehicle)
-
-      // Limpieza y toast
-      setFormData({
-        id: "",
-        type: undefined,
-        glpCapacity: undefined,
-        fuelCapacity: undefined,
-        currentGLP: 0,
-        currentFuel: 0,
-        status: "AVAILABLE",
-        currentPosition: { x: 0, y: 0 },
-      })
-      toast({
-        title: "Éxito",
-        description: "Vehículo registrado exitosamente.",
-      })
-
-      // ← aquí disparas el popup de éxito en el padre
-      onSuccess()
-    } catch {
-      // el error ya sale por el hook
+      // Siempre establecemos el estado como AVAILABLE
+      const vehicleData = {
+        ...formData,
+        status: VehicleStatusEnum.Available
+      }
+      
+      await createVehicle(vehicleData)
+      onClose()
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Error al crear vehículo"
+      setError(errorMessage)
+    } finally {
+      setLoading(false)
     }
   }
 
+  const resetForm = () => {
+    setFormData({
+      id: "",
+      type: undefined,
+      currentPosition: {
+        x: 0,
+        y: 0,
+      },
+      status: VehicleStatusEnum.Available,
+    })
+    setError(null)
+  }
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="id">ID del Vehículo</Label>
-          <Input
-            id="id"
-            value={formData.id}
-            onChange={(e) => handleChange('id', e.target.value)}
-            placeholder="ej. VEH-001"
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="type">Tipo de Vehículo</Label>
-          <Select value={formData.type} onValueChange={(value: VehicleTypeEnum) => handleChange('type', value)} required>
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccionar tipo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="TA">TA - Cisterna Pequeña</SelectItem>
-              <SelectItem value="TB">TB - Cisterna Mediana</SelectItem>
-              <SelectItem value="TC">TC - Cisterna Grande</SelectItem>
-              <SelectItem value="TD">TD - Cisterna Extra Grande</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-lg font-medium">Datos del Vehículo</h3>
+        <p className="text-sm text-muted-foreground">
+          Ingresa los datos del nuevo vehículo
+        </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="glpCapacity">Capacidad GLP (L)</Label>
-          <Input
-            id="glpCapacity"
-            type="number"
-            min="0"
-            step="0.01"
-            value={formData.glpCapacity || ""}
-            onChange={(e) => handleChange('glpCapacity', parseFloat(e.target.value) || undefined)} // Allow undefined if empty
-            placeholder="ej. 5000"
-            required
-          />
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-md">
+          {error}
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="fuelCapacity">Capacidad Combustible (L)</Label>
-          <Input
-            id="fuelCapacity"
-            type="number"
-            min="0"
-            step="0.01"
-            value={formData.fuelCapacity || ""}
-            onChange={(e) => handleChange('fuelCapacity', parseFloat(e.target.value) || undefined)} // Allow undefined if empty
-            placeholder="ej. 200"
-            required
-          />
-        </div>
-      </div>
+      )}
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="currentGLP">GLP Actual (L)</Label>
-          <Input
-            id="currentGLP"
-            type="number"
-            min="0"
-            step="0.01"
-            value={formData.currentGLP || ""}
-            onChange={(e) => handleChange('currentGLP', parseFloat(e.target.value) || 0)}
-            placeholder="ej. 2500"
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="currentFuel">Combustible Actual (L)</Label>
-          <Input
-            id="currentFuel"
-            type="number"
-            min="0"
-            step="0.01"
-            value={formData.currentFuel || ""}
-            onChange={(e) => handleChange('currentFuel', parseFloat(e.target.value) || 0)}
-            placeholder="ej. 150"
-          />
-        </div>
-      </div>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label
+              htmlFor="id"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              ID del Vehículo
+            </label>
+            <Input
+              id="id"
+              value={formData.id || ""}
+              onChange={(e) => handleChange("id", e.target.value)}
+              disabled={loading}
+            />
+          </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="positionX">Posición X</Label>
-          <Input
-            id="positionX"
-            type="number"
-            value={formData.currentPosition?.x || ""}
-            onChange={(e) => handlePositionChange('x', e.target.value)}
-            placeholder="ej. 10"
-          />
+          <div className="space-y-2">
+            <label
+              htmlFor="type"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Tipo de Vehículo
+            </label>
+            <Select
+              value={formData.type}
+              onValueChange={(value) => handleChange("type", value)}
+              disabled={loading}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Seleccionar tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={VehicleTypeEnum.Ta}>Tipo TA</SelectItem>
+                <SelectItem value={VehicleTypeEnum.Tb}>Tipo TB</SelectItem>
+                <SelectItem value={VehicleTypeEnum.Tc}>Tipo TC</SelectItem>
+                <SelectItem value={VehicleTypeEnum.Td}>Tipo TD</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="positionY">Posición Y</Label>
-          <Input
-            id="positionY"
-            type="number"
-            value={formData.currentPosition?.y || ""}
-            onChange={(e) => handlePositionChange('y', e.target.value)}
-            placeholder="ej. 20"
-          />
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <label
+              htmlFor="positionX"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Posición X
+            </label>
+            <Input
+              id="positionX"
+              type="number"
+              value={formData.currentPosition?.x || 0}
+              onChange={(e) =>
+                handleChange("currentPosition", {
+                  x: parseFloat(e.target.value) || 0,
+                  y: formData.currentPosition?.y || 0,
+                })
+              }
+              disabled={loading}
+            />
+          </div>
+          <div className="space-y-2">
+            <label
+              htmlFor="positionY"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Posición Y
+            </label>
+            <Input
+              id="positionY"
+              type="number"
+              value={formData.currentPosition?.y || 0}
+              onChange={(e) =>
+                handleChange("currentPosition", {
+                  x: formData.currentPosition?.x || 0,
+                  y: parseFloat(e.target.value) || 0,
+                })
+              }
+              disabled={loading}
+            />
+          </div>
         </div>
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="status">Estado</Label>
-        <Select value={formData.status} onValueChange={(value: VehicleStatusEnum) => handleChange('status', value)} required>
-          <SelectTrigger>
-            <SelectValue placeholder="Seleccionar estado" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="AVAILABLE">Disponible</SelectItem>
-            <SelectItem value="IN_TRANSIT">En Tránsito</SelectItem>
-            <SelectItem value="MAINTENANCE">Mantenimiento</SelectItem>
-            <SelectItem value="BROKEN_DOWN">Averiado</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <Button type="submit" className="w-full">
-        Registrar Vehículo
-      </Button>
-    </form>
+        <div className="flex justify-end space-x-2 pt-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={resetForm}
+            disabled={loading}
+          >
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={loading}>
+            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Guardar Vehículo"}
+          </Button>
+        </div>
+      </form>
+    </div>
   )
 }

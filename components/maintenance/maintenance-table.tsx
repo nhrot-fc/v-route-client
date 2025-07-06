@@ -38,7 +38,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 
 import { useMaintenance } from "@/hooks/use-maintenance"
-import { MaintenanceDTO, MaintenanceTypeEnum } from "@/lib/api-client"
+import { MaintenanceDTO } from "@/lib/api-client"
 
 export function MaintenanceTable() {
   const { maintenance, loading, error } = useMaintenance()
@@ -59,11 +59,6 @@ export function MaintenanceTable() {
       return false
     }
 
-    // Apply type filter (assuming there's a type field)
-    if (typeFilter !== "all" && item.type !== typeFilter) {
-      return false
-    }
-
     // Apply search filter
     if (searchTerm && !item.vehicleId?.toLowerCase().includes(searchTerm.toLowerCase())) {
       return false
@@ -78,7 +73,6 @@ export function MaintenanceTable() {
     const data = filteredMaintenance.map(item => ({
       ID: item.id,
       'ID Vehículo': item.vehicleId,
-      'Tipo': item.type || 'N/A',
       'Fecha Asignada': item.assignedDate ? new Date(item.assignedDate).toLocaleDateString() : 'N/A',
       'Fecha Inicio': item.realStart ? new Date(item.realStart).toLocaleDateString() : 'Pendiente',
       'Fecha Fin': item.realEnd ? new Date(item.realEnd).toLocaleDateString() : 'Pendiente',
@@ -127,19 +121,6 @@ export function MaintenanceTable() {
             </SelectContent>
           </Select>
           
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue placeholder="Filtrar por tipo" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="all">Todos los tipos</SelectItem>
-                <SelectItem value={MaintenanceTypeEnum.PREVENTIVE}>Preventivo</SelectItem>
-                <SelectItem value={MaintenanceTypeEnum.CORRECTIVE}>Correctivo</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-          
           <Button 
             variant="outline" 
             className="flex items-center gap-2"
@@ -158,7 +139,6 @@ export function MaintenanceTable() {
               <TableRow>
                 <TableHead>ID</TableHead>
                 <TableHead>Vehículo</TableHead>
-                <TableHead>Tipo</TableHead>
                 <TableHead>Fecha Asignada</TableHead>
                 <TableHead>Inicio Real</TableHead>
                 <TableHead>Fin Real</TableHead>
@@ -173,7 +153,6 @@ export function MaintenanceTable() {
                   <TableRow key={item.id}>
                     <TableCell>{item.id}</TableCell>
                     <TableCell>{item.vehicleId}</TableCell>
-                    <TableCell>{item.type || 'N/A'}</TableCell>
                     <TableCell>
                       {item.assignedDate ? new Date(item.assignedDate).toLocaleDateString() : 'N/A'}
                     </TableCell>

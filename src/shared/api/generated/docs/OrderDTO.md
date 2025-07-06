@@ -1,4 +1,4 @@
-# Order
+# OrderDTO
 
 
 ## Properties
@@ -9,22 +9,22 @@ Name | Type | Description | Notes
 **arriveTime** | **string** |  | [optional] [default to undefined]
 **dueTime** | **string** |  | [optional] [default to undefined]
 **glpRequestM3** | **number** |  | [optional] [default to undefined]
-**position** | [**Position**](Position.md) |  | [optional] [default to undefined]
 **remainingGlpM3** | **number** |  | [optional] [default to undefined]
+**position** | [**Position**](Position.md) |  | [optional] [default to undefined]
 **delivered** | **boolean** |  | [optional] [default to undefined]
 
 ## Example
 
 ```typescript
-import { Order } from './api';
+import { OrderDTO } from './api';
 
-const instance: Order = {
+const instance: OrderDTO = {
     id,
     arriveTime,
     dueTime,
     glpRequestM3,
-    position,
     remainingGlpM3,
+    position,
     delivered,
 };
 ```

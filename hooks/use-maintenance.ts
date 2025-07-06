@@ -2,9 +2,9 @@ import { useState, useEffect, useCallback } from 'react'
 import { maintenanceApi, type MaintenanceDTO } from '@/lib/api-client'
 import { useToast } from '@/components/ui/use-toast'
 
-// Define an interface for legacy fields
+// Define an interface for legacy fields if needed
 interface MaintenanceWithLegacyFields extends MaintenanceDTO {
-  type?: string; // Legacy field that might not exist in the new API
+  // No legacy fields needed for now
 }
 
 // Export with original name for backward compatibility
@@ -23,8 +23,7 @@ export function useMaintenance() {
       // Map the response data to include legacy fields if needed
       const maintenanceData = Array.isArray(response.data) ? response.data : [response.data].filter(Boolean)
       const mappedMaintenance = maintenanceData.map(record => ({
-        ...record,
-        // If there were legacy fields, we would map them here
+        ...record
       }))
       
       setMaintenance(mappedMaintenance)
@@ -71,12 +70,12 @@ export function useMaintenance() {
     }
   }
 
-  const scheduleMaintenance = async (vehicleId: string, startDate: string, type: string) => {
+  const scheduleMaintenance = async (vehicleId: string, assignedDate: string) => {
     try {
       // Prepare the maintenance create data
       const data = {
         vehicleId,
-        assignedDate: startDate
+        assignedDate
       }
       
       await maintenanceApi.createMaintenance(data)
@@ -173,8 +172,7 @@ export function useActiveMaintenance() {
         // Map the response data to include legacy fields if needed
         const maintenanceData = Array.isArray(response.data) ? response.data : [response.data].filter(Boolean)
         const mappedMaintenance = maintenanceData.map(record => ({
-          ...record,
-          // If there were legacy fields, we would map them here
+          ...record
         }))
         
         setMaintenance(mappedMaintenance)
@@ -217,8 +215,7 @@ export function useMaintenanceByVehicle(vehicleId: string) {
         // Map the response data to include legacy fields if needed
         const maintenanceData = Array.isArray(response.data) ? response.data : [response.data].filter(Boolean)
         const mappedMaintenance = maintenanceData.map(record => ({
-          ...record,
-          // If there were legacy fields, we would map them here
+          ...record
         }))
         
         setMaintenance(mappedMaintenance)

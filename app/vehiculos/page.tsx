@@ -119,7 +119,7 @@ export default function VehiculosPage() {
             <DialogTitle>Registro de Vehículo</DialogTitle>
             <DialogDescription>Añade un nuevo vehículo a la flota</DialogDescription>
           </DialogHeader>
-          <VehicleForm onSuccess={handleNewSubmit} />
+          <VehicleForm onClose={() => setNewOpen(false)} />
         </DialogContent>
       </Dialog>
 
