@@ -2,8 +2,16 @@ import { useState, useEffect, useCallback } from 'react'
 import { vehiclesApi, type Vehicle } from '@/lib/api-client'
 import { useToast } from '@/components/ui/use-toast'
 
+// Define an interface that combines the old field names with the new ones for transition
+interface VehicleWithLegacyFields extends Vehicle {
+  currentGLP?: number; // Legacy field
+  currentFuel?: number; // Legacy field
+  glpCapacity?: number; // Legacy field
+  fuelCapacity?: number; // Legacy field
+}
+
 export function useVehicles(filter?: string) {
-  const [vehicles, setVehicles] = useState<Vehicle[]>([])
+  const [vehicles, setVehicles] = useState<VehicleWithLegacyFields[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
@@ -18,22 +26,33 @@ export function useVehicles(filter?: string) {
         // Map Spanish filter names to API status values
         const statusMap: Record<string, string> = {
           'disponible': 'AVAILABLE',
-          'en-ruta': 'IN_TRANSIT',
+          'en-ruta': 'DRIVING',
           'mantenimiento': 'MAINTENANCE',
-          'averiado': 'BROKEN_DOWN'
+          'averiado': 'INCIDENT'
         }
         
         const apiStatus = statusMap[filter]
         if (apiStatus) {
-          response = await vehiclesApi.getVehiclesByStatus(apiStatus as any)
+          response = await vehiclesApi.list(undefined, apiStatus as any)
         } else {
-          response = await vehiclesApi.getAllVehicles()
+          response = await vehiclesApi.list()
         }
       } else {
-        response = await vehiclesApi.getAllVehicles()
+        response = await vehiclesApi.list()
       }
       
-      setVehicles(Array.isArray(response.data) ? response.data : [response.data].filter(Boolean))
+      const vehiclesData = Array.isArray(response.data) ? response.data : [response.data].filter(Boolean)
+      
+      // Map the received vehicles to include legacy fields for compatibility
+      const mappedVehicles = vehiclesData.map(v => ({
+        ...v,
+        currentGLP: v.currentGlpM3, // Map new field to legacy field
+        currentFuel: v.currentFuelGal, // Map new field to legacy field
+        glpCapacity: v.glpCapacityM3, // Map new field to legacy field
+        fuelCapacity: v.fuelCapacityGal // Map new field to legacy field
+      }))
+      
+      setVehicles(mappedVehicles)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al cargar vehículos'
       setError(errorMessage)
@@ -51,9 +70,18 @@ export function useVehicles(filter?: string) {
     fetchVehicles()
   }, [fetchVehicles])
 
-  const createVehicle = async (vehicleData: Partial<Vehicle>) => {
+  const createVehicle = async (vehicleData: Partial<VehicleWithLegacyFields>) => {
     try {
-      const response = await vehiclesApi.createVehicle(vehicleData as Vehicle)
+      // Create a new vehicle DTO with the correct field names
+      const vehicleDTO = {
+        ...vehicleData,
+        currentGlpM3: vehicleData.currentGLP ?? vehicleData.currentGlpM3,
+        currentFuelGal: vehicleData.currentFuel ?? vehicleData.currentFuelGal,
+        glpCapacityM3: vehicleData.glpCapacity ?? vehicleData.glpCapacityM3,
+        fuelCapacityGal: vehicleData.fuelCapacity ?? vehicleData.fuelCapacityGal
+      } 
+      
+      const response = await vehiclesApi.create(vehicleDTO as any)
       await fetchVehicles() // Refresh the list
       toast({
         title: 'Éxito',
@@ -73,7 +101,17 @@ export function useVehicles(filter?: string) {
 
   const updateVehicleStatus = async (id: string, status: string) => {
     try {
-      await vehiclesApi.updateVehicleStatus(id, status as any)
+      // Get the current vehicle first
+      const vehicleResponse = await vehiclesApi.getById(id)
+      const currentVehicle = vehicleResponse.data
+      
+      // Update only the status
+      const vehicleDTO = {
+        ...currentVehicle,
+        status: status // The API expects a specific enum value
+      }
+      
+      await vehiclesApi.update(id, vehicleDTO as any)
       await fetchVehicles() // Refresh the list
       toast({
         title: 'Éxito',
@@ -92,7 +130,7 @@ export function useVehicles(filter?: string) {
 
   const deleteVehicle = async (id: string) => {
     try {
-      await vehiclesApi.deleteVehicle(id)
+      await vehiclesApi._delete(id)
       await fetchVehicles() // Refresh the list
       toast({
         title: 'Éxito',
@@ -108,16 +146,25 @@ export function useVehicles(filter?: string) {
       throw err
     }
   }
-  const updateVehicle = async (id: string, data: Partial<Vehicle>) => {
-    // try {
-    //   await vehiclesApi.(id, data as any)
-    //   await fetchVehicles()
-    //   toast({ title: 'Éxito', description: 'Vehículo actualizado' })
-    // } catch (err) {
-    //   const msg = err instanceof Error ? err.message : 'Error al actualizar vehículo'
-    //   toast({ title: 'Error', description: msg, variant: 'destructive' })
-    //   throw err
-    // }
+  
+  const updateVehicle = async (id: string, data: Partial<VehicleWithLegacyFields>) => {
+    try {
+      const vehicleDTO = {
+        ...data,
+        currentGlpM3: data.currentGLP ?? data.currentGlpM3,
+        currentFuelGal: data.currentFuel ?? data.currentFuelGal,
+        glpCapacityM3: data.glpCapacity ?? data.glpCapacityM3,
+        fuelCapacityGal: data.fuelCapacity ?? data.fuelCapacityGal
+      }
+      
+      await vehiclesApi.update(id, vehicleDTO as any)
+      await fetchVehicles()
+      toast({ title: 'Éxito', description: 'Vehículo actualizado' })
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Error al actualizar vehículo'
+      toast({ title: 'Error', description: msg, variant: 'destructive' })
+      throw err
+    }
   }
   return {
     vehicles,
@@ -132,7 +179,7 @@ export function useVehicles(filter?: string) {
 }
 
 export function useVehicle(id: string) {
-  const [vehicle, setVehicle] = useState<Vehicle | null>(null)
+  const [vehicle, setVehicle] = useState<VehicleWithLegacyFields | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
@@ -142,8 +189,16 @@ export function useVehicle(id: string) {
       try {
         setLoading(true)
         setError(null)
-        const response = await vehiclesApi.getVehicleById(id)
-        setVehicle(response.data)
+        const response = await vehiclesApi.getById(id)
+        // Map the vehicle to include legacy fields for compatibility
+        const vehicleWithLegacy = {
+          ...response.data,
+          currentGLP: response.data.currentGlpM3,
+          currentFuel: response.data.currentFuelGal,
+          glpCapacity: response.data.glpCapacityM3,
+          fuelCapacity: response.data.fuelCapacityGal
+        }
+        setVehicle(vehicleWithLegacy)
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : 'Error al cargar vehículo'
         setError(errorMessage)

@@ -1,199 +1,210 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Search, FileDown } from "lucide-react"
 import { 
   Select, 
   SelectContent, 
+  SelectGroup, 
   SelectItem, 
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select"
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card"
-import { 
-  CalendarClock, 
-  Search, 
-  Truck, 
-  Wrench, 
-  X 
-} from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { downloadToCSV } from "@/lib/utils"
+import { Card, CardContent } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+
 import { useMaintenance } from "@/hooks/use-maintenance"
-import { Maintenance, MaintenanceTypeEnum } from "@/lib/api-client"
-import { Badge } from "@/components/ui/badge"
+import { MaintenanceDTO, MaintenanceTypeEnum } from "@/lib/api-client"
 
 export function MaintenanceTable() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedType, setSelectedType] = useState("all")
   const { maintenance, loading, error } = useMaintenance()
-  
-  // Filter maintenance based on search term and selected type
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [typeFilter, setTypeFilter] = useState<string>("all")
+
+  const getMaintenanceStatus = (item: MaintenanceDTO): string => {
+    if (item.active === false && item.realEnd) return "completado"
+    if (item.active === true) return "activo"
+    return "pendiente"
+  }
+
   const filteredMaintenance = maintenance.filter(item => {
-    const matchesSearch = searchTerm === "" || 
-      (item.vehicleId && item.vehicleId.toLowerCase().includes(searchTerm.toLowerCase()))
-    
-    if (selectedType === "all") return matchesSearch
-    
-    return matchesSearch && item.type === selectedType
+    // Apply status filter
+    const status = getMaintenanceStatus(item)
+    if (statusFilter !== "all" && status !== statusFilter) {
+      return false
+    }
+
+    // Apply type filter (assuming there's a type field)
+    if (typeFilter !== "all" && item.type !== typeFilter) {
+      return false
+    }
+
+    // Apply search filter
+    if (searchTerm && !item.vehicleId?.toLowerCase().includes(searchTerm.toLowerCase())) {
+      return false
+    }
+
+    return true
   })
 
-  const handleDelete = async (id: number) => {
-    if (confirm("¿Estás seguro de que quieres eliminar este mantenimiento?")) {
-      console.error("Funcionalidad de eliminación no implementada")
-    }
-  }
+  const handleDownloadCSV = () => {
+    if (!filteredMaintenance.length) return
+    
+    const data = filteredMaintenance.map(item => ({
+      ID: item.id,
+      'ID Vehículo': item.vehicleId,
+      'Tipo': item.type || 'N/A',
+      'Fecha Asignada': item.assignedDate ? new Date(item.assignedDate).toLocaleDateString() : 'N/A',
+      'Fecha Inicio': item.realStart ? new Date(item.realStart).toLocaleDateString() : 'Pendiente',
+      'Fecha Fin': item.realEnd ? new Date(item.realEnd).toLocaleDateString() : 'Pendiente',
+      'Duración (horas)': item.durationHours || 'N/A',
+      'Estado': getMaintenanceStatus(item)
+    }))
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "-"
-    return new Date(dateString).toLocaleDateString("es-ES")
-  }
-
-  const getMaintenanceTypeLabel = (type?: string) => {
-    switch (type) {
-      case MaintenanceTypeEnum.Preventive:
-        return <Badge className="bg-blue-500">Preventivo</Badge>
-      case MaintenanceTypeEnum.Corrective:
-        return <Badge className="bg-amber-500">Correctivo</Badge>
-      default:
-        return <Badge variant="outline">Desconocido</Badge>
-    }
+    downloadToCSV(data, 'mantenimientos.csv')
   }
 
   if (loading) {
-    return <div className="flex justify-center p-4">Cargando mantenimientos...</div>
+    return <div>Cargando...</div>
   }
 
   if (error) {
-    return <div className="text-red-500 p-4">Error: {error}</div>
+    return <div>Error: {error}</div>
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Mantenimientos</CardTitle>
-        <CardDescription>
-          Lista de mantenimientos programados para los vehículos
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col md:flex-row gap-4 mb-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por ID de vehículo..."
+    <div className="space-y-4">
+      <div className="flex flex-col sm:flex-row justify-between gap-4">
+        <div className="flex items-center space-x-2 flex-grow">
+          <div className="relative flex-grow">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Buscar por ID de vehículo..." 
               className="pl-8"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Select value={selectedType} onValueChange={setSelectedType}>
-            <SelectTrigger className="w-full md:w-[180px]">
+        </div>
+        
+        <div className="flex flex-wrap gap-2">
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[160px]">
+              <SelectValue placeholder="Filtrar por estado" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                <SelectItem value="activo">Activos</SelectItem>
+                <SelectItem value="pendiente">Pendientes</SelectItem>
+                <SelectItem value="completado">Completados</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+          
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="w-[160px]">
               <SelectValue placeholder="Filtrar por tipo" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos los tipos</SelectItem>
-              <SelectItem value={MaintenanceTypeEnum.Preventive}>Preventivo</SelectItem>
-              <SelectItem value={MaintenanceTypeEnum.Corrective}>Correctivo</SelectItem>
+              <SelectGroup>
+                <SelectItem value="all">Todos los tipos</SelectItem>
+                <SelectItem value={MaintenanceTypeEnum.PREVENTIVE}>Preventivo</SelectItem>
+                <SelectItem value={MaintenanceTypeEnum.CORRECTIVE}>Correctivo</SelectItem>
+              </SelectGroup>
             </SelectContent>
           </Select>
+          
+          <Button 
+            variant="outline" 
+            className="flex items-center gap-2"
+            onClick={handleDownloadCSV}
+          >
+            <FileDown size={16} />
+            <span className="hidden sm:inline">Exportar</span>
+          </Button>
         </div>
-        
-        <div className="rounded-md border">
+      </div>
+      
+      {filteredMaintenance.length > 0 ? (
+        <div className="border rounded-md">
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead>ID</TableHead>
                 <TableHead>Vehículo</TableHead>
-                <TableHead>Fecha Inicio</TableHead>
-                <TableHead>Fecha Fin</TableHead>
                 <TableHead>Tipo</TableHead>
+                <TableHead>Fecha Asignada</TableHead>
+                <TableHead>Inicio Real</TableHead>
+                <TableHead>Fin Real</TableHead>
+                <TableHead>Duración</TableHead>
                 <TableHead>Estado</TableHead>
-                <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredMaintenance.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
-                    No se encontraron mantenimientos.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredMaintenance.map((item) => {
-                  const now = new Date()
-                  const startDate = item.startDate ? new Date(item.startDate) : null
-                  const endDate = item.endDate ? new Date(item.endDate) : null
-                  
-                  let status = "scheduled"
-                  if (startDate && now >= startDate && endDate && now <= endDate) {
-                    status = "in-progress"
-                  } else if (endDate && now > endDate) {
-                    status = "completed"
-                  }
-                  
-                  return (
-                    <TableRow key={item.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center">
-                          <Truck className="mr-2 h-4 w-4 text-muted-foreground" />
-                          {item.vehicleId}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <CalendarClock className="mr-2 h-4 w-4 text-muted-foreground" />
-                          {formatDate(item.startDate)}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <CalendarClock className="mr-2 h-4 w-4 text-muted-foreground" />
-                          {formatDate(item.endDate)}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center">
-                          <Wrench className="mr-2 h-4 w-4 text-muted-foreground" />
-                          {getMaintenanceTypeLabel(item.type)}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {status === "scheduled" && <Badge variant="outline">Programado</Badge>}
-                        {status === "in-progress" && <Badge className="bg-blue-500">En Progreso</Badge>}
-                        {status === "completed" && <Badge className="bg-green-500">Completado</Badge>}
-                      </TableCell>
-                      <TableCell>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={() => handleDelete(item.id || 0)}
-                          disabled={status === "in-progress"}
-                        >
-                          <X className="h-4 w-4" />
-                          <span className="sr-only">Eliminar</span>
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })
-              )}
+              {filteredMaintenance.map((item) => {
+                const status = getMaintenanceStatus(item)
+                return (
+                  <TableRow key={item.id}>
+                    <TableCell>{item.id}</TableCell>
+                    <TableCell>{item.vehicleId}</TableCell>
+                    <TableCell>{item.type || 'N/A'}</TableCell>
+                    <TableCell>
+                      {item.assignedDate ? new Date(item.assignedDate).toLocaleDateString() : 'N/A'}
+                    </TableCell>
+                    <TableCell>
+                      {item.realStart ? new Date(item.realStart).toLocaleDateString() : 'Pendiente'}
+                    </TableCell>
+                    <TableCell>
+                      {item.realEnd ? new Date(item.realEnd).toLocaleDateString() : 'Pendiente'}
+                    </TableCell>
+                    <TableCell>{item.durationHours || 'N/A'}</TableCell>
+                    <TableCell>
+                      <Badge variant={
+                        status === 'activo' ? 'default' : 
+                        status === 'completado' ? 'outline' : 'secondary'
+                      }>
+                        {status}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         </div>
-      </CardContent>
-    </Card>
+      ) : (
+        <Card>
+          <CardContent className="pt-6 text-center text-muted-foreground">
+            No se encontraron registros de mantenimiento.
+          </CardContent>
+        </Card>
+      )}
+    </div>
   )
 }
