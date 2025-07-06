@@ -33,8 +33,7 @@ import simulationApi, {
   Vehicle,
   Order,
   Blockage,
-  Depot,
-  EnvironmentResponse
+  Depot
 } from '@/lib/simulation-api'
 
 // Import Dialog components
@@ -287,9 +286,8 @@ export function SimulationMap({ onTimeUpdate }: SimulationMapProps) {
         setIsLoading(true);
         setDataError(null);
 
-        // Assuming simulationApi.getEnvironment() returns EnvironmentData
+        // Obtener datos del entorno desde la API
         const data = await simulationApi.getEnvironment();
-        console.log(data)
         setEnvironmentData(data);
         setSimulationTime(data.simulationTime);
         setSimulationRunning(data.simulationRunning);

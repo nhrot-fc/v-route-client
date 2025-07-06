@@ -1,9 +1,8 @@
 "use client"
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Bar, BarChart, CartesianGrid, Line, LineChart, Legend, Pie, PieChart, Cell, ResponsiveContainer, XAxis, YAxis } from "recharts"
 import { Badge } from "@/components/ui/badge"
 import { ArrowUp, ArrowDown, TrendingUp, TrendingDown, Truck, Package, Fuel, Clock, AlertTriangle } from "lucide-react"
