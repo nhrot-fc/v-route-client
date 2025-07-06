@@ -13,6 +13,10 @@ const config: Config = {
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
+        surface: {
+          DEFAULT: 'hsl(var(--surface))',
+          foreground: 'hsl(var(--surface-foreground))'
+        },
   			card: {
   				DEFAULT: 'hsl(var(--card))',
   				foreground: 'hsl(var(--card-foreground))'
@@ -23,7 +27,19 @@ const config: Config = {
   			},
   			primary: {
   				DEFAULT: 'hsl(var(--primary))',
-  				foreground: 'hsl(var(--primary-foreground))'
+  				foreground: 'hsl(var(--primary-foreground))',
+          light: 'hsl(var(--primary-light))',
+          dark: 'hsl(var(--primary-dark))',
+          50: 'hsl(var(--primary-50))',
+          100: 'hsl(var(--primary-100))',
+          200: 'hsl(var(--primary-200))',
+          300: 'hsl(var(--primary-300))',
+          400: 'hsl(var(--primary-400))',
+          500: 'hsl(var(--primary-500))',
+          600: 'hsl(var(--primary-600))',
+          700: 'hsl(var(--primary-700))',
+          800: 'hsl(var(--primary-800))',
+          900: 'hsl(var(--primary-900))'
   			},
   			secondary: {
   				DEFAULT: 'hsl(var(--secondary))',
@@ -60,7 +76,29 @@ const config: Config = {
   				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
-  			}
+  			},
+        status: {
+          success: 'hsl(var(--success))',
+          'success-foreground': 'hsl(var(--success-foreground))',
+          info: 'hsl(var(--info))',
+          'info-foreground': 'hsl(var(--info-foreground))',
+          warning: 'hsl(var(--warning))',
+          'warning-foreground': 'hsl(var(--warning-foreground))',
+          error: 'hsl(var(--error))',
+          'error-foreground': 'hsl(var(--error-foreground))'
+        },
+        blue: {
+          50: 'hsl(var(--blue-50))',
+          100: 'hsl(var(--blue-100))',
+          200: 'hsl(var(--blue-200))',
+          300: 'hsl(var(--blue-300))',
+          400: 'hsl(var(--blue-400))',
+          500: 'hsl(var(--blue-500))',
+          600: 'hsl(var(--blue-600))',
+          700: 'hsl(var(--blue-700))',
+          800: 'hsl(var(--blue-800))',
+          900: 'hsl(var(--blue-900))'
+        }
   		},
   		borderRadius: {
   			lg: 'var(--radius)',
@@ -83,11 +121,31 @@ const config: Config = {
   				to: {
   					height: '0'
   				}
-  			}
+  			},
+        'fadeIn': {
+          from: {
+            opacity: '0',
+            transform: 'translateY(10px)'
+          },
+          to: {
+            opacity: '1',
+            transform: 'translateY(0)'
+          }
+        },
+        'pulse': {
+          '0%, 100%': {
+            opacity: '1'
+          },
+          '50%': {
+            opacity: '0.7'
+          }
+        }
   		},
   		animation: {
   			'accordion-down': 'accordion-down 0.2s ease-out',
-  			'accordion-up': 'accordion-up 0.2s ease-out'
+  			'accordion-up': 'accordion-up 0.2s ease-out',
+        'fade-in': 'fadeIn 0.3s ease-out forwards',
+        'pulse-slow': 'pulse 2s infinite ease-in-out'
   		}
   	}
   },

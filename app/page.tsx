@@ -11,27 +11,27 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Activity,
-  AlertTriangle,
   CheckCircle2,
   Clock,
   Fuel,
   BarChart2,
-  TrendingDown,
-  TrendingUp,
   Truck,
   RefreshCw,
   Loader2,
+  Home,
+  Package,
 } from "lucide-react";
 import { DeliveryStatusChart } from "@/components/dashboard/delivery-status-chart";
 import { FuelConsumptionChart } from "@/components/dashboard/fuel-consumption-chart";
 import { RecentOrders } from "@/components/dashboard/recent-orders";
 import { VehicleStatusList } from "@/components/dashboard/vehicle-status-list";
 import { useDashboardMetrics } from "@/hooks/use-dashboard";
-import { PageContainer } from "@/components/ui/page-container";
-import { PageHeader } from "@/components/ui/page-header";
+import { PageLayout } from "@/components/ui/page-layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { Divider } from "@/components/ui/divider";
+import { IconCard } from "@/components/ui/icon-card";
+import { StatusBadge } from "@/components/ui/status-badge";
 
 export default function DashboardPage() {
   const { metrics, loading, refreshMetrics } = useDashboardMetrics();
@@ -50,100 +50,153 @@ export default function DashboardPage() {
   };
 
   return (
-    <PageContainer>
-      <PageHeader 
-        title="Dashboard" 
-        description="Visualización de métricas operativas y gestión logística"
-        actions={[
-          { 
-            icon: isRefreshing ? <Loader2 className="animate-spin" /> : <RefreshCw />, 
-            label: "Actualizar datos", 
-            variant: "outline", 
-            onClick: handleRefresh 
-          }
-        ]}
-      />
+    <PageLayout
+      title="Dashboard" 
+      description="Visualización de métricas operativas y gestión logística"
+      actions={[
+        { 
+          icon: isRefreshing ? <Loader2 className="animate-spin" /> : <RefreshCw />, 
+          label: "Actualizar datos", 
+          variant: "outline", 
+          onClick: handleRefresh 
+        }
+      ]}
+    >
+      <div className="mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-semibold flex items-center">
+            <Home className="h-5 w-5 mr-2 text-primary" />
+            Resumen Operativo
+          </h2>
+          <Badge variant="ghost" className="text-xs">
+            Última actualización: {currentTime}
+          </Badge>
+        </div>
+        
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <IconCard
+            icon={<Clock className="h-5 w-5" />}
+            title="Pedidos Pendientes"
+            value={loading ? "..." : metrics.pendingOrders.count}
+            trend={
+              !loading && metrics.pendingOrders.changePercent !== 0
+                ? {
+                    value: metrics.pendingOrders.changePercent,
+                    isPositive: metrics.pendingOrders.changePercent < 0,
+                    label: metrics.pendingOrders.changePercent < 0 ? "menos que ayer" : "más que ayer"
+                  }
+                : undefined
+            }
+            colorScheme="blue"
+          />
+
+          <IconCard
+            icon={<CheckCircle2 className="h-5 w-5" />}
+            title="Entregas Completadas"
+            value={loading ? "..." : metrics.completedOrders.count}
+            trend={
+              !loading && metrics.completedOrders.changePercent !== 0
+                ? {
+                    value: metrics.completedOrders.changePercent,
+                    isPositive: metrics.completedOrders.changePercent > 0,
+                    label: metrics.completedOrders.changePercent > 0 ? "más que ayer" : "menos que ayer"
+                  }
+                : undefined
+            }
+            colorScheme="green"
+          />
+
+          <IconCard
+            icon={<Truck className="h-5 w-5" />}
+            title="Vehículos Activos"
+            value={loading ? "..." : `${metrics.activeVehicles.active}/${metrics.activeVehicles.total}`}
+            subtitle={metrics.activeVehicles.inMaintenance > 0 
+              ? `${metrics.activeVehicles.inMaintenance} en mantenimiento`
+              : "Todos operativos"
+            }
+            footer={
+              metrics.activeVehicles.inMaintenance > 0 ? (
+                <StatusBadge status="warning" text="Mantenimiento requerido" size="sm" />
+              ) : (
+                <StatusBadge status="success" text="Flota operativa" size="sm" />
+              )
+            }
+            colorScheme="primary"
+          />
+
+          <IconCard
+            icon={<Fuel className="h-5 w-5" />}
+            title="Consumo de Combustible"
+            value={loading ? "..." : `${metrics.fuelConsumption.total} L`}
+            trend={
+              !loading && metrics.fuelConsumption.changePercent !== 0
+                ? {
+                    value: metrics.fuelConsumption.changePercent,
+                    isPositive: metrics.fuelConsumption.changePercent < 0,
+                    label: metrics.fuelConsumption.changePercent < 0 ? "menos que ayer" : "más que ayer"
+                  }
+                : undefined
+            }
+            colorScheme="amber"
+          />
+        </div>
+      </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList className="w-full max-w-md mx-auto md:mx-0 grid grid-cols-3">
-          <TabsTrigger value="overview">Vista General</TabsTrigger>
-          <TabsTrigger value="analytics">Analítica</TabsTrigger>
-          <TabsTrigger value="reports">Reportes</TabsTrigger>
+        <TabsList className="w-full max-w-md mx-auto md:mx-0 grid grid-cols-3 bg-muted/60">
+          <TabsTrigger value="overview" className="data-[state=active]:bg-white dark:data-[state=active]:bg-card">
+            <Package className="h-4 w-4 mr-2" />
+            Vista General
+          </TabsTrigger>
+          <TabsTrigger value="analytics" className="data-[state=active]:bg-white dark:data-[state=active]:bg-card">
+            <BarChart2 className="h-4 w-4 mr-2" />
+            Analítica
+          </TabsTrigger>
+          <TabsTrigger value="reports" className="data-[state=active]:bg-white dark:data-[state=active]:bg-card">
+            <Activity className="h-4 w-4 mr-2" />
+            Reportes
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6 animate-fade-in">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <StatCard 
-              title="Pedidos Pendientes"
-              value={loading ? null : metrics.pendingOrders.count}
-              icon={<Clock className="h-5 w-5 text-blue-600" />}
-              change={metrics.pendingOrders.changePercent}
-              changeDescription={metrics.pendingOrders.changePercent < 0 ? "menos que ayer" : "más que ayer"}
-              changeBetter={metrics.pendingOrders.changePercent < 0}
-            />
-
-            <StatCard 
-              title="Entregas Completadas"
-              value={loading ? null : metrics.completedOrders.count}
-              icon={<CheckCircle2 className="h-5 w-5 text-green-600" />}
-              change={metrics.completedOrders.changePercent}
-              changeDescription={metrics.completedOrders.changePercent > 0 ? "más que ayer" : "menos que ayer"}
-              changeBetter={metrics.completedOrders.changePercent > 0}
-            />
-
-            <StatCard 
-              title="Vehículos Activos"
-              value={loading ? null : `${metrics.activeVehicles.active}/${metrics.activeVehicles.total}`}
-              icon={<Truck className="h-5 w-5 text-blue-600" />}
-              secondaryText={metrics.activeVehicles.inMaintenance > 0 ? (
-                <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200 mt-1">
-                  <AlertTriangle className="mr-1 h-3 w-3" />
-                  <span>{metrics.activeVehicles.inMaintenance} en mantenimiento</span>
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200 mt-1">
-                  <CheckCircle2 className="mr-1 h-3 w-3" />
-                  <span>Todos operativos</span>
-                </Badge>
-              )}
-            />
-
-            <StatCard 
-              title="Consumo de Combustible"
-              value={loading ? null : `${metrics.fuelConsumption.total} L`}
-              icon={<Fuel className="h-5 w-5 text-blue-600" />}
-              change={metrics.fuelConsumption.changePercent}
-              changeDescription={metrics.fuelConsumption.changePercent < 0 ? "menos que ayer" : "más que ayer"}
-              changeBetter={metrics.fuelConsumption.changePercent < 0}
-            />
-          </div>
-
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4 overflow-hidden border-border">
-              <CardHeader className="bg-card pb-2">
-                <CardTitle className="text-lg font-semibold flex items-center">
-                  <BarChart2 className="h-5 w-5 mr-2 text-blue-600" />
-                  Estado de Entregas
-                </CardTitle>
+            <Card className="col-span-4 overflow-hidden border bg-white">
+              <CardHeader className="bg-white pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-semibold flex items-center">
+                    <BarChart2 className="h-5 w-5 mr-2 text-primary" />
+                    Estado de Entregas
+                  </CardTitle>
+                  <Badge variant="outline" className="bg-primary-50 text-primary-700">
+                    Últimas 24h
+                  </Badge>
+                </div>
                 <CardDescription>
                   Distribución de entregas por estado en las últimas 24 horas
                 </CardDescription>
               </CardHeader>
+              <Divider className="mx-6" />
               <CardContent className="pl-2 pt-4">
                 <DeliveryStatusChart />
               </CardContent>
             </Card>
 
-            <Card className="col-span-3 overflow-hidden border-border">
-              <CardHeader className="bg-card pb-2">
-                <CardTitle className="text-lg font-semibold flex items-center">
-                  <Fuel className="h-5 w-5 mr-2 text-blue-600" />
-                  Consumo de Combustible
-                </CardTitle>
+            <Card className="col-span-3 overflow-hidden border bg-white">
+              <CardHeader className="bg-white pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-semibold flex items-center">
+                    <Fuel className="h-5 w-5 mr-2 text-primary" />
+                    Consumo de Combustible
+                  </CardTitle>
+                  <Badge variant="outline" className="bg-primary-50 text-primary-700">
+                    Semanal
+                  </Badge>
+                </div>
                 <CardDescription>
                   Consumo diario de combustible en la última semana
                 </CardDescription>
               </CardHeader>
+              <Divider className="mx-6" />
               <CardContent className="pt-4">
                 <FuelConsumptionChart />
               </CardContent>
@@ -151,31 +204,33 @@ export default function DashboardPage() {
           </div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
-            <Card className="col-span-4 overflow-hidden border-border">
-              <CardHeader className="bg-card pb-2">
+            <Card className="col-span-4 overflow-hidden border bg-white">
+              <CardHeader className="bg-white pb-2">
                 <CardTitle className="text-lg font-semibold flex items-center">
-                  <Clock className="h-5 w-5 mr-2 text-blue-600" />
+                  <Clock className="h-5 w-5 mr-2 text-primary" />
                   Pedidos Recientes
                 </CardTitle>
                 <CardDescription>
                   Últimos pedidos registrados en el sistema
                 </CardDescription>
               </CardHeader>
+              <Divider className="mx-6" />
               <CardContent className="pt-4">
                 <RecentOrders />
               </CardContent>
             </Card>
 
-            <Card className="col-span-3 overflow-hidden border-border">
-              <CardHeader className="bg-card pb-2">
+            <Card className="col-span-3 overflow-hidden border bg-white">
+              <CardHeader className="bg-white pb-2">
                 <CardTitle className="text-lg font-semibold flex items-center">
-                  <Truck className="h-5 w-5 mr-2 text-blue-600" />
+                  <Truck className="h-5 w-5 mr-2 text-primary" />
                   Estado de Vehículos
                 </CardTitle>
                 <CardDescription>
                   Listado de vehículos y su estado actual
                 </CardDescription>
               </CardHeader>
+              <Divider className="mx-6" />
               <CardContent className="pt-4">
                 <VehicleStatusList />
               </CardContent>
@@ -184,91 +239,65 @@ export default function DashboardPage() {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-4 animate-fade-in">
-          <Card>
+          <Card className="bg-white">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <Activity className="h-5 w-5 mr-2 text-blue-600" />
+                <Activity className="h-5 w-5 mr-2 text-primary" />
                 Análisis de Rendimiento
               </CardTitle>
               <CardDescription>
                 Métricas detalladas de rendimiento operativo
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-center h-40">
-                <Activity className="h-16 w-16 text-muted-foreground" />
-                <p className="ml-4 text-muted-foreground">
+            <Divider className="mx-6" />
+            <CardContent className="py-8">
+              <div className="flex flex-col items-center justify-center text-center">
+                <Activity className="h-16 w-16 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">
                   Seleccione parámetros para visualizar análisis
                 </p>
+                <Button className="mt-4" variant="outline">
+                  Configurar Análisis
+                </Button>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
         <TabsContent value="reports" className="space-y-4 animate-fade-in">
-          <Card>
+          <Card className="bg-white">
             <CardHeader>
               <CardTitle className="flex items-center">
-                <BarChart2 className="h-5 w-5 mr-2 text-blue-600" />
+                <BarChart2 className="h-5 w-5 mr-2 text-primary" />
                 Reportes
               </CardTitle>
               <CardDescription>
                 Generación de reportes personalizados
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-center h-40">
-                <Activity className="h-16 w-16 text-muted-foreground" />
-                <p className="ml-4 text-muted-foreground">
+            <Divider className="mx-6" />
+            <CardContent className="py-8">
+              <div className="flex flex-col items-center justify-center text-center">
+                <Activity className="h-16 w-16 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">
                   Seleccione parámetros para generar reportes
                 </p>
+                <div className="flex gap-3 mt-4">
+                  <Button variant="outline">
+                    Diario
+                  </Button>
+                  <Button variant="outline">
+                    Semanal
+                  </Button>
+                  <Button variant="outline">
+                    Mensual
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
       </Tabs>
-    </PageContainer>
-  );
-}
-
-interface StatCardProps {
-  title: string;
-  value: string | number | null;
-  icon: React.ReactNode;
-  change?: number;
-  changeDescription?: string;
-  changeBetter?: boolean;
-  secondaryText?: React.ReactNode;
-}
-
-function StatCard({ title, value, icon, change, changeDescription, changeBetter, secondaryText }: StatCardProps) {
-  return (
-    <Card className="overflow-hidden border-border">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 bg-card">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        {icon}
-      </CardHeader>
-      <CardContent className="pt-4">
-        {value === null ? (
-          <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-8 w-16 rounded mb-2"></div>
-        ) : (
-          <div className="text-2xl font-bold">{value}</div>
-        )}
-        {(change !== undefined && changeDescription) ? (
-          <p className="text-xs text-muted-foreground flex items-center">
-            {changeBetter ? (
-              <TrendingDown className={cn("mr-1 h-4 w-4", changeBetter ? "text-green-600" : "text-amber-500")} />
-            ) : (
-              <TrendingUp className={cn("mr-1 h-4 w-4", changeBetter ? "text-green-600" : "text-amber-500")} />
-            )}
-            <span>
-              {Math.abs(change)}% {changeDescription}
-            </span>
-          </p>
-        ) : secondaryText ? (
-          secondaryText
-        ) : null}
-      </CardContent>
-    </Card>
+    </PageLayout>
   );
 }

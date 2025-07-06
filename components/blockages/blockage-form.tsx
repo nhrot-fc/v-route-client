@@ -12,17 +12,9 @@ import {
   FormMessage 
 } from "@/components/ui/form"
 import { useToast } from "@/components/ui/use-toast"
-import { Calendar } from "@/components/ui/calendar"
-import { 
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { CalendarIcon, Loader2 } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
-import { useForm } from "react-hook-form"
+import { DatePicker } from "@/components/ui/date-picker"
+import { Loader2, Plus, Trash2 } from "lucide-react"
+import { useForm, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { useBlockages } from "@/hooks/use-blockages"
@@ -42,12 +34,15 @@ import {
   SelectValue 
 } from "@/components/ui/select"
 
+// Define point schema
+const pointSchema = z.object({
+  x: z.coerce.number().int().min(0, "Ingrese un número válido"),
+  y: z.coerce.number().int().min(0, "Ingrese un número válido"),
+});
+
 // Define form schema
 const formSchema = z.object({
-  startNodeX: z.coerce.number().int().min(0, "Ingrese un número válido"),
-  startNodeY: z.coerce.number().int().min(0, "Ingrese un número válido"),
-  endNodeX: z.coerce.number().int().min(0, "Ingrese un número válido"),
-  endNodeY: z.coerce.number().int().min(0, "Ingrese un número válido"),
+  points: z.array(pointSchema).min(2, "Debe ingresar al menos 2 puntos"),
   startDate: z.date({
     required_error: "Seleccione una fecha de inicio",
   }),
@@ -81,16 +76,22 @@ export function BlockageForm() {
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      startNodeX: 0,
-      startNodeY: 0,
-      endNodeX: 0,
-      endNodeY: 0,
+      points: [
+        { x: 0, y: 0 },
+        { x: 0, y: 0 }
+      ],
       startHour: "08",
       startMinute: "00",
       endHour: "18",
       endMinute: "00",
     }
   })
+  
+  // Use fieldArray to handle the dynamic points array
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "points"
+  });
 
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true)
@@ -102,9 +103,14 @@ export function BlockageForm() {
       const endTime = new Date(data.endDate)
       endTime.setHours(parseInt(data.endHour), parseInt(data.endMinute), 0, 0)
 
+      // Create linePoints string from points array: "x1,y1,x2,y2,...,xn,yn"
+      const linePoints = data.points
+        .map(point => `${point.x},${point.y}`)
+        .join(',');
+
       // Create blockage object with linePoints format
       const blockageData: Blockage = {
-        linePoints: `${data.startNodeX},${data.startNodeY}-${data.endNodeX},${data.endNodeY}`,
+        linePoints,
         startTime: startTime.toISOString(),
         endTime: endTime.toISOString()
       }
@@ -113,10 +119,10 @@ export function BlockageForm() {
 
       // Reset form
       form.reset({
-        startNodeX: 0,
-        startNodeY: 0,
-        endNodeX: 0,
-        endNodeY: 0,
+        points: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 }
+        ],
         startDate: undefined,
         endDate: undefined,
         startHour: "08",
@@ -156,70 +162,74 @@ export function BlockageForm() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <h3 className="text-lg font-medium">Nodo Inicial</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="startNodeX"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Coordenada X</FormLabel>
-                        <FormControl>
-                          <Input type="number" min={0} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="startNodeY"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Coordenada Y</FormLabel>
-                        <FormControl>
-                          <Input type="number" min={0} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+            <div className="grid gap-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium">Puntos del Bloqueo</h3>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => append({ x: 0, y: 0 })}
+                  className="flex items-center gap-1"
+                >
+                  <Plus className="h-4 w-4" />
+                  Agregar Punto
+                </Button>
               </div>
               
-              <div className="grid gap-2">
-                <h3 className="text-lg font-medium">Nodo Final</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="endNodeX"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Coordenada X</FormLabel>
-                        <FormControl>
-                          <Input type="number" min={0} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+              <div className="space-y-4">
+                {fields.map((field, index) => (
+                  <div key={field.id} className="flex items-end gap-2 bg-muted/20 p-3 rounded-md">
+                    <div className="flex-1">
+                      <div className="text-sm font-medium mb-2">Punto {index + 1}</div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name={`points.${index}.x`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Coordenada X</FormLabel>
+                              <FormControl>
+                                <Input type="number" min={0} {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name={`points.${index}.y`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Coordenada Y</FormLabel>
+                              <FormControl>
+                                <Input type="number" min={0} {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    </div>
+                    {fields.length > 2 && (
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="icon"
+                        onClick={() => remove(index)}
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Eliminar punto</span>
+                      </Button>
                     )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="endNodeY"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Coordenada Y</FormLabel>
-                        <FormControl>
-                          <Input type="number" min={0} {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+                  </div>
+                ))}
               </div>
+              
+              {form.formState.errors.points?.message && (
+                <p className="text-sm text-red-500 mt-1">{form.formState.errors.points.message}</p>
+              )}
             </div>
             
             <div className="grid md:grid-cols-2 gap-4">
@@ -229,37 +239,15 @@ export function BlockageForm() {
                   control={form.control}
                   name="startDate"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col">
+                    <FormItem>
                       <FormLabel>Fecha</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP", { locale: es })
-                              ) : (
-                                <span>Seleccione una fecha</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) => date < new Date()}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <FormControl>
+                        <DatePicker
+                          date={field.value}
+                          setDate={field.onChange}
+                          disabled={false}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -329,37 +317,15 @@ export function BlockageForm() {
                   control={form.control}
                   name="endDate"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col">
+                    <FormItem>
                       <FormLabel>Fecha</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP", { locale: es })
-                              ) : (
-                                <span>Seleccione una fecha</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) => date < new Date()}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
+                      <FormControl>
+                        <DatePicker
+                          date={field.value}
+                          setDate={field.onChange}
+                          disabled={false}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

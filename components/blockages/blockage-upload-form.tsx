@@ -21,10 +21,10 @@ export function BlockageUploadForm() {
     if (e.target.files && e.target.files.length > 0) {
       const selectedFile = e.target.files[0]
       
-      // Validate file name format (aaaamm.bloqueadas)
-      const fileNameRegex = /^\d{6}\.bloqueadas$/
+      // Validate file name format (aaaamm.bloqueos.txt)
+      const fileNameRegex = /^\d{6}\.bloqueos.txt$/
       if (!fileNameRegex.test(selectedFile.name)) {
-        setErrorMessage("El nombre del archivo debe tener el formato aaaamm.bloqueadas (ejemplo: 202501.bloqueadas)")
+        setErrorMessage("El nombre del archivo debe tener el formato aaaamm.bloqueos.txt (ejemplo: 202501.bloqueos.txt)")
         setUploadStatus("error")
         setFile(null)
         return
@@ -41,7 +41,7 @@ export function BlockageUploadForm() {
     const match = dateStr.match(/^(\d{2})d(\d{2})h(\d{2})m$/)
     if (!match) return new Date().toISOString()
     
-    const [_unused, days, hours, minutes] = match
+    const [, days, hours, minutes] = match
     
     const result = new Date(baseDate)
     result.setDate(result.getDate() + parseInt(days))
@@ -54,21 +54,21 @@ export function BlockageUploadForm() {
 
   // Parse blockage line to create blockage objects
   const parseBlockageLine = (line: string): Blockage => {
-    // Format: ##d##h##m-##d##h##m:x1,y1,x2,y2
+    // Format: ##d##h##m-##d##h##m:x1,y1,x2,y2,...,xn,yn
     const [timeRange, coordinates] = line.split(':')
     const [startTimeStr, endTimeStr] = timeRange.split('-')
     
-    const coords = coordinates.split(',').map(Number)
-    const linePoints = `${coords[0]},${coords[1]}-${coords[2]},${coords[3]}`
+    // Parse the coordinates - now we handle any number of points
+    const linePoints = coordinates.trim()
     
     // Parse the file name to get year and month for the base date
-    // The file name format is aaaamm.bloqueadas (e.g., 202501.bloqueadas)
+    // The file name format is aaaamm.bloqueos.txt (e.g., 202501.bloqueos.txt)
     const fileName = file?.name || ''
     const yearMonth = fileName.match(/^(\d{4})(\d{2})/)
     
     let baseDate = new Date()
     if (yearMonth) {
-      const [_unused, year, month] = yearMonth
+      const [, year, month] = yearMonth
       baseDate = new Date(parseInt(year), parseInt(month) - 1, 1) // Month is 0-indexed
     }
     
@@ -124,7 +124,7 @@ export function BlockageUploadForm() {
       <CardHeader>
         <CardTitle>Carga Masiva de Bloqueos</CardTitle>
         <CardDescription>
-          Suba un archivo con formato aaaamm.bloqueadas para importar múltiples bloqueos
+          Suba un archivo con formato aaaamm.bloqueos.txt para importar múltiples bloqueos
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -133,14 +133,16 @@ export function BlockageUploadForm() {
           <Input 
             id="blockage-file" 
             type="file" 
-            accept=".bloqueadas"
+            accept=".bloqueos.txt"
             onChange={handleFileChange}
             disabled={isUploading}
           />
           <p className="text-sm text-muted-foreground mt-1">
-            El archivo debe tener el formato aaaamm.bloqueadas y cada línea debe seguir el formato:
+            El archivo debe tener el formato aaaamm.bloqueos.txt y cada línea debe seguir el formato:
             <br />
-            <code className="text-xs">##d##h##m-##d##h##m:x1,y1,x2,y2</code>
+            <code className="text-xs">##d##h##m-##d##h##m:x1,y1,x2,y2,...</code>
+            <br />
+            <span className="text-xs">Ejemplo: 01d08h30m-01d18h00m:10,15,20,15,20,25</span>
           </p>
         </div>
         

@@ -1,79 +1,227 @@
 "use client";
 
 import { useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { MaintenanceUploadForm } from "@/components/maintenance/maintenance-upload-form"
-import { MaintenanceForm } from "@/components/maintenance/maintenance-form"
-import { MaintenanceTable } from "@/components/maintenance/maintenance-table"
-import { PageContainer } from "@/components/ui/page-container"
-import { PageHeader } from "@/components/ui/page-header"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Wrench, FileUp, Plus, ClipboardList } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card";
+import { MaintenanceUploadForm } from "@/components/maintenance/maintenance-upload-form";
+import { MaintenanceForm } from "@/components/maintenance/maintenance-form";
+import { PageLayout } from "@/components/ui/page-layout";
+import { DataTable } from "@/components/ui/data-table";
+import { SectionContainer } from "@/components/ui/section-container";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Divider } from "@/components/ui/divider";
+import { Wrench, FileUp, Plus, ClipboardList, Timer, CheckCircle, AlertTriangle } from "lucide-react";
+import { useMaintenance } from "@/hooks/use-maintenance";
+import { MaintenanceDTO } from "@/lib/api-client";
 
 export default function MantenimientosPage() {
   const [activeTab, setActiveTab] = useState("list");
+  const [newOpen, setNewOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  
+  const { maintenance, loading, error } = useMaintenance();
+
+  // Count maintenance by status
+  const pendingCount = maintenance.filter(item => !item.active && !item.realEnd).length;
+  const activeCount = maintenance.filter(item => item.active).length;
+  const completedCount = maintenance.filter(item => !item.active && item.realEnd).length;
+  const totalCount = maintenance.length;
+
+  // Define maintenance status function
+  const getMaintenanceStatus = (item: MaintenanceDTO) => {
+    if (item.active === false && item.realEnd) {
+      return <StatusBadge status="success" text="Completado" />;
+    } else if (item.active === true) {
+      return <StatusBadge status="info" text="En Proceso" />;
+    } else {
+      return <StatusBadge status="warning" text="Pendiente" />;
+    }
+  };
+
+  // Define table columns
+  const columns = [
+    {
+      header: "ID",
+      accessorKey: "id" as keyof MaintenanceDTO,
+      className: "font-medium",
+    },
+    {
+      header: "Vehículo",
+      accessorKey: "vehicleId" as keyof MaintenanceDTO,
+    },
+    {
+      header: "Fecha Asignada",
+      accessorKey: "assignedDate" as keyof MaintenanceDTO,
+      cell: (item: MaintenanceDTO) => item.assignedDate ? new Date(item.assignedDate).toLocaleDateString() : 'N/A',
+    },
+    {
+      header: "Inicio Real",
+      accessorKey: "realStart" as keyof MaintenanceDTO,
+      cell: (item: MaintenanceDTO) => item.realStart ? new Date(item.realStart).toLocaleDateString() : 'Pendiente',
+    },
+    {
+      header: "Fin Real",
+      accessorKey: "realEnd" as keyof MaintenanceDTO,
+      cell: (item: MaintenanceDTO) => item.realEnd ? new Date(item.realEnd).toLocaleDateString() : 'Pendiente',
+    },
+    {
+      header: "Duración (horas)",
+      accessorKey: "durationHours" as keyof MaintenanceDTO,
+      cell: (item: MaintenanceDTO) => item.durationHours || 'N/A',
+    },
+    {
+      header: "Estado",
+      accessorKey: "status" as keyof MaintenanceDTO,
+      cell: (item: MaintenanceDTO) => getMaintenanceStatus(item),
+    },
+  ];
+
+  // Define filter tabs
+  const filterTabs = [
+    {
+      id: "activo",
+      label: "En Proceso",
+      icon: <Timer className="h-4 w-4" />,
+      count: activeCount,
+      filter: (item: MaintenanceDTO) => item.active === true,
+    },
+    {
+      id: "pendiente",
+      label: "Pendientes",
+      icon: <AlertTriangle className="h-4 w-4" />,
+      count: pendingCount,
+      filter: (item: MaintenanceDTO) => item.active === false && !item.realEnd,
+    },
+    {
+      id: "completado",
+      label: "Completados",
+      icon: <CheckCircle className="h-4 w-4" />,
+      count: completedCount,
+      filter: (item: MaintenanceDTO) => item.active === false && !!item.realEnd,
+    },
+  ];
 
   return (
-    <PageContainer>
-      <PageHeader 
-        title="Gestión de Mantenimientos" 
-        description="Administre los mantenimientos programados y repare los vehículos para mantener la flota operativa"
-      />
-
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center space-x-2">
-            <Wrench className="h-5 w-5 text-blue-600" />
-            <CardTitle>Mantenimientos de Flota</CardTitle>
-          </div>
-          <CardDescription>
-            Gestione el ciclo de vida del mantenimiento preventivo y correctivo de los vehículos
-          </CardDescription>
-        </CardHeader>
+    <PageLayout 
+      title="Gestión de Mantenimientos" 
+      description="Administre los mantenimientos programados y repare los vehículos para mantener la flota operativa"
+      actions={[
+        { 
+          icon: <FileUp className="h-4 w-4" />, 
+          label: "Importar", 
+          variant: "outline",
+          onClick: () => setImportOpen(true)
+        },
+        { 
+          icon: <Plus className="h-4 w-4" />, 
+          label: "Nuevo Mantenimiento", 
+          onClick: () => setNewOpen(true) 
+        }
+      ]}
+    >
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <Card className="bg-white border">
+          <CardContent className="p-4 flex items-center">
+            <div className="bg-primary-50 p-3 rounded-md mr-3">
+              <ClipboardList className="h-5 w-5 text-primary-600" />
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">Total</div>
+              <div className="text-2xl font-semibold">{totalCount}</div>
+            </div>
+          </CardContent>
+        </Card>
         
-        <CardContent>
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="space-y-6"
-          >
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="list" className="flex items-center">
-                <ClipboardList className="h-4 w-4 mr-2" />
-                <span>Listado</span>
-              </TabsTrigger>
-              
-              <TabsTrigger value="create" className="flex items-center">
-                <Plus className="h-4 w-4 mr-2" />
-                <span>Crear Mantenimiento</span>
-              </TabsTrigger>
-              
-              <TabsTrigger value="upload" className="flex items-center">
-                <FileUp className="h-4 w-4 mr-2" />
-                <span>Cargar Archivo</span>
-              </TabsTrigger>
-            </TabsList>
+        <Card className="bg-white border">
+          <CardContent className="p-4 flex items-center">
+            <div className="bg-blue-50 p-3 rounded-md mr-3">
+              <Timer className="h-5 w-5 text-blue-600" />
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">En Proceso</div>
+              <div className="text-2xl font-semibold">{activeCount}</div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-white border">
+          <CardContent className="p-4 flex items-center">
+            <div className="bg-amber-50 p-3 rounded-md mr-3">
+              <AlertTriangle className="h-5 w-5 text-amber-600" />
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">Pendientes</div>
+              <div className="text-2xl font-semibold">{pendingCount}</div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-white border">
+          <CardContent className="p-4 flex items-center">
+            <div className="bg-green-50 p-3 rounded-md mr-3">
+              <CheckCircle className="h-5 w-5 text-green-600" />
+            </div>
+            <div>
+              <div className="text-sm text-muted-foreground">Completados</div>
+              <div className="text-2xl font-semibold">{completedCount}</div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-            <TabsContent value="list" className="space-y-4 animate-fade-in">
-              <div className="rounded-md border">
-                <MaintenanceTable />
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="create" className="animate-fade-in">
-              <div className="max-w-2xl mx-auto">
-                <MaintenanceForm />
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="upload" className="animate-fade-in">
-              <div className="max-w-2xl mx-auto">
-                <MaintenanceUploadForm />
-              </div>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-    </PageContainer>
+      <SectionContainer
+        title="Mantenimientos de Flota"
+        description="Gestione los mantenimientos programados para los vehículos"
+        icon={<Wrench className="h-5 w-5" />}
+        variant="card"
+        className="p-4"
+      >
+        <DataTable
+          data={maintenance}
+          columns={columns}
+          filterTabs={filterTabs}
+          searchable={{
+            field: "vehicleId" as keyof MaintenanceDTO,
+            placeholder: "Buscar por ID de vehículo...",
+          }}
+          isLoading={loading}
+          error={error}
+          activeFilter={activeTab}
+          onFilterChange={setActiveTab}
+          onDownload={() => console.log("Exportando mantenimientos...")}
+          noDataMessage="No se encontraron registros de mantenimiento con los filtros seleccionados."
+        />
+      </SectionContainer>
+
+      {/* Modal de nuevo mantenimiento */}
+      <Dialog open={newOpen} onOpenChange={setNewOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <Plus className="h-5 w-5 mr-2 text-primary" />
+              <span>Registro de Mantenimiento</span>
+            </DialogTitle>
+            <DialogDescription>Añade un nuevo mantenimiento programado</DialogDescription>
+          </DialogHeader>
+          <Divider className="my-2" />
+          <MaintenanceForm />
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de importación de mantenimientos */}
+      <Dialog open={importOpen} onOpenChange={setImportOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <FileUp className="h-5 w-5 mr-2 text-primary" />
+              <span>Carga Masiva de Mantenimientos</span>
+            </DialogTitle>
+            <DialogDescription>Sube un archivo CSV con mantenimientos</DialogDescription>
+          </DialogHeader>
+          <Divider className="my-2" />
+          <MaintenanceUploadForm />
+        </DialogContent>
+      </Dialog>
+    </PageLayout>
   )
 } 

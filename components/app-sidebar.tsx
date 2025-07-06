@@ -4,7 +4,6 @@ import { useState } from "react"
 import {
   BarChart3,
   Truck,
-  Settings,
   ClipboardList,
   PlayCircle,
   Menu,
@@ -169,10 +168,10 @@ export function AppSidebar() {
           </SidebarContent>
 
           <SidebarFooter className="border-t">
-            <div className="p-3 bg-gray-50/50">
+            <div className="p-3 bg-blue-50/50">
               <div className="flex items-center gap-3 mb-3">
-                <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                  <Flame className="h-4 w-4 text-blue-700" />
+                <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
+                  <Flame className="h-4 w-4 text-primary-700" />
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium truncate">GLP Distribución</p>
@@ -181,19 +180,10 @@ export function AppSidebar() {
               </div>
             </div>
             <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/configuracion")} className={isActive("/configuracion") ? "bg-blue-50 text-blue-700" : ""}>
-                  <Link href="/configuracion">
-                    <Settings className={isActive("/configuracion") ? "text-blue-600" : ""} />
-                    <span>Configuración</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
               <div className="flex px-2 mb-2 justify-around">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button className="p-2.5 text-gray-500 hover:text-blue-600 rounded-full hover:bg-gray-100 transition-colors">
+                    <button className="p-2.5 text-gray-500 hover:text-primary rounded-full hover:bg-primary-50 transition-colors">
                       <MapPin className="h-5 w-5" />
                     </button>
                   </TooltipTrigger>
@@ -204,7 +194,7 @@ export function AppSidebar() {
                 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button className="p-2.5 text-gray-500 hover:text-blue-600 rounded-full hover:bg-gray-100 transition-colors">
+                    <button className="p-2.5 text-gray-500 hover:text-primary rounded-full hover:bg-primary-50 transition-colors">
                       <AlertCircle className="h-5 w-5" />
                     </button>
                   </TooltipTrigger>
@@ -215,7 +205,7 @@ export function AppSidebar() {
                 
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button className="p-2.5 text-gray-500 hover:text-blue-600 rounded-full hover:bg-gray-100 transition-colors">
+                    <button className="p-2.5 text-gray-500 hover:text-primary rounded-full hover:bg-primary-50 transition-colors">
                       <HelpCircle className="h-5 w-5" />
                     </button>
                   </TooltipTrigger>

@@ -1,20 +1,25 @@
 "use client";
 
+import { PageLayout } from "@/components/ui/page-layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle, Clock, Construction, Settings } from "lucide-react";
+import { AlertTriangle, Clock, Construction, Settings, MapPin, BarChart, Route } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function SimulacionPage() {
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">
-          Simulación
-        </h2>
-      </div>
-
-      <Card className="border-dashed border-2">
-        <CardHeader className="text-center">
+    <PageLayout
+      title="Simulación de Rutas"
+      description="Visualice y evalúe diferentes escenarios de distribución con el simulador en tiempo real"
+      actions={[
+        { 
+          icon: <BarChart className="h-4 w-4" />, 
+          label: "Ver Reportes", 
+          variant: "outline" 
+        }
+      ]}
+    >
+      <Card className="border-dashed border-2 bg-white">
+        <CardHeader className="text-center pb-2">
           <div className="flex justify-center mb-4">
             <Construction className="h-16 w-16 text-amber-500" />
           </div>
@@ -32,25 +37,38 @@ export default function SimulacionPage() {
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-3">
             <Card className="p-4 border-none bg-muted/50">
               <div className="flex items-start space-x-4">
-                <Clock className="h-6 w-6 text-blue-600" />
+                <Route className="h-6 w-6 text-primary" />
                 <div>
-                  <h3 className="font-medium">Funcionalidades Esperadas</h3>
+                  <h3 className="font-medium">Visualización de Rutas</h3>
                   <p className="text-sm text-muted-foreground">
-                    Visualización de rutas, monitoreo en tiempo real, y análisis predictivo
+                    Seguimiento en tiempo real de vehículos y análisis de rutas óptimas
                   </p>
                 </div>
               </div>
             </Card>
+            
             <Card className="p-4 border-none bg-muted/50">
               <div className="flex items-start space-x-4">
-                <Settings className="h-6 w-6 text-blue-600" />
+                <Clock className="h-6 w-6 text-primary" />
                 <div>
-                  <h3 className="font-medium">Configuraciones Avanzadas</h3>
+                  <h3 className="font-medium">Optimización de Tiempos</h3>
                   <p className="text-sm text-muted-foreground">
-                    Creación de escenarios personalizados y comparación de resultados
+                    Reducción de tiempos de entrega mediante rutas más eficientes
+                  </p>
+                </div>
+              </div>
+            </Card>
+            
+            <Card className="p-4 border-none bg-muted/50">
+              <div className="flex items-start space-x-4">
+                <MapPin className="h-6 w-6 text-primary" />
+                <div>
+                  <h3 className="font-medium">Mapeo Inteligente</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Integraciones con mapas en tiempo real y condiciones de tráfico
                   </p>
                 </div>
               </div>
@@ -58,10 +76,13 @@ export default function SimulacionPage() {
           </div>
 
           <div className="flex justify-center pt-4">
-            <Button variant="outline">Volver al Inicio</Button>
+            <Button>
+              <Settings className="h-4 w-4 mr-2" />
+              Ir al Dashboard
+            </Button>
           </div>
         </CardContent>
       </Card>
-    </div>
+    </PageLayout>
   );
 }

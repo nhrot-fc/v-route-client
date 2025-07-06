@@ -38,7 +38,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="es" suppressHydrationWarning className={inter.variable}>
-      <body>
+      <body className="bg-surface min-h-screen font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <SidebarProvider>
             <div className="flex flex-1 h-screen overflow-hidden">
