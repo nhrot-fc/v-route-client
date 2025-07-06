@@ -13,11 +13,26 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OrdersTable } from "@/components/orders/orders-table";
 import { OrderUploadForm } from "@/components/orders/order-upload-form";
 import OrderForm from "@/components/orders/order-form";
-import { Plus, Upload } from "lucide-react";
+import { 
+  Plus, 
+  Upload, 
+  Search, 
+  FileSpreadsheet, 
+  PackageOpen,
+  PackageCheck,
+  Truck, 
+  CheckCircle, 
+  ClipboardList 
+} from "lucide-react";
 import { useState } from "react";
+import { PageContainer } from "@/components/ui/page-container";
+import { PageHeader } from "@/components/ui/page-header";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 export default function PedidosPage() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [activeTab, setActiveTab] = useState("todos");
   // Key to trigger re-fetching/re-rendering of OrdersTable
   const [ordersUpdateKey, setOrdersUpdateKey] = useState(0);
   // Key to reset OrderForm instance
@@ -29,129 +44,150 @@ export default function PedidosPage() {
   };
 
   // This function should be called by OrderForm after a new order is successfully created.
-  // OrderForm will need to be modified to accept and call an onOrderAdded prop.
   const handleOrderAdded = () => {
     setOrdersUpdateKey((prevKey) => prevKey + 1); // Refresh the orders table
-    // Optionally, reset the form to its initial state after successful submission
-    // setOrderFormInstanceKey((prevKey) => prevKey + 1);
   };
 
   const handleNewPedidoClick = () => {
     // Explicitly reset the OrderForm by changing its key, forcing a re-mount
     setOrderFormInstanceKey((prevKey) => prevKey + 1);
-    // You could add other logic here, like scrolling to the form
+    // Scroll to form
+    document.getElementById('order-form-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
+
+  const getTabIcon = (tab: string) => {
+    switch (tab) {
+      case "todos": return <ClipboardList className="h-4 w-4 mr-2" />;
+      case "pendiente": return <PackageOpen className="h-4 w-4 mr-2" />;
+      case "en-ruta": return <Truck className="h-4 w-4 mr-2" />;
+      case "entregados": return <CheckCircle className="h-4 w-4 mr-2" />;
+      default: return null;
+    }
   };
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">
-          Gestión de Pedidos
-        </h2>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline">
-            <Upload className="mr-2 h-4 w-4" />
-            Importar
-          </Button>
-          <Button onClick={handleNewPedidoClick}>
-            {" "}
-            {/* Attach handler */}
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo Pedido
-          </Button>
-        </div>
-      </div>
+    <PageContainer>
+      <PageHeader 
+        title="Gestión de Pedidos" 
+        description="Administre las órdenes de distribución de GLP"
+        actions={[
+          { 
+            icon: <Upload className="h-4 w-4" />, 
+            label: "Importar", 
+            variant: "outline" 
+          },
+          { 
+            icon: <Plus className="h-4 w-4" />, 
+            label: "Nuevo Pedido", 
+            onClick: handleNewPedidoClick 
+          }
+        ]}
+      />
 
-      <Tabs defaultValue="todos" className="space-y-4">
-        <div className="flex justify-between">
-          <TabsList>
-            <TabsTrigger value="todos">Todos</TabsTrigger>
-            <TabsTrigger value="pendiente">Pendientes</TabsTrigger>
-            <TabsTrigger value="en-ruta">En Ruta</TabsTrigger>
-            <TabsTrigger value="entregados">Entregados</TabsTrigger>
-          </TabsList>
-          <div className="flex w-full max-w-sm items-center space-x-2 ml-auto">
-            <Input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Buscar pedidos..."
-            />
-            <Button onClick={handleSearch} variant="secondary">
-              Buscar
-            </Button>
-          </div>
-        </div>
-
-        {[
-          {
-            key: "todos",
-            title: "Todos los Pedidos",
-            desc: "Listado completo de pedidos registrados en el sistema",
-          },
-          {
-            key: "pendiente",
-            title: "Pedidos Pendientes",
-            desc: "Pedidos que aún no han sido asignados a una ruta",
-          },
-          {
-            key: "en-ruta",
-            title: "Pedidos En Ruta",
-            desc: "Pedidos que están actualmente en proceso de entrega",
-          },
-          {
-            key: "entregados",
-            title: "Pedidos Entregados",
-            desc: "Pedidos que han sido entregados satisfactoriamente",
-          },
-        ].map(({ key, title, desc }) => (
-          <TabsContent key={key} value={key} className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>{title}</CardTitle>
-                <CardDescription>{desc}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {/* Add ordersUpdateKey as a React key to OrdersTable.
-                    This will cause OrdersTable to re-mount and re-fetch its data when the key changes.
-                    Ensure OrdersTable fetches data on mount or when its props (like this key) change.
-                */}
-                <OrdersTable key={ordersUpdateKey} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        ))}
-      </Tabs>
-
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="space-y-6">
         <Card>
-          <CardHeader>
-            <CardTitle>Registro de Pedido</CardTitle>
-            <CardDescription>Añade un nuevo pedido al sistema</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {/* Pass the key to reset the form and the callback for when an order is added.
-                OrderForm must be adapted to accept and call onOrderAdded.
-            */}
-            <OrderForm
-              key={orderFormInstanceKey}
-              onOrderAdded={handleOrderAdded}
-            />
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Carga Masiva</CardTitle>
-            <CardDescription>
-              Importa múltiples pedidos desde un archivo CSV
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <FileSpreadsheet className="h-5 w-5 text-blue-600" />
+                <CardTitle>Registro de Pedidos</CardTitle>
+              </div>
+              <div className="flex w-full max-w-sm items-center space-x-2">
+                <Input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Buscar pedidos..."
+                  className="h-9"
+                />
+                <Button onClick={handleSearch} variant="secondary" size="sm" className="h-9">
+                  <Search className="h-4 w-4 mr-1" />
+                  Buscar
+                </Button>
+              </div>
+            </div>
+            <CardDescription className="pt-1">
+              Listado de pedidos de GLP registrados en el sistema
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <OrderUploadForm onOrdersUploaded={handleOrderAdded} />
-          </CardContent>
+
+          <Tabs value={activeTab} onValueChange={handleTabChange} className="px-6">
+            <TabsList className="grid grid-cols-4 mb-4">
+              <TabsTrigger value="todos">
+                {getTabIcon("todos")}
+                <span>Todos</span>
+              </TabsTrigger>
+              <TabsTrigger value="pendiente">
+                {getTabIcon("pendiente")}
+                <span>Pendientes</span>
+                <Badge variant="secondary" className="ml-2 bg-amber-100 text-amber-800">8</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="en-ruta">
+                {getTabIcon("en-ruta")}
+                <span>En Ruta</span>
+                <Badge variant="secondary" className="ml-2 bg-blue-100 text-blue-800">3</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="entregados">
+                {getTabIcon("entregados")}
+                <span>Entregados</span>
+                <Badge variant="secondary" className="ml-2 bg-green-100 text-green-800">12</Badge>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="todos">
+              <OrdersTable key={`todos-${ordersUpdateKey}`} />
+            </TabsContent>
+            <TabsContent value="pendiente">
+              <OrdersTable key={`pendiente-${ordersUpdateKey}`} filter="pendiente" />
+            </TabsContent>
+            <TabsContent value="en-ruta">
+              <OrdersTable key={`en-ruta-${ordersUpdateKey}`} filter="en-ruta" />
+            </TabsContent>
+            <TabsContent value="entregados">
+              <OrdersTable key={`entregados-${ordersUpdateKey}`} filter="entregado" />
+            </TabsContent>
+          </Tabs>
         </Card>
+
+        <div className="grid gap-6 md:grid-cols-2" id="order-form-section">
+          <Card className="border-border overflow-hidden">
+            <CardHeader className="bg-card pb-3">
+              <div className="flex items-center space-x-2">
+                <Plus className="h-5 w-5 text-blue-600" />
+                <CardTitle>Registro de Pedido</CardTitle>
+              </div>
+              <CardDescription>
+                Añade un nuevo pedido al sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <OrderForm
+                key={orderFormInstanceKey}
+                onOrderAdded={handleOrderAdded}
+              />
+            </CardContent>
+          </Card>
+
+          <Card className="border-border overflow-hidden">
+            <CardHeader className="bg-card pb-3">
+              <div className="flex items-center space-x-2">
+                <Upload className="h-5 w-5 text-blue-600" />
+                <CardTitle>Carga Masiva</CardTitle>
+              </div>
+              <CardDescription>
+                Importa múltiples pedidos desde un archivo CSV
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <OrderUploadForm onOrdersUploaded={handleOrderAdded} />
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
+    </PageContainer>
   );
 }

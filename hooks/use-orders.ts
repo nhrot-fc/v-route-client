@@ -9,6 +9,7 @@ interface OrderWithLegacyFields extends Order {
   arriveDate?: string; // Legacy field mapping to arriveTime
   dueDate?: string; // Legacy field mapping to dueTime
   deliveryDate?: string; // Legacy field that might not be in the new API
+  routeId?: string; // ID de la ruta asignada
 }
 
 export function useOrders(status?: string) {

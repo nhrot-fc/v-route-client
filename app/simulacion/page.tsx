@@ -1,203 +1,67 @@
 "use client";
 
-import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { SimulationMap } from "@/components/simulation/simulation-map";
-import { SimulationResults } from "@/components/simulation/simulation-results";
-import { SimulationConfig } from "@/components/simulation/simulation-config";
-import { SimulationController } from "@/components/simulation/simulation-controller";
-import { Badge } from "@/components/ui/badge";
-import { SimulationScenarioType } from "@/hooks/use-simulation";
-import { Calendar, Clock, AlertOctagon } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AlertTriangle, Clock, Construction, Settings } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function SimulacionPage() {
-  const [isRunning, setIsRunning] = useState(false);
-  const [activeTab, setActiveTab] = useState("mapa");
-  const [apiStatus, setApiStatus] = useState<"loading" | "connected" | "error">(
-    "loading"
-  );
-  const [selectedScenario] = useState<SimulationScenarioType>(
-    SimulationScenarioType.DAILY_OPERATIONS
-  );
-
-  const handleTimeUpdate = (time: string, running: boolean) => {
-    setIsRunning(running);
-    setApiStatus("connected");
-  };
-
-  const handleSimulationChange = (running: boolean) => {
-    setIsRunning(running);
-  };
-
-  const handleSimulationCreated = () => {
-    setActiveTab("mapa");
-  };
-
-  const getScenarioIcon = () => {
-    switch (selectedScenario) {
-      case SimulationScenarioType.DAILY_OPERATIONS:
-        return <Clock className="h-5 w-5" />;
-      case SimulationScenarioType.WEEKLY_SIMULATION:
-        return <Calendar className="h-5 w-5" />;
-      case SimulationScenarioType.COLLAPSE_SIMULATION:
-        return <AlertOctagon className="h-5 w-5" />;
-      default:
-        return <Clock className="h-5 w-5" />;
-    }
-  };
-
-  const getScenarioLabel = () => {
-    switch (selectedScenario) {
-      case SimulationScenarioType.DAILY_OPERATIONS:
-        return "Operaciones diarias";
-      case SimulationScenarioType.WEEKLY_SIMULATION:
-        return "Simulación semanal";
-      case SimulationScenarioType.COLLAPSE_SIMULATION:
-        return "Simulación hasta el colapso";
-      default:
-        return "Desconocido";
-    }
-  };
-
-  const getScenarioBadgeColor = () => {
-    switch (selectedScenario) {
-      case SimulationScenarioType.DAILY_OPERATIONS:
-        return "bg-blue-100 text-blue-800";
-      case SimulationScenarioType.WEEKLY_SIMULATION:
-        return "bg-green-100 text-green-800";
-      case SimulationScenarioType.COLLAPSE_SIMULATION:
-        return "bg-amber-100 text-amber-800";
-      default:
-        return "";
-    }
-  };
-
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+      <div className="flex items-center justify-between">
         <h2 className="text-3xl font-bold tracking-tight">
-          Visualizador de Simulaciones
+          Simulación
         </h2>
       </div>
 
-      <Tabs
-        value={activeTab}
-        onValueChange={setActiveTab}
-        className="space-y-4"
-      >
-        <TabsList>
-          <TabsTrigger value="mapa">Mapa</TabsTrigger>
-          <TabsTrigger value="configuracion">Configuración</TabsTrigger>
-          <TabsTrigger value="resultados">Resultados</TabsTrigger>
-        </TabsList>
+      <Card className="border-dashed border-2">
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <Construction className="h-16 w-16 text-amber-500" />
+          </div>
+          <CardTitle className="text-2xl">Módulo en Desarrollo</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="text-center text-muted-foreground">
+            <p className="mb-4">
+              El módulo de simulación se encuentra actualmente en desarrollo. Estamos trabajando para implementar nuevas funcionalidades
+              y mejorar la experiencia de usuario.
+            </p>
+            <p className="flex items-center justify-center gap-2 text-amber-600">
+              <AlertTriangle className="h-4 w-4" />
+              <span>Próximamente disponible</span>
+            </p>
+          </div>
 
-        <TabsContent value="mapa" className="space-y-4">
-          <div className="flex flex-col space-y-4">
-            <Card>
-              <CardHeader className="py-3 border-b">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                  <div className="flex items-center">
-                    <CardTitle className="text-lg flex items-center gap-2">
-                      {getScenarioIcon()}
-                      <span>Controles de Simulación</span>
-                    </CardTitle>
-                    {selectedScenario && (
-                      <Badge
-                        variant="outline"
-                        className={`ml-2 px-2 py-0 text-xs ${getScenarioBadgeColor()}`}
-                      >
-                        {getScenarioLabel()}
-                      </Badge>
-                    )}
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Badge
-                      variant={
-                        apiStatus === "connected" ? "default" : "outline"
-                      }
-                      className={
-                        apiStatus === "connected"
-                          ? "bg-green-100 text-green-800"
-                          : apiStatus === "error"
-                          ? "bg-red-100 text-red-800"
-                          : ""
-                      }
-                    >
-                      {apiStatus === "connected"
-                        ? "Conectado"
-                        : apiStatus === "error"
-                        ? "Error"
-                        : "Conectando..."}
-                    </Badge>
-
-                    {isRunning && (
-                      <Badge
-                        variant="default"
-                        className="bg-blue-100 text-blue-800"
-                      >
-                        Simulación activa
-                      </Badge>
-                    )}
-                  </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="p-4 border-none bg-muted/50">
+              <div className="flex items-start space-x-4">
+                <Clock className="h-6 w-6 text-blue-600" />
+                <div>
+                  <h3 className="font-medium">Funcionalidades Esperadas</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Visualización de rutas, monitoreo en tiempo real, y análisis predictivo
+                  </p>
                 </div>
-              </CardHeader>
-
-              <CardContent className="p-0">
-                <div className="flex flex-col">
-                  <div className="p-4 bg-slate-50 border-b">
-                    <div className="w-full">
-                      <SimulationController
-                        onSimulationChange={handleSimulationChange}
-                        layout="horizontal"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="h-[calc(100vh-300px)] min-h-[500px]">
-                    <SimulationMap onTimeUpdate={handleTimeUpdate} />
-                  </div>
+              </div>
+            </Card>
+            <Card className="p-4 border-none bg-muted/50">
+              <div className="flex items-start space-x-4">
+                <Settings className="h-6 w-6 text-blue-600" />
+                <div>
+                  <h3 className="font-medium">Configuraciones Avanzadas</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Creación de escenarios personalizados y comparación de resultados
+                  </p>
                 </div>
-              </CardContent>
+              </div>
             </Card>
           </div>
-        </TabsContent>
 
-        <TabsContent value="configuracion" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Configuración de Escenarios</CardTitle>
-              <CardDescription>
-                Personaliza los parámetros para cada modo de visualización
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <SimulationConfig onConfigSaved={handleSimulationCreated} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="resultados" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Estadísticas y Métricas</CardTitle>
-              <CardDescription>
-                Análisis del desempeño operativo y logístico
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <SimulationResults />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+          <div className="flex justify-center pt-4">
+            <Button variant="outline">Volver al Inicio</Button>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

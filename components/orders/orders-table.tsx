@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Search, MoreHorizontal, FileEdit, Trash2, Truck } from "lucide-react";
+import { Search, MoreHorizontal, FileEdit, Trash2, Truck, AlertCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   AlertDialog,
@@ -35,19 +35,36 @@ import { useOrders } from "@/hooks/use-orders";
 import { OrderDTO } from "@/lib/api-client";
 import { formatDate } from "@/lib/utils";
 
-export function OrdersTable() {
+interface OrdersTableProps {
+  filter?: string;
+}
+
+export function OrdersTable({ filter }: OrdersTableProps) {
   const { orders, loading, error, deleteOrder } = useOrders();
   const [searchTerm, setSearchTerm] = useState("");
   const [deleteDialogOrder, setDeleteDialogOrder] = useState<OrderDTO | null>(null);
 
-  // Filter orders based on search term
+  // Filter orders based on search term and filter prop
   const filteredOrders = orders.filter(
-    (order) =>
-      (order.id && order.id.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (order.position?.x !== undefined && 
-        order.position.x.toString().includes(searchTerm.toLowerCase())) ||
-      (order.position?.y !== undefined && 
-        order.position.y.toString().includes(searchTerm.toLowerCase()))
+    (order) => {
+      // Apply status filter
+      if (filter) {
+        if (filter === "pendiente" && order.delivered) return false;
+        if (filter === "entregado" && !order.delivered) return false;
+        if (filter === "en-ruta" && (!order.routeId || order.delivered)) return false;
+      }
+
+      // Apply search term filter
+      if (searchTerm) {
+        return (order.id && order.id.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          (order.position?.x !== undefined && 
+            order.position.x.toString().includes(searchTerm.toLowerCase())) ||
+          (order.position?.y !== undefined && 
+            order.position.y.toString().includes(searchTerm.toLowerCase()));
+      }
+      
+      return true;
+    }
   );
 
   const handleDeleteClick = (order: OrderDTO) => {
@@ -60,11 +77,25 @@ export function OrdersTable() {
   };
 
   if (loading) {
-    return <div>Cargando pedidos...</div>;
+    return (
+      <div className="flex justify-center items-center py-8">
+        <div className="flex items-center space-x-2">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-600 border-t-transparent"></div>
+          <span className="text-muted-foreground">Cargando pedidos...</span>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return (
+      <div className="rounded-md bg-red-50 p-4 my-4">
+        <div className="flex items-center">
+          <AlertCircle className="h-5 w-5 text-red-500 mr-2" />
+          <span className="text-red-800">Error: {error}</span>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -114,6 +145,10 @@ export function OrdersTable() {
                       <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100 border-green-200">
                         Entregado
                       </Badge>
+                    ) : order.routeId ? (
+                      <Badge variant="outline" className="bg-blue-100 text-blue-800 hover:bg-blue-100 border-blue-200">
+                        En Ruta
+                      </Badge>
                     ) : (
                       <Badge variant="outline" className="bg-amber-100 text-amber-800 hover:bg-amber-100 border-amber-200">
                         Pendiente
@@ -155,7 +190,7 @@ export function OrdersTable() {
       ) : (
         <Card>
           <CardContent className="pt-6 text-center text-muted-foreground">
-            No se encontraron pedidos.
+            No se encontraron pedidos {filter && `con estado "${filter}"`}.
           </CardContent>
         </Card>
       )}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { dashboardApi, ordersApi, vehiclesApi, VehicleStatusEnum, Vehicle } from '@/lib/api-client'
 import { useToast } from '@/components/ui/use-toast'
 
@@ -135,99 +135,107 @@ export function useDashboardMetrics() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchMetrics = async () => {
-      try {
-        setLoading(true);
+  const fetchMetrics = useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch data needed for the metrics in parallel
+      const [pendingResponse, completedResponse, vehicleResponse] = await Promise.all([
+        ordersApi.list2(true), // pendingOnly = true for pending orders
+        ordersApi.list2(false), // pendingOnly = false for completed orders
+        vehiclesApi.list() // Get all vehicles
+      ]);
+      
+      // Calculate pending orders metrics
+      const pendingOrders = Array.isArray(pendingResponse.data) ? pendingResponse.data.length : 0;
+      // In a real app, you would compare with historical data
+      // Simulating a change percentage for visualization
+      const pendingChangePercent = Math.round((Math.random() > 0.5 ? -1 : 1) * Math.random() * 15);
+      
+      // Calculate completed orders metrics
+      const completedOrders = Array.isArray(completedResponse.data) ? completedResponse.data.length : 0;
+      // Simulating a change percentage for visualization
+      const completedChangePercent = Math.round((Math.random() > 0.5 ? -1 : 1) * Math.random() * 15);
+      
+      // Calculate vehicle metrics
+      let totalVehicles = 0;
+      let activeVehicles = 0;
+      let inMaintenance = 0;
+      let totalFuel = 0;
+      
+      if (Array.isArray(vehicleResponse.data)) {
+        const vehicles = vehicleResponse.data as VehicleWithLegacyFields[];
+        totalVehicles = vehicles.length;
         
-        // Fetch data needed for the metrics in parallel
-        const [pendingResponse, completedResponse, vehicleResponse] = await Promise.all([
-          ordersApi.list2(true), // pendingOnly = true for pending orders
-          ordersApi.list2(false), // pendingOnly = false for completed orders
-          vehiclesApi.list() // Get all vehicles
-        ]);
-        
-        // Calculate pending orders metrics
-        const pendingOrders = Array.isArray(pendingResponse.data) ? pendingResponse.data.length : 0;
-        // In a real app, you would compare with historical data
-        // Simulating a change percentage for visualization
-        const pendingChangePercent = Math.round((Math.random() > 0.5 ? -1 : 1) * Math.random() * 15);
-        
-        // Calculate completed orders metrics
-        const completedOrders = Array.isArray(completedResponse.data) ? completedResponse.data.length : 0;
-        // Simulating a change percentage for visualization
-        const completedChangePercent = Math.round((Math.random() > 0.5 ? -1 : 1) * Math.random() * 15);
-        
-        // Calculate vehicle metrics
-        let totalVehicles = 0;
-        let activeVehicles = 0;
-        let inMaintenance = 0;
-        let totalFuel = 0;
-        
-        if (Array.isArray(vehicleResponse.data)) {
-          const vehicles = vehicleResponse.data as VehicleWithLegacyFields[];
-          totalVehicles = vehicles.length;
+        vehicles.forEach(vehicle => {
+          // Check active vehicles (Available or Driving status)
+          if (vehicle.status === VehicleStatusEnum.Available || vehicle.status === VehicleStatusEnum.Driving) {
+            activeVehicles++;
+          }
           
-          vehicles.forEach(vehicle => {
-            // Check active vehicles (Available or Driving status)
-            if (vehicle.status === VehicleStatusEnum.Available || vehicle.status === VehicleStatusEnum.Driving) {
-              activeVehicles++;
-            }
+          // Check maintenance vehicles
+          if (vehicle.status === VehicleStatusEnum.Maintenance) {
+            inMaintenance++;
+          }
+          
+          // Get fuel consumption - first check legacy field, fall back to new field name
+          const currentFuel = vehicle.currentFuel !== undefined ? 
+            vehicle.currentFuel : 
+            vehicle.currentFuelGal;
             
-            // Check maintenance vehicles
-            if (vehicle.status === VehicleStatusEnum.Maintenance) {
-              inMaintenance++;
-            }
-            
-            // Get fuel consumption - first check legacy field, fall back to new field name
-            const currentFuel = vehicle.currentFuel !== undefined ? 
-              vehicle.currentFuel : 
-              vehicle.currentFuelGal;
-              
-            if (currentFuel !== undefined) {
-              totalFuel += currentFuel;
-            }
-          });
-        }
-        
-        // Simulating a change percentage for fuel consumption
-        const fuelChangePercent = Math.round((Math.random() > 0.5 ? -1 : 1) * Math.random() * 10);
-        
-        // Update metrics state
-        setMetrics({
-          pendingOrders: {
-            count: pendingOrders,
-            changePercent: pendingChangePercent
-          },
-          completedOrders: {
-            count: completedOrders,
-            changePercent: completedChangePercent
-          },
-          activeVehicles: {
-            active: activeVehicles,
-            total: totalVehicles,
-            inMaintenance: inMaintenance
-          },
-          fuelConsumption: {
-            total: Math.round(totalFuel),
-            changePercent: fuelChangePercent
+          if (currentFuel !== undefined) {
+            totalFuel += currentFuel;
           }
         });
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Error al cargar métricas del dashboard';
-        setError(errorMessage);
-        toast({
-          title: 'Error',
-          description: errorMessage,
-          variant: 'destructive',
-        });
-      } finally {
-        setLoading(false);
       }
-    };
-
-    fetchMetrics();
+      
+      // Simulating a change percentage for fuel consumption
+      const fuelChangePercent = Math.round((Math.random() > 0.5 ? -1 : 1) * Math.random() * 10);
+      
+      // Update metrics state
+      setMetrics({
+        pendingOrders: {
+          count: pendingOrders,
+          changePercent: pendingChangePercent
+        },
+        completedOrders: {
+          count: completedOrders,
+          changePercent: completedChangePercent
+        },
+        activeVehicles: {
+          active: activeVehicles,
+          total: totalVehicles,
+          inMaintenance: inMaintenance
+        },
+        fuelConsumption: {
+          total: Math.round(totalFuel),
+          changePercent: fuelChangePercent
+        }
+      });
+      
+      return true;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al cargar métricas del dashboard';
+      setError(errorMessage);
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+      return false;
+    } finally {
+      setLoading(false);
+    }
   }, [toast]);
 
-  return { metrics, loading, error };
+  useEffect(() => {
+    fetchMetrics();
+  }, [fetchMetrics]);
+
+  // Función para actualizar manualmente las métricas
+  const refreshMetrics = useCallback(async () => {
+    return await fetchMetrics();
+  }, [fetchMetrics]);
+
+  return { metrics, loading, error, refreshMetrics };
 }
