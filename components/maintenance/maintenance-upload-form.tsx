@@ -95,7 +95,9 @@ export function MaintenanceUploadForm() {
     const hour = hourMatch ? parseInt(hourMatch[1], 10) : 0
     const minute = minuteMatch ? parseInt(minuteMatch[1], 10) : 0
     
-    const date = new Date(year, month - 1, day, hour, minute)
+    // Crear la fecha usando UTC para evitar el ajuste por zona horaria
+    const timestamp = Date.UTC(year, month - 1, day, hour, minute)
+    const date = new Date(timestamp)
     
     if (isNaN(date.getTime())) {
       throw new Error('Fecha inválida')

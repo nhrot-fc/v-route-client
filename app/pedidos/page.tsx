@@ -16,7 +16,6 @@ import OrderForm from "@/components/orders/order-form";
 import { useOrders } from "@/hooks/use-orders";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { OrderDTO } from "@/lib/api-client";
-import { formatDate } from "@/lib/utils";
 import { PaginationFooter } from "@/components/ui/pagination-footer";
 import { DataTable } from "@/components/ui/data-table";
 import { TableFilterTabs } from "@/components/ui/table-filter-tabs";
@@ -118,12 +117,12 @@ export default function PedidosPage() {
     {
       header: "Hora Llegada",
       accessorKey: "arrivalTime" as keyof OrderWithStatus,
-      cell: (order: OrderWithStatus) => order.arrivalTime ? formatDate(new Date(order.arrivalTime)) : 'N/A',
+      cell: (order: OrderWithStatus) => order.arrivalTime ? new Date(order.arrivalTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A',
     },
     {
       header: "Fecha Límite",
       accessorKey: "deadlineTime" as keyof OrderWithStatus,
-      cell: (order: OrderWithStatus) => order.deadlineTime ? formatDate(new Date(order.deadlineTime)) : 'N/A',
+      cell: (order: OrderWithStatus) => order.deadlineTime ? new Date(order.deadlineTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A',
     },
     {
       header: "GLP Solicitado",

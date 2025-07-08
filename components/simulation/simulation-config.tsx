@@ -6,14 +6,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useVehicles } from "@/hooks/use-vehicles";
-import { Checkbox } from "@/components/ui/checkbox";
+import { SimulationDTOTypeEnum } from "@/lib/api-client";
 
 export interface SimulationConfigData {
-  startDate: string;
-  vehicleIds: string[];
-  mainDepotId: string;
-  auxDepotIds: string[];
+  startDateTime: string;
+  endDateTime?: string;
+  type: SimulationDTOTypeEnum;
+  taVehicles: number;
+  tbVehicles: number;
+  tcVehicles: number;
+  tdVehicles: number;
 }
 
 interface SimulationConfigProps {
@@ -21,18 +23,13 @@ interface SimulationConfigProps {
 }
 
 export function SimulationConfig({ onCreateSimulation }: SimulationConfigProps) {
-  const { vehicles } = useVehicles();
   const [startDate, setStartDate] = useState<string>("");
-  const [selectedVehicles, setSelectedVehicles] = useState<string[]>([]);
-  const [mainDepot, setMainDepot] = useState<string>("");
-  const [auxDepots, setAuxDepots] = useState<string[]>([]);
-  
-  // Lista temporal de depósitos (esto debería venir de una API real)
-  const depots = [
-    { id: "main-depot-1", name: "Depósito Principal 1" },
-    { id: "aux-depot-1", name: "Depósito Auxiliar 1" },
-    { id: "aux-depot-2", name: "Depósito Auxiliar 2" },
-  ];
+  const [endDate, setEndDate] = useState<string | undefined>(undefined);
+  const [simulationType, setSimulationType] = useState<SimulationDTOTypeEnum>(SimulationDTOTypeEnum.Weekly);
+  const [taVehicles, setTaVehicles] = useState<number>(0);
+  const [tbVehicles, setTbVehicles] = useState<number>(0);
+  const [tcVehicles, setTcVehicles] = useState<number>(0);
+  const [tdVehicles, setTdVehicles] = useState<number>(0);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,40 +39,22 @@ export function SimulationConfig({ onCreateSimulation }: SimulationConfigProps) 
       return;
     }
     
-    if (!mainDepot) {
-      alert("Por favor selecciona un depósito principal");
-      return;
-    }
-    
-    if (selectedVehicles.length === 0) {
+    if (taVehicles + tbVehicles + tcVehicles + tdVehicles === 0) {
       alert("Por favor selecciona al menos un vehículo");
       return;
     }
     
     const config: SimulationConfigData = {
-      startDate,
-      vehicleIds: selectedVehicles,
-      mainDepotId: mainDepot,
-      auxDepotIds: auxDepots
+      startDateTime: startDate,
+      endDateTime: endDate,
+      type: simulationType,
+      taVehicles,
+      tbVehicles,
+      tcVehicles,
+      tdVehicles
     };
     
     await onCreateSimulation(config);
-  };
-  
-  const toggleVehicleSelection = (vehicleId: string) => {
-    setSelectedVehicles(prev => 
-      prev.includes(vehicleId)
-        ? prev.filter(id => id !== vehicleId)
-        : [...prev, vehicleId]
-    );
-  };
-  
-  const toggleAuxDepot = (depotId: string) => {
-    setAuxDepots(prev =>
-      prev.includes(depotId)
-        ? prev.filter(id => id !== depotId)
-        : [...prev, depotId]
-    );
   };
 
   return (
@@ -86,6 +65,23 @@ export function SimulationConfig({ onCreateSimulation }: SimulationConfigProps) 
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <Label htmlFor="simulationType">Tipo de simulación</Label>
+            <Select value={simulationType} onValueChange={(value) => setSimulationType(value as SimulationDTOTypeEnum)}>
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Seleccione el tipo de simulación" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={SimulationDTOTypeEnum.Weekly}>Semanal</SelectItem>
+                <SelectItem value={SimulationDTOTypeEnum.Infinite}>Colapso</SelectItem>
+                <SelectItem value={SimulationDTOTypeEnum.Custom}>Personalizada</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-muted-foreground mt-1">
+              Seleccione el tipo de simulación que desea ejecutar
+            </p>
+          </div>
+
           <div>
             <Label htmlFor="startDate">Fecha de inicio</Label>
             <Input
@@ -99,67 +95,73 @@ export function SimulationConfig({ onCreateSimulation }: SimulationConfigProps) 
               Seleccione la fecha y hora de inicio de la simulación
             </p>
           </div>
+
+          {simulationType === SimulationDTOTypeEnum.Custom && <div>
+            <Label htmlFor="endDate">Fecha de fin</Label>
+            <Input
+              id="endDate"
+              type="datetime-local"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="mt-1"
+            />
+          </div>}
           
-          <div>
-            <Label>Depósito Principal</Label>
-            <Select value={mainDepot} onValueChange={setMainDepot}>
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Seleccione el depósito principal" />
-              </SelectTrigger>
-              <SelectContent>
-                {depots.map((depot) => (
-                  <SelectItem key={depot.id} value={depot.id}>
-                    {depot.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <Label>Depósitos Auxiliares</Label>
-            <div className="grid gap-2 mt-2">
-              {depots.filter(d => d.id !== mainDepot).map((depot) => (
-                <div key={depot.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={`aux-${depot.id}`}
-                    checked={auxDepots.includes(depot.id)}
-                    onCheckedChange={() => toggleAuxDepot(depot.id)}
-                  />
-                  <label
-                    htmlFor={`aux-${depot.id}`}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {depot.name}
-                  </label>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <div>
-            <Label>Vehículos</Label>
-            <div className="border rounded-md p-3 mt-2 h-48 overflow-y-auto">
-              <div className="grid gap-2">
-                {vehicles.map((vehicle) => (
-                  <div key={vehicle.id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`vehicle-${vehicle.id}`}
-                      checked={selectedVehicles.includes(vehicle.id || "")}
-                      onCheckedChange={() => toggleVehicleSelection(vehicle.id || "")}
-                    />
-                    <label
-                      htmlFor={`vehicle-${vehicle.id}`}
-                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      {vehicle.id} - {vehicle.type} ({vehicle.currentGlpM3}/{vehicle.glpCapacityM3} m³)
-                    </label>
-                  </div>
-                ))}
+          <div className="space-y-4">
+            <Label>Cantidad de vehículos por tipo</Label>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="taVehicles">Vehículos tipo TA</Label>
+                <Input
+                  id="taVehicles"
+                  type="number"
+                  min="0"
+                  value={taVehicles}
+                  onChange={(e) => setTaVehicles(parseInt(e.target.value) || 0)}
+                  className="mt-1"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="tbVehicles">Vehículos tipo TB</Label>
+                <Input
+                  id="tbVehicles"
+                  type="number"
+                  min="0"
+                  value={tbVehicles}
+                  onChange={(e) => setTbVehicles(parseInt(e.target.value) || 0)}
+                  className="mt-1"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="tcVehicles">Vehículos tipo TC</Label>
+                <Input
+                  id="tcVehicles"
+                  type="number"
+                  min="0"
+                  value={tcVehicles}
+                  onChange={(e) => setTcVehicles(parseInt(e.target.value) || 0)}
+                  className="mt-1"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="tdVehicles">Vehículos tipo TD</Label>
+                <Input
+                  id="tdVehicles"
+                  type="number"
+                  min="0"
+                  value={tdVehicles}
+                  onChange={(e) => setTdVehicles(parseInt(e.target.value) || 0)}
+                  className="mt-1"
+                />
               </div>
             </div>
+            
             <p className="text-sm text-muted-foreground mt-1">
-              Seleccione los vehículos que participarán en la simulación
+              Indique la cantidad de vehículos de cada tipo que participarán en la simulación
             </p>
           </div>
           

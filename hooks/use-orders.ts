@@ -215,7 +215,7 @@ export function useOrders(
       const deliveryRecordDTO: DeliveryRecordDTO = {
         vehicleId: "DEFAULT", // This should be replaced with the actual vehicle ID
         volumeM3: amount,
-        serveDate: new Date().toISOString(),
+        serveDate: new Date().toISOString(), // Aunque ya está en formato ISO, JavaScript lo convierte a UTC automáticamente
       };
 
       await ordersApi.recordDelivery(id, deliveryRecordDTO);
@@ -438,8 +438,11 @@ export function useUrgentOrders(
       setError(null);
 
       // We'll use overdueAt parameter with current time to get urgent orders
+      // Usar fechas UTC para evitar problemas con zona horaria
       const now = new Date();
-      const overdueDate = new Date(now.getTime() + hoursAhead * 60 * 60 * 1000);
+      // Crear la fecha en UTC usando el timestamp
+      const overdueTimestamp = now.getTime() + hoursAhead * 60 * 60 * 1000;
+      const overdueDate = new Date(overdueTimestamp);
 
       const isPaginated = !!paginationParams;
       const { page, size, sortBy, direction } = paginationParams || {

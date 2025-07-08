@@ -6,9 +6,12 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **startDateTime** | **string** |  | [optional] [default to undefined]
-**vehicleIds** | **Array&lt;string&gt;** |  | [optional] [default to undefined]
-**mainDepotId** | **string** |  | [optional] [default to undefined]
-**auxDepotIds** | **Array&lt;string&gt;** |  | [optional] [default to undefined]
+**endDateTime** | **string** |  | [optional] [default to undefined]
+**type** | **string** |  | [optional] [default to undefined]
+**taVehicles** | **number** |  | [optional] [default to undefined]
+**tbVehicles** | **number** |  | [optional] [default to undefined]
+**tcVehicles** | **number** |  | [optional] [default to undefined]
+**tdVehicles** | **number** |  | [optional] [default to undefined]
 
 ## Example
 
@@ -17,9 +20,12 @@ import { SimulationCreateDTO } from './api';
 
 const instance: SimulationCreateDTO = {
     startDateTime,
-    vehicleIds,
-    mainDepotId,
-    auxDepotIds,
+    endDateTime,
+    type,
+    taVehicles,
+    tbVehicles,
+    tcVehicles,
+    tdVehicles,
 };
 ```
 

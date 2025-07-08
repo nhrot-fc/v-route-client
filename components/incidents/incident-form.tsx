@@ -101,6 +101,8 @@ export function IncidentForm({ incident, onSaved, onCancel }: IncidentFormProps)
     try {
       setIsSubmitting(true);
       
+      // Convertir la fecha a formato ISO string usando UTC para evitar problemas con zona horaria
+      // toISOString() ya convierte a UTC por defecto
       const incidentData: IncidentCreateDTO = {
         vehicleId: values.vehicleId,
         type: values.type as IncidentCreateDTOTypeEnum,

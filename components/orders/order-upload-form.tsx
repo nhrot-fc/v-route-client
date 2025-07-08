@@ -94,9 +94,8 @@ export function OrderUploadForm({ onOrdersUploaded }: OrderUploadFormProps) {
 
       const [posX, posY, clientId, glpRequestStr, deadlineStr] = dataParts;
 
-      // Parse arrival time from format DDdHHhMMm
-      let arrivalTime = "";
       try {
+        // Parse arrival time from format DDdHHhMMm
         const dayMatch = timeStr.match(/(\d+)d/);
         const hourMatch = timeStr.match(/(\d+)h/);
         const minuteMatch = timeStr.match(/(\d+)m/);
@@ -105,40 +104,33 @@ export function OrderUploadForm({ onOrdersUploaded }: OrderUploadFormProps) {
         const hours = hourMatch ? parseInt(hourMatch[1]) : 0;
         const minutes = minuteMatch ? parseInt(minuteMatch[1]) : 0;
 
-        // Crear la fecha con el año y mes de referencia
-        const date = new Date(refYear, refMonth - 1, days, hours, minutes, 0);
-        arrivalTime = date.toISOString();
-      } catch (err) {
-        console.error("Error parsing arrival time:", err);
-        continue;
-      }
+        // Crear la fecha de llegada usando UTC para evitar el ajuste por zona horaria
+        // Date.UTC devuelve un timestamp que luego convertimos a objeto Date
+        const arrivalTimestamp = Date.UTC(
+          refYear,
+          refMonth - 1, // Mes en JavaScript es 0-indexed (0-11)
+          days,
+          hours,
+          minutes,
+          0
+        );
+        const arrivalDate = new Date(arrivalTimestamp);
 
-      // Parse GLP request (remove m3 suffix)
-      let glpRequestM3 = 0;
-      try {
-        glpRequestM3 = parseFloat(glpRequestStr.replace("m3", ""));
-      } catch (err) {
-        console.error("Error parsing GLP request:", err);
-        continue;
-      }
+        // Parse GLP request (remove m3 suffix)
+        const glpRequestM3 = parseFloat(glpRequestStr.replace("m3", ""));
+        
+        // Parse deadline hours (remove h suffix)
+        const deadlineHours = parseInt(deadlineStr.replace("h", ""));
 
-      // Parse deadline hours (remove h suffix)
-      let deadlineHours = 0;
-      try {
-        deadlineHours = parseInt(deadlineStr.replace("h", ""));
-      } catch (err) {
-        console.error("Error parsing deadline hours:", err);
-        continue;
-      }
+        // Calcular la fecha límite sumando las horas de plazo, también en UTC
+        const deadlineTimestamp = arrivalTimestamp + (deadlineHours * 60 * 60 * 1000);
+        const deadlineDate = new Date(deadlineTimestamp);
 
-      // Calculate deadline time based on arrival time plus deadline hours
-      let deadlineTime = "";
-      try {
-        const arrivalDate = new Date(arrivalTime);
-        arrivalDate.setHours(arrivalDate.getHours() + deadlineHours);
-        deadlineTime = arrivalDate.toISOString();
-
-        const stringId = `${clientId}-${arrivalDate.getFullYear()}-${arrivalDate.getMonth()}-${arrivalDate.getDate()}T${arrivalDate.getHours()}:${arrivalDate.getMinutes()}`;
+        // Crear un ID que refleje correctamente el cliente y la fecha/hora de llegada
+        // Extraemos los componentes de fecha directamente de la fecha UTC
+        const stringId = `${clientId}-${arrivalDate.getUTCFullYear()}-${
+          arrivalDate.getUTCMonth() + 1
+        }-${arrivalDate.getUTCDate()}T${arrivalDate.getUTCHours()}:${arrivalDate.getUTCMinutes()}`;
 
         // Create order DTO
         const order: OrderDTO = {
@@ -147,16 +139,17 @@ export function OrderUploadForm({ onOrdersUploaded }: OrderUploadFormProps) {
             x: parseFloat(posX),
             y: parseFloat(posY),
           },
-          arrivalTime,
-          deadlineTime,
-          glpRequestM3: glpRequestM3,
+          arrivalTime: arrivalDate.toISOString(),
+          deadlineTime: deadlineDate.toISOString(),
+          glpRequestM3,
           remainingGlpM3: glpRequestM3, // Initially, remaining = requested
           delivered: false,
         };
 
         orders.push(order);
       } catch (err) {
-        console.error("Error calculating deadline time:", err);
+        console.error("Error parsing line:", line, err);
+        continue;
       }
     }
 

@@ -6,11 +6,12 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **string** |  | [optional] [default to undefined]
-**currentTime** | **string** |  | [optional] [default to undefined]
+**simulatedCurrentTime** | **string** |  | [optional] [default to undefined]
+**creationTime** | **string** |  | [optional] [default to undefined]
+**realStartTime** | **string** |  | [optional] [default to undefined]
+**realEndTime** | **string** |  | [optional] [default to undefined]
 **type** | **string** |  | [optional] [default to undefined]
 **status** | **string** |  | [optional] [default to undefined]
-**startTime** | **string** |  | [optional] [default to undefined]
-**endTime** | **string** |  | [optional] [default to undefined]
 
 ## Example
 
@@ -19,11 +20,12 @@ import { SimulationDTO } from './api';
 
 const instance: SimulationDTO = {
     id,
-    currentTime,
+    simulatedCurrentTime,
+    creationTime,
+    realStartTime,
+    realEndTime,
     type,
     status,
-    startTime,
-    endTime,
 };
 ```
 

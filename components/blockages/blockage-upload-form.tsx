@@ -1,63 +1,102 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, CheckCircle2, Upload, Loader2, Download, CalendarIcon } from "lucide-react"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { useBlockages } from "@/hooks/use-blockages"
-import { Blockage } from "@/lib/api-client"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Upload,
+  Loader2,
+  Download,
+  CalendarIcon,
+} from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { useBlockages } from "@/hooks/use-blockages";
+import { BlockageDTO, Position } from "@/lib/api-client";
 
 export function BlockageUploadForm() {
-  const [file, setFile] = useState<File | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
-  const [uploadStatus, setUploadStatus] = useState<"idle" | "success" | "error">("idle")
-  const [errorMessage, setErrorMessage] = useState("")
-  const [year, setYear] = useState<number>(new Date().getFullYear())
-  const [month, setMonth] = useState<number>(new Date().getMonth() + 1)
-  const { createBulkBlockages } = useBlockages()
+  const [file, setFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [year, setYear] = useState<number>(new Date().getFullYear());
+  const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
+  const { createBulkBlockages } = useBlockages();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      const selectedFile = e.target.files[0]
-      setFile(selectedFile)
-      setUploadStatus("idle")
-      setErrorMessage("")
+      const selectedFile = e.target.files[0];
+      setFile(selectedFile);
+      setUploadStatus("idle");
+      setErrorMessage("");
     }
-  }
+  };
 
   // Helper function to parse date string in format ##d##h##m to Date
-  const parseDateString = (dateStr: string, refYear: number, refMonth: number): string => {
-    const match = dateStr.match(/^(\d{2})d(\d{2})h(\d{2})m$/)
-    if (!match) return new Date().toISOString()
-    
-    const [, days, hours, minutes] = match
-    
-    // Usar el año y mes de referencia proporcionados
-    const result = new Date(refYear, refMonth - 1, parseInt(days), parseInt(hours), parseInt(minutes), 0)
-    return result.toISOString()
-  }
+  const parseDateString = (
+    dateStr: string,
+    refYear: number,
+    refMonth: number
+  ): string => {
+    const match = dateStr.match(/^(\d{2})d(\d{2})h(\d{2})m$/);
+    if (!match) return new Date().toISOString();
+
+    const [, days, hours, minutes] = match;
+
+    // Usar el año y mes de referencia proporcionados con UTC para evitar ajustes de zona horaria
+    const timestamp = Date.UTC(
+      refYear,
+      refMonth - 1,
+      parseInt(days),
+      parseInt(hours),
+      parseInt(minutes),
+      0
+    );
+    const utcDate = new Date(timestamp);
+    return utcDate.toISOString();
+  };
 
   // Parse blockage line to create blockage objects
-  const parseBlockageLine = (line: string, refYear: number, refMonth: number): Blockage => {
+  const parseBlockageLine = (
+    line: string,
+    refYear: number,
+    refMonth: number
+  ): BlockageDTO => {
     // Format: ##d##h##m-##d##h##m:x1,y1,x2,y2,...,xn,yn
-    const [timeRange, coordinates] = line.split(':')
-    const [startTimeStr, endTimeStr] = timeRange.split('-')
-    
+    const [timeRange, coordinates] = line.split(":");
+    const [startTimeStr, endTimeStr] = timeRange.split("-");
+
     // Parse the coordinates
-    const linePoints = coordinates.trim()
-    
-    const startTime = parseDateString(startTimeStr, refYear, refMonth)
-    const endTime = parseDateString(endTimeStr, refYear, refMonth)
-    
-    return {
-      linePoints,
-      startTime,
-      endTime
+    const startTime = parseDateString(startTimeStr, refYear, refMonth);
+    const endTime = parseDateString(endTimeStr, refYear, refMonth);
+
+    const blockageLines: Position[] = [];
+    const coordinatesArray = coordinates.split(",").map(Number);
+    for (let i = 0; i < coordinatesArray.length; i += 2) {
+      blockageLines.push({
+        x: coordinatesArray[i],
+        y: coordinatesArray[i + 1],
+      });
     }
-  }
+
+    return {
+      startTime,
+      endTime,
+      blockageLines,
+    };
+  };
 
   const handleDownloadTemplate = () => {
     // Crear contenido de la plantilla según el formato requerido
@@ -82,7 +121,9 @@ export function BlockageUploadForm() {
     ].join("\n");
 
     // Crear y descargar el archivo
-    const blob = new Blob([templateContent], { type: "text/plain;charset=utf-8" });
+    const blob = new Blob([templateContent], {
+      type: "text/plain;charset=utf-8",
+    });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
@@ -94,46 +135,49 @@ export function BlockageUploadForm() {
   };
 
   const handleUpload = async () => {
-    if (!file) return
-    
-    setIsUploading(true)
-    setUploadStatus("idle")
-    setErrorMessage("")
-    
+    if (!file) return;
+
+    setIsUploading(true);
+    setUploadStatus("idle");
+    setErrorMessage("");
+
     try {
       // Read file content
-      const fileContent = await file.text()
-      const lines = fileContent.trim().split('\n')
-      
+      const fileContent = await file.text();
+      const lines = fileContent.trim().split("\n");
+
       // Parse each line and collect all blockages
       const blockages = lines
-        .map(line => line.trim())
-        .filter(line => line && !line.startsWith('#')) // Filter out empty lines and comments
-        .map(line => parseBlockageLine(line, year, month))
-      
+        .map((line) => line.trim())
+        .filter((line) => line && !line.startsWith("#")) // Filter out empty lines and comments
+        .map((line) => parseBlockageLine(line, year, month));
+
       if (blockages.length === 0) {
-        throw new Error("No se encontraron bloqueos válidos en el archivo")
+        throw new Error("No se encontraron bloqueos válidos en el archivo");
       }
-      
+
       // Create blockages in bulk
-      await createBulkBlockages(blockages)
-      
+      await createBulkBlockages(blockages);
+
       // Reset file input and show success
-      setFile(null)
-      setUploadStatus("success")
-      
+      setFile(null);
+      setUploadStatus("success");
+
       // Reset the file input element
-      const fileInput = document.getElementById('blockage-file') as HTMLInputElement
-      if (fileInput) fileInput.value = ''
-      
+      const fileInput = document.getElementById(
+        "blockage-file"
+      ) as HTMLInputElement;
+      if (fileInput) fileInput.value = "";
     } catch (error) {
-      console.error("Error uploading blockages:", error)
-      setErrorMessage(error instanceof Error ? error.message : "Error al procesar el archivo")
-      setUploadStatus("error")
+      console.error("Error uploading blockages:", error);
+      setErrorMessage(
+        error instanceof Error ? error.message : "Error al procesar el archivo"
+      );
+      setUploadStatus("error");
     } finally {
-      setIsUploading(false)
+      setIsUploading(false);
     }
-  }
+  };
 
   return (
     <Card className="w-full">
@@ -147,9 +191,9 @@ export function BlockageUploadForm() {
         <div className="grid w-full max-w-sm items-center gap-1.5">
           <Label htmlFor="blockage-file">Archivo de Bloqueos</Label>
           <div className="flex gap-2">
-            <Input 
-              id="blockage-file" 
-              type="file" 
+            <Input
+              id="blockage-file"
+              type="file"
               accept=".csv,.txt,text/plain"
               onChange={handleFileChange}
               disabled={isUploading}
@@ -171,10 +215,12 @@ export function BlockageUploadForm() {
             <br />
             <code className="text-xs">##d##h##m-##d##h##m:x1,y1,x2,y2,...</code>
             <br />
-            <span className="text-xs">Ejemplo: 01d00h31m-01d21h35m:15,10,30,10,30,18</span>
+            <span className="text-xs">
+              Ejemplo: 01d00h31m-01d21h35m:15,10,30,10,30,18
+            </span>
           </p>
         </div>
-        
+
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="year">Año de referencia</Label>
@@ -207,21 +253,25 @@ export function BlockageUploadForm() {
             <CalendarIcon className="h-4 w-4 mt-0.5" />
             <div>
               <p className="font-medium">Nota sobre fechas</p>
-              <p>El archivo sólo contiene días, horas y minutos. El año y mes seleccionados se usarán como referencia.</p>
+              <p>
+                El archivo sólo contiene días, horas y minutos. El año y mes
+                seleccionados se usarán como referencia.
+              </p>
             </div>
           </div>
         </div>
-        
+
         {uploadStatus === "success" && (
-          <Alert variant="default" className="bg-green-50 border-green-200 text-green-800">
+          <Alert
+            variant="default"
+            className="bg-green-50 border-green-200 text-green-800"
+          >
             <CheckCircle2 className="h-4 w-4" />
             <AlertTitle>Éxito</AlertTitle>
-            <AlertDescription>
-              Bloqueos cargados correctamente
-            </AlertDescription>
+            <AlertDescription>Bloqueos cargados correctamente</AlertDescription>
           </Alert>
         )}
-        
+
         {uploadStatus === "error" && (
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
@@ -233,8 +283,8 @@ export function BlockageUploadForm() {
         )}
       </CardContent>
       <CardFooter>
-        <Button 
-          onClick={handleUpload} 
+        <Button
+          onClick={handleUpload}
           disabled={!file || isUploading}
           className="w-full"
         >
@@ -252,5 +302,5 @@ export function BlockageUploadForm() {
         </Button>
       </CardFooter>
     </Card>
-  )
-} 
+  );
+}

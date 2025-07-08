@@ -1,64 +1,145 @@
 "use client";
 
-import { SimulationDTO } from "@/lib/api-client";
-import { Card } from "@/components/ui/card";
-import { AlertCircle } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useSimulationWebSocket } from "@/hooks/use-simulation-websocket";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
-interface SimulationReportProps {
-  report: SimulationDTO | undefined;
-  formatDate: (dateStr?: string) => string;
-}
+export function SimulationReport() {
+  const [simulationStats, setSimulationStats] = useState<{
+    totalVehicles: number;
+    ordersDelivered: number;
+    ordersPending: number;
+    ordersOverdue: number;
+    vehiclesAvailable: number;
+    vehiclesUnavailable: number;
+    currentTime: string;
+  }>({
+    totalVehicles: 0,
+    ordersDelivered: 0,
+    ordersPending: 0,
+    ordersOverdue: 0,
+    vehiclesAvailable: 0,
+    vehiclesUnavailable: 0,
+    currentTime: "",
+  });
 
-export function SimulationReport({ report, formatDate }: SimulationReportProps) {
-  if (!report) {
+  const { simulationState, simulationInfo } = useSimulationWebSocket();
+
+  useEffect(() => {
+    if (simulationState && simulationInfo) {
+      const totalVehicles = simulationState.vehicles?.length || 0;
+      const vehiclesAvailable = simulationState.availableVehiclesCount || 0;
+      
+      setSimulationStats({
+        totalVehicles,
+        ordersDelivered: simulationState.deliveredOrdersCount || 0,
+        ordersPending: simulationState.pendingOrdersCount || 0,
+        ordersOverdue: simulationState.overdueOrdersCount || 0,
+        vehiclesAvailable,
+        vehiclesUnavailable: totalVehicles - vehiclesAvailable,
+        currentTime: formatDate(simulationInfo.simulatedCurrentTime),
+      });
+    }
+  }, [simulationState, simulationInfo]);
+
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return "N/A";
+    
+    try {
+      const date = new Date(dateStr);
+      return format(date, "PPpp", { locale: es });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  if (!simulationState || !simulationInfo) {
     return (
-      <div className="text-center py-10">
-        <AlertCircle className="w-10 h-10 mx-auto text-gray-400" />
-        <h3 className="mt-4 text-lg font-medium">No hay reporte disponible</h3>
-        <p className="mt-2 text-gray-500">Finaliza una simulación para generar un reporte</p>
+      <div className="text-center py-10 text-gray-500">
+        No hay información de simulación disponible.
+        <br />
+        Selecciona una simulación activa en la pestaña del mapa.
       </div>
     );
   }
 
   return (
-    <Card className="p-6">
-      <div className="space-y-8">
-        <div>
-          <h3 className="text-lg font-semibold mb-4">Información General</h3>
-          <table className="w-full">
-            <tbody>
-              <tr className="border-b">
-                <td className="py-2 font-medium">ID de la simulación</td>
-                <td className="py-2">{report.id}</td>
-              </tr>
-              <tr className="border-b">
-                <td className="py-2 font-medium">Tipo de simulación</td>
-                <td className="py-2">{report.type}</td>
-              </tr>
-              <tr className="border-b">
-                <td className="py-2 font-medium">Estado</td>
-                <td className="py-2">{report.status}</td>
-              </tr>
-              <tr className="border-b">
-                <td className="py-2 font-medium">Fecha de inicio</td>
-                <td className="py-2">{formatDate(report.startTime)}</td>
-              </tr>
-              <tr className="border-b">
-                <td className="py-2 font-medium">Fecha de finalización</td>
-                <td className="py-2">{formatDate(report.endTime)}</td>
-              </tr>
-              <tr className="border-b">
-                <td className="py-2 font-medium">Tiempo actual</td>
-                <td className="py-2">{formatDate(report.currentTime)}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Estado de la Simulación</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <dl className="space-y-2">
+            <div className="flex justify-between">
+              <dt className="font-medium">ID:</dt>
+              <dd>{simulationInfo.id || 'N/A'}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="font-medium">Tipo:</dt>
+              <dd>{simulationInfo.type || 'N/A'}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="font-medium">Estado:</dt>
+              <dd>{simulationInfo.status || 'N/A'}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="font-medium">Hora simulada:</dt>
+              <dd>{simulationStats.currentTime}</dd>
+            </div>
+          </dl>
+        </CardContent>
+      </Card>
 
-        <div className="bg-yellow-50 border border-yellow-300 text-yellow-800 px-4 py-3 rounded">
-          <p>Nota: La información detallada de estadísticas no está disponible en esta versión de la API.</p>
-        </div>
-      </div>
-    </Card>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Pedidos</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <dl className="space-y-2">
+            <div className="flex justify-between">
+              <dt className="font-medium">Pedidos Pendientes:</dt>
+              <dd>{simulationStats.ordersPending}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="font-medium">Pedidos Entregados:</dt>
+              <dd>{simulationStats.ordersDelivered}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="font-medium">Pedidos Retrasados:</dt>
+              <dd>{simulationStats.ordersOverdue}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="font-medium">Total:</dt>
+              <dd>{simulationStats.ordersDelivered + simulationStats.ordersPending}</dd>
+            </div>
+          </dl>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Vehículos</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <dl className="space-y-2">
+            <div className="flex justify-between">
+              <dt className="font-medium">Vehículos Disponibles:</dt>
+              <dd>{simulationStats.vehiclesAvailable}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="font-medium">Vehículos En Uso:</dt>
+              <dd>{simulationStats.vehiclesUnavailable}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="font-medium">Total:</dt>
+              <dd>{simulationStats.totalVehicles}</dd>
+            </div>
+          </dl>
+        </CardContent>
+      </Card>
+    </div>
   );
 } 

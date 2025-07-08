@@ -13,11 +13,13 @@ export function useSimulation() {
   const createSimulation = async (
     simulationData: {
       startDateTime?: string;
-      vehicleIds?: string[];
-      mainDepotId?: string;
-      auxDepotIds?: string[];
-    },
-    type: SimulationDTOTypeEnum = SimulationDTOTypeEnum.Custom
+      endDateTime?: string;
+      type?: SimulationDTOTypeEnum;
+      taVehicles?: number;
+      tbVehicles?: number;
+      tcVehicles?: number;
+      tdVehicles?: number;
+    }
   ) => {
     setIsLoading(true);
     setError(null);
@@ -25,14 +27,16 @@ export function useSimulation() {
     try {
       const simulationCreateDTO: SimulationCreateDTO = {
         startDateTime: simulationData.startDateTime,
-        vehicleIds: simulationData.vehicleIds,
-        mainDepotId: simulationData.mainDepotId,
-        auxDepotIds: simulationData.auxDepotIds,
+        endDateTime: simulationData.endDateTime,
+        type: simulationData.type,
+        taVehicles: simulationData.taVehicles,
+        tbVehicles: simulationData.tbVehicles,
+        tcVehicles: simulationData.tcVehicles,
+        tdVehicles: simulationData.tdVehicles
       };
 
       const response = await simulationApi.createSimulation(
-        simulationCreateDTO,
-        type
+        simulationCreateDTO
       );
 
       setIsLoading(false);

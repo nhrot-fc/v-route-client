@@ -4,7 +4,7 @@ All URIs are relative to *http://localhost:8080*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**createSimulation**](#createsimulation) | **POST** /api/simulation | Create a new time-based simulation|
+|[**createSimulation**](#createsimulation) | **POST** /api/simulation | Create a new simplified simulation|
 |[**getDailyOperations**](#getdailyoperations) | **GET** /api/simulation/daily | Get daily operations simulation|
 |[**getDailyOperationsState**](#getdailyoperationsstate) | **GET** /api/simulation/daily/state | Get daily operations state|
 |[**getSimulationState**](#getsimulationstate) | **GET** /api/simulation/{id}/state | Get simulation state|
@@ -17,7 +17,7 @@ All URIs are relative to *http://localhost:8080*
 # **createSimulation**
 > SimulationDTO createSimulation(simulationCreateDTO)
 
-Creates a new simulation with the specified parameters
+Creates a new simulation with the specified parameters. For WEEKLY type, end date is automatically set to one week after start date. For INFINITE, no end date is used.
 
 ### Example
 
@@ -32,11 +32,9 @@ const configuration = new Configuration();
 const apiInstance = new SimulationApi(configuration);
 
 let simulationCreateDTO: SimulationCreateDTO; //
-let type: 'DAILY_OPERATIONS' | 'WEEKLY' | 'INFINITE' | 'CUSTOM'; // (optional) (default to 'CUSTOM')
 
 const { status, data } = await apiInstance.createSimulation(
-    simulationCreateDTO,
-    type
+    simulationCreateDTO
 );
 ```
 
@@ -45,7 +43,6 @@ const { status, data } = await apiInstance.createSimulation(
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **simulationCreateDTO** | **SimulationCreateDTO**|  | |
-| **type** | [**&#39;DAILY_OPERATIONS&#39; | &#39;WEEKLY&#39; | &#39;INFINITE&#39; | &#39;CUSTOM&#39;**]**Array<&#39;DAILY_OPERATIONS&#39; &#124; &#39;WEEKLY&#39; &#124; &#39;INFINITE&#39; &#124; &#39;CUSTOM&#39;>** |  | (optional) defaults to 'CUSTOM'|
 
 
 ### Return type

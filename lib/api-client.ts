@@ -157,6 +157,5 @@ export {
   IncidentCreateDTOShiftEnum,
   SimulationDTOTypeEnum,
   SimulationDTOStatusEnum,
-  CreateSimulationTypeEnum,
   SimulationStateDTOStatusEnum,
 } from "@/src/shared/api/generated";

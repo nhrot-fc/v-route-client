@@ -293,7 +293,7 @@ export function useActiveBlockages() {
       setLoading(true)
       setError(null)
       
-      // Use the current date to get active blockages
+      // Use the current date to get active blockages - la fecha ya se convierte a UTC al usar toISOString()
       const now = new Date().toISOString()
       const response = await blockagesApi.list5(now)
       

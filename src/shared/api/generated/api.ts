@@ -747,23 +747,51 @@ export interface SimulationCreateDTO {
     'startDateTime'?: string;
     /**
      * 
-     * @type {Array<string>}
+     * @type {string}
      * @memberof SimulationCreateDTO
      */
-    'vehicleIds'?: Array<string>;
+    'endDateTime'?: string;
     /**
      * 
      * @type {string}
      * @memberof SimulationCreateDTO
      */
-    'mainDepotId'?: string;
+    'type'?: SimulationCreateDTOTypeEnum;
     /**
      * 
-     * @type {Array<string>}
+     * @type {number}
      * @memberof SimulationCreateDTO
      */
-    'auxDepotIds'?: Array<string>;
+    'taVehicles'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SimulationCreateDTO
+     */
+    'tbVehicles'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SimulationCreateDTO
+     */
+    'tcVehicles'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof SimulationCreateDTO
+     */
+    'tdVehicles'?: number;
 }
+
+export const SimulationCreateDTOTypeEnum = {
+    DailyOperations: 'DAILY_OPERATIONS',
+    Weekly: 'WEEKLY',
+    Infinite: 'INFINITE',
+    Custom: 'CUSTOM'
+} as const;
+
+export type SimulationCreateDTOTypeEnum = typeof SimulationCreateDTOTypeEnum[keyof typeof SimulationCreateDTOTypeEnum];
+
 /**
  * 
  * @export
@@ -781,7 +809,25 @@ export interface SimulationDTO {
      * @type {string}
      * @memberof SimulationDTO
      */
-    'currentTime'?: string;
+    'simulatedCurrentTime'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SimulationDTO
+     */
+    'creationTime'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SimulationDTO
+     */
+    'realStartTime'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof SimulationDTO
+     */
+    'realEndTime'?: string;
     /**
      * 
      * @type {string}
@@ -794,18 +840,6 @@ export interface SimulationDTO {
      * @memberof SimulationDTO
      */
     'status'?: SimulationDTOStatusEnum;
-    /**
-     * 
-     * @type {string}
-     * @memberof SimulationDTO
-     */
-    'startTime'?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberof SimulationDTO
-     */
-    'endTime'?: string;
 }
 
 export const SimulationDTOTypeEnum = {
@@ -4116,14 +4150,13 @@ export class ServeRecordControllerApi extends BaseAPI {
 export const SimulationApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Creates a new simulation with the specified parameters
-         * @summary Create a new time-based simulation
+         * Creates a new simulation with the specified parameters. For WEEKLY type, end date is automatically set to one week after start date. For INFINITE, no end date is used.
+         * @summary Create a new simplified simulation
          * @param {SimulationCreateDTO} simulationCreateDTO 
-         * @param {CreateSimulationTypeEnum} [type] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createSimulation: async (simulationCreateDTO: SimulationCreateDTO, type?: CreateSimulationTypeEnum, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        createSimulation: async (simulationCreateDTO: SimulationCreateDTO, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'simulationCreateDTO' is not null or undefined
             assertParamExists('createSimulation', 'simulationCreateDTO', simulationCreateDTO)
             const localVarPath = `/api/simulation`;
@@ -4137,10 +4170,6 @@ export const SimulationApiAxiosParamCreator = function (configuration?: Configur
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
-
-            if (type !== undefined) {
-                localVarQueryParameter['type'] = type;
-            }
 
 
     
@@ -4427,15 +4456,14 @@ export const SimulationApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = SimulationApiAxiosParamCreator(configuration)
     return {
         /**
-         * Creates a new simulation with the specified parameters
-         * @summary Create a new time-based simulation
+         * Creates a new simulation with the specified parameters. For WEEKLY type, end date is automatically set to one week after start date. For INFINITE, no end date is used.
+         * @summary Create a new simplified simulation
          * @param {SimulationCreateDTO} simulationCreateDTO 
-         * @param {CreateSimulationTypeEnum} [type] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async createSimulation(simulationCreateDTO: SimulationCreateDTO, type?: CreateSimulationTypeEnum, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SimulationDTO>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.createSimulation(simulationCreateDTO, type, options);
+        async createSimulation(simulationCreateDTO: SimulationCreateDTO, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SimulationDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.createSimulation(simulationCreateDTO, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['SimulationApi.createSimulation']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -4552,15 +4580,14 @@ export const SimulationApiFactory = function (configuration?: Configuration, bas
     const localVarFp = SimulationApiFp(configuration)
     return {
         /**
-         * Creates a new simulation with the specified parameters
-         * @summary Create a new time-based simulation
+         * Creates a new simulation with the specified parameters. For WEEKLY type, end date is automatically set to one week after start date. For INFINITE, no end date is used.
+         * @summary Create a new simplified simulation
          * @param {SimulationCreateDTO} simulationCreateDTO 
-         * @param {CreateSimulationTypeEnum} [type] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createSimulation(simulationCreateDTO: SimulationCreateDTO, type?: CreateSimulationTypeEnum, options?: RawAxiosRequestConfig): AxiosPromise<SimulationDTO> {
-            return localVarFp.createSimulation(simulationCreateDTO, type, options).then((request) => request(axios, basePath));
+        createSimulation(simulationCreateDTO: SimulationCreateDTO, options?: RawAxiosRequestConfig): AxiosPromise<SimulationDTO> {
+            return localVarFp.createSimulation(simulationCreateDTO, options).then((request) => request(axios, basePath));
         },
         /**
          * Returns the current status of the daily operations simulation
@@ -4650,16 +4677,15 @@ export const SimulationApiFactory = function (configuration?: Configuration, bas
  */
 export class SimulationApi extends BaseAPI {
     /**
-     * Creates a new simulation with the specified parameters
-     * @summary Create a new time-based simulation
+     * Creates a new simulation with the specified parameters. For WEEKLY type, end date is automatically set to one week after start date. For INFINITE, no end date is used.
+     * @summary Create a new simplified simulation
      * @param {SimulationCreateDTO} simulationCreateDTO 
-     * @param {CreateSimulationTypeEnum} [type] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SimulationApi
      */
-    public createSimulation(simulationCreateDTO: SimulationCreateDTO, type?: CreateSimulationTypeEnum, options?: RawAxiosRequestConfig) {
-        return SimulationApiFp(this.configuration).createSimulation(simulationCreateDTO, type, options).then((request) => request(this.axios, this.basePath));
+    public createSimulation(simulationCreateDTO: SimulationCreateDTO, options?: RawAxiosRequestConfig) {
+        return SimulationApiFp(this.configuration).createSimulation(simulationCreateDTO, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4756,16 +4782,6 @@ export class SimulationApi extends BaseAPI {
     }
 }
 
-/**
- * @export
- */
-export const CreateSimulationTypeEnum = {
-    DailyOperations: 'DAILY_OPERATIONS',
-    Weekly: 'WEEKLY',
-    Infinite: 'INFINITE',
-    Custom: 'CUSTOM'
-} as const;
-export type CreateSimulationTypeEnum = typeof CreateSimulationTypeEnum[keyof typeof CreateSimulationTypeEnum];
 
 
 /**
