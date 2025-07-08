@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSimulation } from "@/hooks/use-simulation";
+import { useWebSocket } from "@/lib/websocket-context";
 import { SimulationConfig, SimulationConfigData } from "@/components/simulation/simulation-config";
 import { SimulationMap } from "@/components/simulation/simulation-map";
 import { SimulationReport } from "@/components/simulation/simulation-report";
+import { SimulationStats } from "@/components/simulation/simulation-stats";
 import { PageContainer } from "@/components/ui/page-container";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -14,9 +16,19 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 
 export default function SimulacionPage() {
   const [activeTab, setActiveTab] = useState("map");
-  const [currentSimulationId, setCurrentSimulationId] = useState<string | null>(null);
+  const { isConnected, currentSimulationId, simulationState, simulationInfo, subscribeToSimulation } = useWebSocket();
   const { toast } = useToast();
   const { createSimulation } = useSimulation();
+  
+  // When the page loads and websocket is connected but no simulation is selected,
+  // switch to the config tab
+  useEffect(() => {
+    if (isConnected && !currentSimulationId) {
+      setActiveTab("config");
+    } else if (isConnected && currentSimulationId) {
+      setActiveTab("map");
+    }
+  }, [isConnected, currentSimulationId]);
 
   const handleCreateSimulation = async (config: SimulationConfigData) => {
     try {
@@ -38,8 +50,8 @@ export default function SimulacionPage() {
           description: `ID: ${simId}`,
         });
         
-        // Set current simulation ID
-        setCurrentSimulationId(simId);
+        // Subscribe to the simulation
+        subscribeToSimulation(simId);
         
         // Switch to map tab
         setActiveTab("map");
@@ -66,6 +78,15 @@ export default function SimulacionPage() {
       />
       <Separator className="my-4" />
 
+      {simulationState && simulationInfo && (
+        <div className="mb-6">
+          <SimulationStats
+            simulationState={simulationState}
+            currentTime={new Date(simulationInfo.simulatedCurrentTime || "").toLocaleString()}
+          />
+        </div>
+      )}
+
       <Tabs value={activeTab} onValueChange={handleTabChange}>
         <TabsList className="mb-4">
           <TabsTrigger value="config">Configuración</TabsTrigger>
@@ -86,7 +107,7 @@ export default function SimulacionPage() {
         </TabsContent>
 
         <TabsContent value="map">
-          <SimulationMap defaultSimulationId={currentSimulationId || undefined} />
+          <SimulationMap />
         </TabsContent>
 
         <TabsContent value="report">

@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Toaster } from "@/components/ui/toaster"
+import { WebSocketProvider } from "@/lib/websocket-context"
 import "./globals.css"
 
 const inter = Inter({
@@ -41,11 +42,13 @@ export default function RootLayout({
       <body className="bg-surface min-h-screen font-sans antialiased">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <SidebarProvider>
-            <div className="flex flex-1 h-screen overflow-hidden">
-              <AppSidebar />
-              <main className="flex-1 overflow-auto">{children}</main>
-            </div>
-            <Toaster />
+            <WebSocketProvider>
+              <div className="flex flex-1 h-screen overflow-hidden">
+                <AppSidebar />
+                <main className="flex-1 overflow-auto">{children}</main>
+              </div>
+              <Toaster />
+            </WebSocketProvider>
           </SidebarProvider>
         </ThemeProvider>
       </body>

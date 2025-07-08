@@ -15,6 +15,8 @@ export function useSimulationWebSocket() {
   
   // Initialize WebSocket connection
   useEffect(() => {
+    console.log("Initializing WebSocket connection");
+    
     const client = new Client({
       brokerURL: `${process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/^http/, "ws") || "ws://localhost:8080"}/ws`,
       debug: (str) => {
@@ -26,13 +28,14 @@ export function useSimulationWebSocket() {
     });
 
     client.onConnect = () => {
+      console.log("WebSocket connected");
       setIsConnected(true);
       setError(null);
-      console.log("WebSocket connected");
       
       // Subscribe to the simulations list
       const simulationsSubscription = client.subscribe("/topic/simulations", (message: Message) => {
         try {
+          console.log("Received simulations list update", message.body);
           const data = JSON.parse(message.body) as Record<string, SimulationDTO>;
           setAvailableSimulations(data);
         } catch (err) {
@@ -41,14 +44,23 @@ export function useSimulationWebSocket() {
       });
       
       subscriptions.current["simulations"] = simulationsSubscription;
+      
+      // Request available simulations immediately after connection
+      client.publish({
+        destination: "/app/simulations",
+        body: "",
+        headers: { 'content-type': 'application/json' }
+      });
     };
 
     client.onStompError = (frame) => {
+      console.error("WebSocket error:", frame);
       setError(`WebSocket error: ${frame.headers.message}`);
       setIsConnected(false);
     };
 
     client.onWebSocketClose = () => {
+      console.log("WebSocket closed");
       setIsConnected(false);
     };
 
@@ -73,6 +85,8 @@ export function useSimulationWebSocket() {
 
   // Subscribe to a specific simulation
   const subscribeToSimulation = useCallback((simulationId: string) => {
+    console.log("Subscribing to simulation:", simulationId);
+    
     if (!stompClient.current || !isConnected) {
       setError("WebSocket not connected");
       return;
@@ -114,6 +128,8 @@ export function useSimulationWebSocket() {
 
   // Unsubscribe from the current simulation
   const unsubscribeFromSimulation = useCallback(() => {
+    console.log("Unsubscribing from simulation:", currentSimulationId);
+    
     if (!currentSimulationId) {
       return;
     }
