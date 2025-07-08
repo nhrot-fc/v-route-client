@@ -8,17 +8,18 @@ import {
   OrderControllerApi,
   VehicleControllerApi,
   SimulationApi,
-  ServeRecordControllerApi
+  ServeRecordControllerApi,
 } from "@/src/shared/api/generated";
 import axios from "axios";
 
 // Configure axios with base URL and default settings
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/api";
+const BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8080/api";
 
 // Create axios instance with common configuration
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
+  timeout: 60000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -58,24 +59,18 @@ const configuration = new Configuration({
   basePath: BASE_URL,
 });
 
-// Extend OrderControllerApi to add importCsv method
-class ExtendedOrderControllerApi extends OrderControllerApi {
-  public async importCsv(formData: FormData) {
-    return axiosInstance.post(`${BASE_URL}/orders/import-csv`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-  }
-}
-
 // Export API instances
 export const vehiclesApi = new VehicleControllerApi(
   configuration,
   BASE_URL,
   axiosInstance
 );
-export const ordersApi = new ExtendedOrderControllerApi(configuration, BASE_URL, axiosInstance);
+
+export const ordersApi = new OrderControllerApi(
+  configuration,
+  BASE_URL,
+  axiosInstance
+);
 export const maintenanceApi = new MaintenanceControllerApi(
   configuration,
   BASE_URL,
@@ -91,7 +86,11 @@ export const blockagesApi = new BlockageControllerApi(
   BASE_URL,
   axiosInstance
 );
-export const depotsApi = new DepotControllerApi(configuration, BASE_URL, axiosInstance);
+export const depotsApi = new DepotControllerApi(
+  configuration,
+  BASE_URL,
+  axiosInstance
+);
 export const dashboardApi = new DashboardApi(
   configuration,
   BASE_URL,
@@ -110,65 +109,54 @@ export const serveRecordApi = new ServeRecordControllerApi(
 
 // Export types for use in components
 export type {
-  // Vehicle related
   Vehicle,
-  VehicleDTO,
-  
-  // Order related
   Order,
-  OrderDTO,
-  DeliveryRecordDTO,
-  
-  // Maintenance related
-  Maintenance,
-  MaintenanceDTO,
-  MaintenanceCreateDTO,
-  
-  // Incident related
-  Incident,
-  IncidentDTO,
-  IncidentCreateDTO,
-  
-  // Blockage related
   Blockage,
-  
-  // Depot related
+  Incident,
   Depot,
-  DepotDTO,
-  
-  // Common
+  Maintenance,
   Position,
-  
-  // Serve Record related
+  ServeRecord,
+} from "@/src/shared/api/generated";
+
+// Export DTO for use in components
+export type {
+  DepotDTO,
+  OrderDTO,
+  VehicleDTO,
+  BlockageDTO,
+  IncidentDTO,
+  SimulationDTO,
+  MaintenanceDTO,
   ServeRecordDTO,
-  
-  // Simulation related
   SimulationStateDTO,
-  SimulationReportDTO,
-  SimulationReportDTOTotalDuration,
-  SimulationReportDTOTotalDurationUnitsInner,
+  SimulationCreateDTO,
+  DeliveryRecordDTO,
+  IncidentCreateDTO,
+  MaintenanceCreateDTO,
 } from "@/src/shared/api/generated";
 
 // Export enums
 export {
-  // Vehicle enums
   VehicleTypeEnum,
   VehicleStatusEnum,
-  VehicleDTOTypeEnum,
-  VehicleDTOStatusEnum,
-  
-  // Incident enums
   IncidentTypeEnum,
   IncidentShiftEnum,
+  ListStatusEnum,
+  ListTypeEnum,
+  DepotTypeEnum,
+  List3TypeEnum,
+  List4TypeEnum,
+  List3ShiftEnum,
+  DepotDTOTypeEnum,
+  VehicleDTOTypeEnum,
+  VehicleDTOStatusEnum,
   IncidentDTOTypeEnum,
   IncidentDTOShiftEnum,
   IncidentCreateDTOTypeEnum,
   IncidentCreateDTOShiftEnum,
-  
-  // Vehicle listing enums
-  ListStatusEnum,
-  ListTypeEnum,
-  
-  // Simulation enums
-  GetVehiclesStatusEnum,
+  SimulationDTOTypeEnum,
+  SimulationDTOStatusEnum,
+  CreateSimulationTypeEnum,
+  SimulationStateDTOStatusEnum,
 } from "@/src/shared/api/generated";

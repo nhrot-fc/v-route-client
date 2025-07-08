@@ -5,7 +5,7 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **number** |  | [optional] [default to undefined]
+**id** | **string** |  | [optional] [default to undefined]
 **vehicleId** | **string** |  | [optional] [default to undefined]
 **assignedDate** | **string** |  | [optional] [default to undefined]
 **realStart** | **string** |  | [optional] [default to undefined]

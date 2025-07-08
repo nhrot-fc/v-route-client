@@ -5,6 +5,7 @@ All URIs are relative to *http://localhost:8080*
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
 |[**create2**](#create2) | **POST** /api/orders | |
+|[**createBulk**](#createbulk) | **POST** /api/orders/bulk | |
 |[**delete2**](#delete2) | **DELETE** /api/orders/{id} | |
 |[**getById2**](#getbyid2) | **GET** /api/orders/{id} | |
 |[**list2**](#list2) | **GET** /api/orders | |
@@ -44,6 +45,56 @@ const { status, data } = await apiInstance.create2(
 ### Return type
 
 **OrderDTO**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **createBulk**
+> Array<OrderDTO> createBulk(orderDTO)
+
+
+### Example
+
+```typescript
+import {
+    OrderControllerApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new OrderControllerApi(configuration);
+
+let orderDTO: Array<OrderDTO>; //
+
+const { status, data } = await apiInstance.createBulk(
+    orderDTO
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **orderDTO** | **Array<OrderDTO>**|  | |
+
+
+### Return type
+
+**Array<OrderDTO>**
 
 ### Authorization
 

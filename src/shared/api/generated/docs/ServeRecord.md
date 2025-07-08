@@ -5,12 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **number** |  | [optional] [default to undefined]
-**vehicleId** | **string** |  | [optional] [default to undefined]
+**id** | **string** |  | [optional] [default to undefined]
 **vehicle** | [**Vehicle**](Vehicle.md) |  | [optional] [default to undefined]
-**orderId** | **string** |  | [optional] [default to undefined]
 **order** | [**Order**](Order.md) |  | [optional] [default to undefined]
-**volumeM3** | **number** |  | [optional] [default to undefined]
+**glpVolumeM3** | **number** |  | [optional] [default to undefined]
 **serveDate** | **string** |  | [optional] [default to undefined]
 
 ## Example
@@ -20,11 +18,9 @@ import { ServeRecord } from './api';
 
 const instance: ServeRecord = {
     id,
-    vehicleId,
     vehicle,
-    orderId,
     order,
-    volumeM3,
+    glpVolumeM3,
     serveDate,
 };
 ```

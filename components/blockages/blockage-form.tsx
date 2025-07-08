@@ -156,10 +156,14 @@ export function BlockageForm() {
       <CardHeader>
         <CardTitle>Crear Bloqueo</CardTitle>
         <CardDescription>
-          Ingrese los datos para crear un nuevo bloqueo en el mapa
+          Ingrese los puntos que conforman el bloqueo y el período de tiempo en que estará activo
         </CardDescription>
       </CardHeader>
       <CardContent>
+        <div className="bg-blue-50 text-blue-700 p-3 rounded-lg mb-4 text-sm">
+          <p><strong>Nota:</strong> Los bloqueos se definen como líneas entre puntos. Debe ingresar al menos dos puntos para crear un bloqueo lineal.</p>
+          <p className="mt-1">El formato es similar al de carga masiva: una serie de puntos (x,y) que definen el trazado del bloqueo.</p>
+        </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-6">
             <div className="grid gap-4">

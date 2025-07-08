@@ -5,14 +5,11 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **number** |  | [optional] [default to undefined]
-**vehicleId** | **string** |  | [optional] [default to undefined]
+**id** | **string** |  | [optional] [default to undefined]
 **vehicle** | [**Vehicle**](Vehicle.md) |  | [optional] [default to undefined]
 **assignedDate** | **string** |  | [optional] [default to undefined]
 **realStart** | **string** |  | [optional] [default to undefined]
 **realEnd** | **string** |  | [optional] [default to undefined]
-**durationHours** | **number** |  | [optional] [default to undefined]
-**date** | **string** |  | [optional] [default to undefined]
 
 ## Example
 
@@ -21,13 +18,10 @@ import { Maintenance } from './api';
 
 const instance: Maintenance = {
     id,
-    vehicleId,
     vehicle,
     assignedDate,
     realStart,
     realEnd,
-    durationHours,
-    date,
 };
 ```
 

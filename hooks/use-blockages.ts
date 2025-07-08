@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { blockagesApi, type Blockage } from '@/lib/api-client'
+import { blockagesApi, type Blockage, Position } from '@/lib/api-client'
 import { useToast } from '@/components/ui/use-toast'
 
 // Define an interface that combines the old field names with the new ones for transition
@@ -45,7 +45,7 @@ export function useBlockages(paginationParams?: PaginationParams) {
       
       // Handle paginated response
       if (isPaginated && responseData && typeof responseData === 'object' && 'content' in responseData) {
-        const { content, totalElements, totalPages: pages } = responseData as any;
+        const { content, totalElements, totalPages: pages } = responseData as { content: Blockage[]; totalElements: number; totalPages: number };
         
         // Convert the line points to start and end nodes for compatibility
         const mappedBlockages = content.map((blockage: Blockage) => {
@@ -146,11 +146,17 @@ export function useBlockages(paginationParams?: PaginationParams) {
   const createBlockage = async (blockageData: Partial<BlockageWithLegacyFields>) => {
     try {
       // Convert from old format to new format if necessary
-      const newBlockageData = { ...blockageData }
+      const newBlockageData: Partial<Blockage> = { ...blockageData }
       
       // If startNode and endNode are provided, convert to linePoints format
       if (blockageData.startNode && blockageData.endNode) {
         newBlockageData.linePoints = `${blockageData.startNode.x},${blockageData.startNode.y}-${blockageData.endNode.x},${blockageData.endNode.y}`
+        
+        // Also create the lines array for the API
+        newBlockageData.lines = [
+          { x: blockageData.startNode.x, y: blockageData.startNode.y } as Position,
+          { x: blockageData.endNode.x, y: blockageData.endNode.y } as Position
+        ]
       }
       
       const response = await blockagesApi.create5(newBlockageData as Blockage)
@@ -171,7 +177,7 @@ export function useBlockages(paginationParams?: PaginationParams) {
     }
   }
 
-  const deleteBlockage = async (id: number) => {
+  const deleteBlockage = async (id: string) => {
     try {
       await blockagesApi.delete4(id)
       await fetchBlockages() // Refresh the list
@@ -190,14 +196,20 @@ export function useBlockages(paginationParams?: PaginationParams) {
     }
   }
 
-  const updateBlockage = async (id: number, blockageData: Partial<BlockageWithLegacyFields>) => {
+  const updateBlockage = async (id: string, blockageData: Partial<BlockageWithLegacyFields>) => {
     try {
       // Convert from old format to new format if necessary
-      const newBlockageData = { ...blockageData }
+      const newBlockageData: Partial<Blockage> = { ...blockageData }
       
       // If startNode and endNode are provided, convert to linePoints format
       if (blockageData.startNode && blockageData.endNode) {
         newBlockageData.linePoints = `${blockageData.startNode.x},${blockageData.startNode.y}-${blockageData.endNode.x},${blockageData.endNode.y}`
+        
+        // Also create the lines array for the API
+        newBlockageData.lines = [
+          { x: blockageData.startNode.x, y: blockageData.startNode.y } as Position,
+          { x: blockageData.endNode.x, y: blockageData.endNode.y } as Position
+        ]
       }
       
       const response = await blockagesApi.update3(id, newBlockageData as Blockage)
@@ -218,6 +230,44 @@ export function useBlockages(paginationParams?: PaginationParams) {
     }
   }
 
+  const createBulkBlockages = async (blockagesData: Partial<BlockageWithLegacyFields>[]) => {
+    try {
+      // Convert all blockages from old format to new format if necessary
+      const blockageDTOs = blockagesData.map(blockageData => {
+        const blockageDTO: Partial<Blockage> = { ...blockageData }
+        
+        // If startNode and endNode are provided, convert to linePoints format
+        if (blockageData.startNode && blockageData.endNode) {
+          blockageDTO.linePoints = `${blockageData.startNode.x},${blockageData.startNode.y}-${blockageData.endNode.x},${blockageData.endNode.y}`
+          
+          // Also create the lines array for the API
+          blockageDTO.lines = [
+            { x: blockageData.startNode.x, y: blockageData.startNode.y } as Position,
+            { x: blockageData.endNode.x, y: blockageData.endNode.y } as Position
+          ]
+        }
+        
+        return blockageDTO
+      })
+      
+      const response = await blockagesApi.createBulk1(blockageDTOs as Blockage[])
+      await fetchBlockages() // Refresh the list
+      toast({
+        title: 'Éxito',
+        description: `${blockageDTOs.length} bloqueos creados exitosamente`,
+      })
+      return response.data
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al crear bloqueos en masa'
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      })
+      throw err
+    }
+  }
+
   return {
     blockages,
     loading,
@@ -226,6 +276,7 @@ export function useBlockages(paginationParams?: PaginationParams) {
     createBlockage,
     deleteBlockage,
     updateBlockage,
+    createBulkBlockages,
     totalItems,
     totalPages,
   }
@@ -237,68 +288,73 @@ export function useActiveBlockages() {
   const [error, setError] = useState<string | null>(null)
   const { toast } = useToast()
 
-  useEffect(() => {
-    const fetchActiveBlockages = async () => {
-      try {
-        setLoading(true)
-        setError(null)
+  const fetchActiveBlockages = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      // Use the current date to get active blockages
+      const now = new Date().toISOString()
+      const response = await blockagesApi.list5(now)
+      
+      // Convert the line points to start and end nodes for compatibility
+      const blockagesData = Array.isArray(response.data) ? response.data : [response.data].filter(Boolean)
+      const mappedBlockages = blockagesData.map(blockage => {
+        // Create a blockage with legacy fields
+        const blockageWithLegacy: BlockageWithLegacyFields = {
+          ...blockage
+        }
         
-        // Use the current date to get active blockages
-        const now = new Date().toISOString()
-        const response = await blockagesApi.list5(now)
-        
-        // Convert the line points to start and end nodes for compatibility
-        const blockagesData = Array.isArray(response.data) ? response.data : [response.data].filter(Boolean)
-        const mappedBlockages = blockagesData.map(blockage => {
-          // Create a blockage with legacy fields
-          const blockageWithLegacy: BlockageWithLegacyFields = {
-            ...blockage
-          }
-          
-          // Parse linePoints if available to extract start and end nodes
-          if (blockage.linePoints) {
-            try {
-              const points = blockage.linePoints.split('-')
-              if (points.length === 2) {
-                const startCoords = points[0].split(',')
-                const endCoords = points[1].split(',')
+        // Parse linePoints if available to extract start and end nodes
+        if (blockage.linePoints) {
+          try {
+            const points = blockage.linePoints.split('-')
+            if (points.length === 2) {
+              const startCoords = points[0].split(',')
+              const endCoords = points[1].split(',')
+              
+              if (startCoords.length === 2 && endCoords.length === 2) {
+                blockageWithLegacy.startNode = {
+                  x: parseFloat(startCoords[0]),
+                  y: parseFloat(startCoords[1])
+                }
                 
-                if (startCoords.length === 2 && endCoords.length === 2) {
-                  blockageWithLegacy.startNode = {
-                    x: parseFloat(startCoords[0]),
-                    y: parseFloat(startCoords[1])
-                  }
-                  
-                  blockageWithLegacy.endNode = {
-                    x: parseFloat(endCoords[0]),
-                    y: parseFloat(endCoords[1])
-                  }
+                blockageWithLegacy.endNode = {
+                  x: parseFloat(endCoords[0]),
+                  y: parseFloat(endCoords[1])
                 }
               }
-            } catch (e) {
-              console.error('Error parsing blockage line points:', e)
             }
+          } catch (e) {
+            console.error('Error parsing blockage line points:', e)
           }
-          
-          return blockageWithLegacy
-        })
+        }
         
-        setBlockages(mappedBlockages)
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Error al cargar bloqueos activos'
-        setError(errorMessage)
-        toast({
-          title: 'Error',
-          description: errorMessage,
-          variant: 'destructive',
-        })
-      } finally {
-        setLoading(false)
-      }
+        return blockageWithLegacy
+      })
+      
+      setBlockages(mappedBlockages)
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al cargar bloqueos activos'
+      setError(errorMessage)
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      })
+    } finally {
+      setLoading(false)
     }
-
-    fetchActiveBlockages()
   }, [toast])
 
-  return { blockages, loading, error }
+  useEffect(() => {
+    fetchActiveBlockages()
+  }, [fetchActiveBlockages])
+
+  return { 
+    blockages, 
+    loading, 
+    error,
+    refetch: fetchActiveBlockages 
+  }
 }

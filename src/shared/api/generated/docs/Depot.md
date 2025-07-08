@@ -8,8 +8,10 @@ Name | Type | Description | Notes
 **id** | **string** |  | [optional] [default to undefined]
 **position** | [**Position**](Position.md) |  | [optional] [default to undefined]
 **glpCapacityM3** | **number** |  | [optional] [default to undefined]
-**canRefuel** | **boolean** |  | [optional] [default to undefined]
+**type** | **string** |  | [optional] [default to undefined]
 **currentGlpM3** | **number** |  | [optional] [default to undefined]
+**auxiliary** | **boolean** |  | [optional] [default to undefined]
+**main** | **boolean** |  | [optional] [default to undefined]
 
 ## Example
 
@@ -20,8 +22,10 @@ const instance: Depot = {
     id,
     position,
     glpCapacityM3,
-    canRefuel,
+    type,
     currentGlpM3,
+    auxiliary,
+    main,
 };
 ```
 

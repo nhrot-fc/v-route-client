@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { ordersApi, OrderDTO } from "@/lib/api-client";
+import { useOrders } from "@/hooks/use-orders";
+import { OrderDTO } from "@/lib/api-client";
 
 interface OrderFormProps {
   onOrderAdded?: () => void;
@@ -13,10 +14,12 @@ interface OrderFormProps {
 
 export default function OrderForm({ onOrderAdded }: OrderFormProps) {
   const { toast } = useToast();
+  const { createOrder } = useOrders();
   const [x, setX] = useState<number>(0);
   const [y, setY] = useState<number>(0);
   const [volumen, setVolumen] = useState<number>(0);
-  const [fechaLimite, setFechaLimite] = useState<string>("");
+  const [clienteId, setClienteId] = useState<string>("");
+  const [plazoHoras, setPlazoHoras] = useState<number>(24);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,37 +42,47 @@ export default function OrderForm({ onOrderAdded }: OrderFormProps) {
       return;
     }
 
-    if (!fechaLimite) {
+    if (!clienteId) {
       toast({
-        title: "Fecha límite requerida",
-        description: "Debes ingresar una fecha y hora válidas.",
+        title: "ID de cliente requerido",
+        description: "Debes ingresar un identificador de cliente (ej: c-123).",
         variant: "destructive",
       });
       return;
     }
 
-    const due = new Date(fechaLimite);
+    // Para el formato c-XXX del ID de cliente
+    if (!/^c-\d+$/.test(clienteId)) {
+      toast({
+        title: "Formato de ID de cliente inválido",
+        description: "El ID del cliente debe tener el formato c-XXX donde XXX son números.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const now = new Date();
+    
+    // Calcular la fecha límite basada en las horas de plazo
+    const due = new Date(now);
+    due.setHours(due.getHours() + plazoHoras);
 
-    if (isNaN(due.getTime())) {
-      toast({
-        title: "Fecha límite inválida",
-        description: "Por favor, ingresa una fecha válida.",
-        variant: "destructive",
-      });
-      return;
-    }
+    // Generar ID basado en el cliente y la fecha
+    const idFecha = now.toISOString().split('T')[0].replace(/-/g, '');
+    const orderId = `${clienteId}-${idFecha}`;
 
     const orderData: OrderDTO = {
+      id: orderId,
       position: { x, y },
-      arriveTime: now.toISOString(),
-      dueTime: due.toISOString(),
+      arrivalTime: now.toISOString(),
+      deadlineTime: due.toISOString(),
       glpRequestM3: volumen,
       remainingGlpM3: volumen,
+      delivered: false
     };
 
     try {
-      await ordersApi.create2(orderData);
+      await createOrder(orderData);
 
       toast({
         title: "Pedido creado",
@@ -80,7 +93,8 @@ export default function OrderForm({ onOrderAdded }: OrderFormProps) {
       setX(0);
       setY(0);
       setVolumen(0);
-      setFechaLimite("");
+      setClienteId("");
+      setPlazoHoras(24);
 
       // Call the callback function if it's provided
       if (onOrderAdded) {
@@ -100,6 +114,17 @@ export default function OrderForm({ onOrderAdded }: OrderFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label htmlFor="clienteId">ID de Cliente (formato c-XXX)</Label>
+        <Input
+          type="text"
+          id="clienteId"
+          value={clienteId}
+          onChange={(e) => setClienteId(e.target.value)}
+          placeholder="c-123"
+          required
+        />
+      </div>
       <div>
         <Label htmlFor="x">Coordenada X (máx 70)</Label>
         <Input
@@ -131,20 +156,24 @@ export default function OrderForm({ onOrderAdded }: OrderFormProps) {
           id="volumen"
           value={volumen}
           onChange={(e) => setVolumen(Number(e.target.value))}
-          min={0.1} // Assuming volume must be positive
+          min={0.1}
           step={0.1}
           required
         />
       </div>
       <div>
-        <Label htmlFor="fechaLimite">Fecha límite</Label>
+        <Label htmlFor="plazoHoras">Plazo de entrega (horas)</Label>
         <Input
-          type="datetime-local"
-          id="fechaLimite"
-          value={fechaLimite}
-          onChange={(e) => setFechaLimite(e.target.value)}
+          type="number"
+          id="plazoHoras"
+          value={plazoHoras}
+          onChange={(e) => setPlazoHoras(Number(e.target.value))}
+          min={1}
           required
         />
+        <p className="text-xs text-muted-foreground mt-1">
+          La fecha límite será {plazoHoras} horas después de la fecha actual.
+        </p>
       </div>
       <Button type="submit">Registrar Pedido</Button>
     </form>

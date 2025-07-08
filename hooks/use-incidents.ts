@@ -1,11 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { incidentsApi, IncidentDTO, IncidentCreateDTO } from '@/lib/api-client';
+import { incidentsApi, type IncidentDTO, type IncidentCreateDTO } from '@/lib/api-client';
 import { useToast } from '@/components/ui/use-toast';
-
-// Define an interface that extends IncidentDTO if needed
-interface IncidentWithLegacyFields extends IncidentDTO {
-  // Add any legacy fields here if needed for compatibility
-}
 
 // Define pagination parameters
 interface PaginationParams {
@@ -24,18 +19,20 @@ export function useIncidents(
   }, 
   paginationParams?: PaginationParams
 ) {
-  const [incidents, setIncidents] = useState<IncidentWithLegacyFields[]>([]);
+  const [incidents, setIncidents] = useState<IncidentDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const { toast } = useToast();
 
-  // Extract pagination and filter values to use in dependencies
+  // Extract pagination values to use in dependencies
   const page = paginationParams?.page;
   const size = paginationParams?.size;
   const sortBy = paginationParams?.sortBy;
   const direction = paginationParams?.direction;
+
+  // Extract filter values
   const vehicleId = filter?.vehicleId;
   const resolved = filter?.resolved;
   const startDate = filter?.startDate;
@@ -45,17 +42,16 @@ export function useIncidents(
     try {
       setLoading(true);
       setError(null);
-
+      
       // Set up pagination parameters
       const isPaginated = !!paginationParams;
       const { page, size, sortBy, direction } = paginationParams || { page: 0, size: 10 };
       
-      // Extract filter parameters
-      const { vehicleId, resolved, startDate, endDate } = filter || {};
-      
-      // Call the API with all parameters
+      // Call API with parameters
       const response = await incidentsApi.list3(
-        vehicleId,
+        vehicleId, 
+        undefined, // type
+        undefined, // shift
         startDate,
         endDate,
         resolved,
@@ -70,40 +66,29 @@ export function useIncidents(
       
       // Handle paginated response
       if (isPaginated && responseData && typeof responseData === 'object' && 'content' in responseData) {
-        const { content, totalElements, totalPages: pages } = responseData as any;
-        
-        // Map the received incidents to include any legacy fields if needed
-        const mappedIncidents = content.map((incident: IncidentDTO) => ({
-          ...incident,
-          // Map new fields to legacy fields if needed
-        }));
-        
-        setIncidents(mappedIncidents);
-        setTotalItems(totalElements);
-        setTotalPages(pages);
+        const { content, totalElements, totalPages: pages } = responseData as { content: IncidentDTO[]; totalElements: number; totalPages: number };
+        setIncidents(content);
+        setTotalItems(totalElements || content.length);
+        setTotalPages(pages || 1);
       } else {
         // Handle non-paginated response
-        const incidentsList = Array.isArray(responseData) ? responseData : [];
+        const incidentsList = Array.isArray(responseData) ? responseData : [responseData].filter(Boolean);
         setIncidents(incidentsList);
         setTotalItems(incidentsList.length);
         setTotalPages(1);
       }
-      
-      setLoading(false);
     } catch (err) {
-      setLoading(false);
-      const errorMessage = err instanceof Error ? err.message : "Error al cargar incidentes";
+      const errorMessage = err instanceof Error ? err.message : 'Error al cargar incidentes';
       setError(errorMessage);
-      
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
-      
-      console.error("Error fetching incidents:", err);
+    } finally {
+      setLoading(false);
     }
-  }, [page, size, sortBy, direction, vehicleId, resolved, startDate, endDate, toast]);
+  }, [vehicleId, resolved, startDate, endDate, page, size, sortBy, direction, toast]);
 
   useEffect(() => {
     fetchIncidents();
@@ -111,44 +96,39 @@ export function useIncidents(
 
   const createIncident = async (incidentData: IncidentCreateDTO) => {
     try {
-      await incidentsApi.create3(incidentData);
-      await fetchIncidents();
-      
+      const response = await incidentsApi.create3(incidentData);
+      await fetchIncidents(); // Refresh the list
       toast({
-        title: "Éxito",
-        description: "Incidente registrado exitosamente",
+        title: 'Éxito',
+        description: 'Incidente registrado exitosamente',
       });
+      return response.data;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Error al registrar incidente";
-      
+      const errorMessage = err instanceof Error ? err.message : 'Error al crear incidente';
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
-      
       throw err;
     }
   };
 
-  const resolveIncident = async (id: number) => {
+  const resolveIncident = async (id: string) => {
     try {
       await incidentsApi.resolveIncident(id);
-      await fetchIncidents();
-      
+      await fetchIncidents(); // Refresh the list
       toast({
-        title: "Éxito",
-        description: "Incidente resuelto exitosamente",
+        title: 'Éxito',
+        description: 'Incidente resuelto exitosamente',
       });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Error al resolver incidente";
-      
+      const errorMessage = err instanceof Error ? err.message : 'Error al resolver incidente';
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
-      
       throw err;
     }
   };
@@ -165,46 +145,68 @@ export function useIncidents(
   };
 }
 
-export function useIncident(id: number) {
-  const [incident, setIncident] = useState<IncidentWithLegacyFields | null>(null);
+export function useIncident(id: string) {
+  const [incident, setIncident] = useState<IncidentDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const fetchIncident = useCallback(async () => {
+    if (!id) {
+      setIncident(null);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
       
       const response = await incidentsApi.getById3(id);
-      
       setIncident(response.data);
-      setLoading(false);
     } catch (err) {
-      setLoading(false);
-      const errorMessage = err instanceof Error ? err.message : "Error al cargar el incidente";
+      const errorMessage = err instanceof Error ? err.message : `Error al cargar el incidente ${id}`;
       setError(errorMessage);
-      
       toast({
-        title: "Error",
+        title: 'Error',
         description: errorMessage,
-        variant: "destructive",
+        variant: 'destructive',
       });
-      
-      console.error("Error fetching incident:", err);
+    } finally {
+      setLoading(false);
     }
   }, [id, toast]);
 
   useEffect(() => {
-    if (id) {
-      fetchIncident();
-    }
-  }, [id, fetchIncident]);
+    fetchIncident();
+  }, [fetchIncident]);
 
-  return {
-    incident,
-    loading,
-    error,
+  const resolveIncident = async () => {
+    if (!id) return;
+    
+    try {
+      await incidentsApi.resolveIncident(id);
+      await fetchIncident(); // Refresh the incident data
+      toast({
+        title: 'Éxito',
+        description: 'Incidente resuelto exitosamente',
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al resolver incidente';
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+      throw err;
+    }
+  };
+
+  return { 
+    incident, 
+    loading, 
+    error, 
     refetch: fetchIncident,
+    resolveIncident
   };
 } 

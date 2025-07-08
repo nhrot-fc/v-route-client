@@ -5,16 +5,16 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **number** |  | [optional] [default to undefined]
+**id** | **string** |  | [optional] [default to undefined]
 **vehicleId** | **string** |  | [optional] [default to undefined]
 **type** | **string** |  | [optional] [default to undefined]
 **shift** | **string** |  | [optional] [default to undefined]
 **occurrenceTime** | **string** |  | [optional] [default to undefined]
 **location** | [**Position**](Position.md) |  | [optional] [default to undefined]
 **resolved** | **boolean** |  | [optional] [default to undefined]
-**transferableGlp** | **number** |  | [optional] [default to undefined]
+**immobilizationEndTime** | **string** |  | [optional] [default to undefined]
 **availabilityTime** | **string** |  | [optional] [default to undefined]
-**requiresReturnToDepot** | **boolean** |  | [optional] [default to undefined]
+**returnToDepotRequired** | **boolean** |  | [optional] [default to undefined]
 
 ## Example
 
@@ -29,9 +29,9 @@ const instance: IncidentDTO = {
     occurrenceTime,
     location,
     resolved,
-    transferableGlp,
+    immobilizationEndTime,
     availabilityTime,
-    requiresReturnToDepot,
+    returnToDepotRequired,
 };
 ```
 

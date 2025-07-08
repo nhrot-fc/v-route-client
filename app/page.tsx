@@ -34,6 +34,7 @@ import { IconCard } from "@/components/ui/icon-card";
 import { StatusBadge } from "@/components/ui/status-badge";
 
 export default function DashboardPage() {
+  // Use the hook with the updated property name
   const { metrics, loading, refreshMetrics } = useDashboardMetrics();
   const [currentTime, setCurrentTime] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -77,7 +78,7 @@ export default function DashboardPage() {
           <IconCard
             icon={<Clock className="h-5 w-5" />}
             title="Pedidos Pendientes"
-            value={loading ? "..." : metrics.pendingOrders.count}
+            value={loading ? "..." : metrics.pendingOrders.count.toString()}
             trend={
               !loading && metrics.pendingOrders.changePercent !== 0
                 ? {
@@ -93,7 +94,7 @@ export default function DashboardPage() {
           <IconCard
             icon={<CheckCircle2 className="h-5 w-5" />}
             title="Entregas Completadas"
-            value={loading ? "..." : metrics.completedOrders.count}
+            value={loading ? "..." : metrics.completedOrders.count.toString()}
             trend={
               !loading && metrics.completedOrders.changePercent !== 0
                 ? {

@@ -17,9 +17,9 @@ export function RecentOrders() {
       const pending = orders
         .filter((order) => !order.delivered)
         .sort((a, b) => {
-          if (!a.dueTime) return 1;
-          if (!b.dueTime) return -1;
-          return new Date(a.dueTime).getTime() - new Date(b.dueTime).getTime();
+          if (!a.deadlineTime) return 1;
+          if (!b.deadlineTime) return -1;
+          return new Date(a.deadlineTime).getTime() - new Date(b.deadlineTime).getTime();
         });
       setUrgentOrders(pending.slice(0, 5));
     }
@@ -77,9 +77,9 @@ export function RecentOrders() {
                   </div>
                 </div>
                 <div className="text-right">
-                  {order.dueTime && (
+                  {order.deadlineTime && (
                     <p className="text-sm font-medium">
-                      {formatDate(new Date(order.dueTime))}
+                      {formatDate(new Date(order.deadlineTime))}
                     </p>
                   )}
                   <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200 mt-1">

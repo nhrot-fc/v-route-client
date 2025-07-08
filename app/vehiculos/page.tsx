@@ -13,7 +13,7 @@ import { VehicleForm } from "@/components/vehicles/vehicle-form"
 import { VehicleUploadForm } from "@/components/vehicles/vehicle-upload-form"
 import { useVehicles } from "@/hooks/use-vehicles"
 import { StatusBadge } from "@/components/ui/status-badge"
-import { Vehicle, VehicleStatusEnum } from "@/lib/api-client"
+import { VehicleDTO, VehicleStatusEnum } from "@/lib/api-client"
 import { PaginationFooter } from "@/components/ui/pagination-footer"
 import { TableFilterControls } from "@/components/ui/table-filter-controls"
 import { TableFilterTabs } from "@/components/ui/table-filter-tabs"
@@ -88,7 +88,7 @@ export default function VehiculosPage() {
   const incidentCount = vehicles.filter(v => v.status === VehicleStatusEnum.Incident).length
 
   // Format vehicle position
-  const formatPosition = (vehicle: Vehicle) => {
+  const formatPosition = (vehicle: VehicleDTO) => {
     if (!vehicle.currentPosition) return "N/A"
     const x = vehicle.currentPosition.x ?? 0
     const y = vehicle.currentPosition.y ?? 0
@@ -115,31 +115,31 @@ export default function VehiculosPage() {
   const columns = [
     {
       header: "ID",
-      accessorKey: "id" as keyof Vehicle,
+      accessorKey: "id" as keyof VehicleDTO,
       className: "font-medium",
     },
     {
       header: "Tipo",
-      accessorKey: "type" as keyof Vehicle,
-      cell: (vehicle: Vehicle) => {
+      accessorKey: "type" as keyof VehicleDTO,
+      cell: (vehicle: VehicleDTO) => {
         const type = vehicle.type || "";
         return <span>Tipo {type.toUpperCase()}</span>
       },
     },
     {
       header: "Capacidad GLP",
-      accessorKey: "glpCapacityM3" as keyof Vehicle,
-      cell: (vehicle: Vehicle) => `${vehicle.glpCapacityM3?.toFixed(2) || '0'} m³`,
+      accessorKey: "glpCapacityM3" as keyof VehicleDTO,
+      cell: (vehicle: VehicleDTO) => `${vehicle.glpCapacityM3?.toFixed(2) || '0'} m³`,
     },
     {
       header: "GLP Actual",
-      accessorKey: "currentGlpM3" as keyof Vehicle,
-      cell: (vehicle: Vehicle) => `${vehicle.currentGlpM3?.toFixed(2) || '0'} m³`,
+      accessorKey: "currentGlpM3" as keyof VehicleDTO,
+      cell: (vehicle: VehicleDTO) => `${vehicle.currentGlpM3?.toFixed(2) || '0'} m³`,
     },
     {
       header: "Combustible",
-      accessorKey: "currentFuelGal" as keyof Vehicle,
-      cell: (vehicle: Vehicle) => (
+      accessorKey: "currentFuelGal" as keyof VehicleDTO,
+      cell: (vehicle: VehicleDTO) => (
         <div className="flex items-center">
           <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2 max-w-[100px]">
             <div 
@@ -157,12 +157,12 @@ export default function VehiculosPage() {
     },
     {
       header: "Posición",
-      accessorKey: (vehicle: Vehicle) => formatPosition(vehicle),
+      accessorKey: (vehicle: VehicleDTO) => formatPosition(vehicle),
     },
     {
       header: "Estado",
-      accessorKey: "status" as keyof Vehicle,
-      cell: (vehicle: Vehicle) => getVehicleStatus(vehicle.status),
+      accessorKey: "status" as keyof VehicleDTO,
+      cell: (vehicle: VehicleDTO) => getVehicleStatus(vehicle.status),
     },
   ];
 
@@ -173,28 +173,28 @@ export default function VehiculosPage() {
       label: "Disponibles",
       icon: <Truck className="h-4 w-4" />,
       count: availableCount,
-      filter: (vehicle: Vehicle) => vehicle.status === VehicleStatusEnum.Available,
+      filter: (vehicle: VehicleDTO) => vehicle.status === VehicleStatusEnum.Available,
     },
     {
       id: "en-ruta",
       label: "En Ruta",
       icon: <TruckIcon className="h-4 w-4" />,
       count: inRouteCount,
-      filter: (vehicle: Vehicle) => vehicle.status === VehicleStatusEnum.Driving,
+      filter: (vehicle: VehicleDTO) => vehicle.status === VehicleStatusEnum.Driving,
     },
     {
       id: "mantenimiento",
       label: "Mantenimiento",
       icon: <Wrench className="h-4 w-4" />,
       count: maintenanceCount,
-      filter: (vehicle: Vehicle) => vehicle.status === VehicleStatusEnum.Maintenance,
+      filter: (vehicle: VehicleDTO) => vehicle.status === VehicleStatusEnum.Maintenance,
     },
     {
       id: "averiados",
       label: "Averiados",
       icon: <AlertTriangle className="h-4 w-4" />,
       count: incidentCount,
-      filter: (vehicle: Vehicle) => vehicle.status === VehicleStatusEnum.Incident,
+      filter: (vehicle: VehicleDTO) => vehicle.status === VehicleStatusEnum.Incident,
     },
   ];
 
@@ -204,28 +204,28 @@ export default function VehiculosPage() {
       id: "service",
       label: "Enviar a mantenimiento",
       icon: <Wrench className="h-4 w-4" />,
-      onClick: (vehicle: Vehicle) => updateVehicleStatus(vehicle.id || "", VehicleStatusEnum.Maintenance),
-      hidden: (vehicle: Vehicle) => vehicle.status === VehicleStatusEnum.Maintenance,
+      onClick: (vehicle: VehicleDTO) => updateVehicleStatus(vehicle.id || "", VehicleStatusEnum.Maintenance),
+      hidden: (vehicle: VehicleDTO) => vehicle.status === VehicleStatusEnum.Maintenance,
     },
     {
       id: "report",
       label: "Reportar avería",
       icon: <AlertTriangle className="h-4 w-4" />,
-      onClick: (vehicle: Vehicle) => updateVehicleStatus(vehicle.id || "", VehicleStatusEnum.Incident),
-      hidden: (vehicle: Vehicle) => vehicle.status === VehicleStatusEnum.Incident,
+      onClick: (vehicle: VehicleDTO) => updateVehicleStatus(vehicle.id || "", VehicleStatusEnum.Incident),
+      hidden: (vehicle: VehicleDTO) => vehicle.status === VehicleStatusEnum.Incident,
     },
     {
       id: "available",
       label: "Marcar como disponible",
       icon: <CheckCircle className="h-4 w-4" />,
-      onClick: (vehicle: Vehicle) => updateVehicleStatus(vehicle.id || "", VehicleStatusEnum.Available),
-      hidden: (vehicle: Vehicle) => vehicle.status === VehicleStatusEnum.Available || vehicle.status === VehicleStatusEnum.Driving,
+      onClick: (vehicle: VehicleDTO) => updateVehicleStatus(vehicle.id || "", VehicleStatusEnum.Available),
+      hidden: (vehicle: VehicleDTO) => vehicle.status === VehicleStatusEnum.Available || vehicle.status === VehicleStatusEnum.Driving,
     },
     {
       id: "delete",
       label: "Eliminar vehículo",
       icon: <Plus className="h-4 w-4 rotate-45" />,
-      onClick: (vehicle: Vehicle) => {
+      onClick: (vehicle: VehicleDTO) => {
         if (vehicle.id) {
           deleteVehicle(vehicle.id);
         }

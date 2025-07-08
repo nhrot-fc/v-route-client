@@ -176,7 +176,8 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DepotControllerApi(configuration);
 
-let canRefuel: boolean; // (optional) (default to undefined)
+let type: 'MAIN' | 'AUXILIARY'; // (optional) (default to undefined)
+let isMain: boolean; // (optional) (default to undefined)
 let minGlpCapacity: number; // (optional) (default to undefined)
 let minCurrentGlp: number; // (optional) (default to undefined)
 let paginated: boolean; // (optional) (default to undefined)
@@ -186,7 +187,8 @@ let sortBy: string; // (optional) (default to 'id')
 let direction: string; // (optional) (default to 'asc')
 
 const { status, data } = await apiInstance.list4(
-    canRefuel,
+    type,
+    isMain,
     minGlpCapacity,
     minCurrentGlp,
     paginated,
@@ -201,7 +203,8 @@ const { status, data } = await apiInstance.list4(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **canRefuel** | [**boolean**] |  | (optional) defaults to undefined|
+| **type** | [**&#39;MAIN&#39; | &#39;AUXILIARY&#39;**]**Array<&#39;MAIN&#39; &#124; &#39;AUXILIARY&#39;>** |  | (optional) defaults to undefined|
+| **isMain** | [**boolean**] |  | (optional) defaults to undefined|
 | **minGlpCapacity** | [**number**] |  | (optional) defaults to undefined|
 | **minCurrentGlp** | [**number**] |  | (optional) defaults to undefined|
 | **paginated** | [**boolean**] |  | (optional) defaults to undefined|

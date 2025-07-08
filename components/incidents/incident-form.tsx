@@ -66,6 +66,8 @@ const formSchema = z.object({
   }).max(100, {
     message: "La coordenada Y debe ser menor a 100",
   }),
+  description: z.string().optional(),
+  resolved: z.boolean().default(false),
 });
 
 type IncidentFormValues = z.infer<typeof formSchema>;
@@ -101,7 +103,7 @@ export function IncidentForm({ incident, onSaved, onCancel }: IncidentFormProps)
       
       const incidentData: IncidentCreateDTO = {
         vehicleId: values.vehicleId,
-        type: values.type as IncidentCreateDTOTypeEnum, // Cast to the enum type
+        type: values.type as IncidentCreateDTOTypeEnum,
         shift: values.shift as IncidentCreateDTOShiftEnum,
         occurrenceTime: values.occurrenceTime.toISOString(),
         location: {
@@ -182,9 +184,9 @@ export function IncidentForm({ incident, onSaved, onCancel }: IncidentFormProps)
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={IncidentTypeEnum.Ti1}>Mecánico</SelectItem>
-                    <SelectItem value={IncidentTypeEnum.Ti2}>Tráfico</SelectItem>
-                    <SelectItem value={IncidentTypeEnum.Ti3}>Clima</SelectItem>
+                    <SelectItem value={IncidentTypeEnum.Ti1}>Mecánico (TI1)</SelectItem>
+                    <SelectItem value={IncidentTypeEnum.Ti2}>Tráfico (TI2)</SelectItem>
+                    <SelectItem value={IncidentTypeEnum.Ti3}>Clima (TI3)</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

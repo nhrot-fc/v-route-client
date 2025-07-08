@@ -255,7 +255,7 @@ export default function MantenimientosPage() {
               <FileUp className="h-5 w-5 mr-2 text-primary" />
               <span>Carga Masiva de Mantenimientos</span>
             </DialogTitle>
-            <DialogDescription>Sube un archivo CSV con mantenimientos</DialogDescription>
+            <DialogDescription>Sube un archivo de texto con mantenimientos</DialogDescription>
           </DialogHeader>
           <Divider className="my-2" />
           <MaintenanceUploadForm />

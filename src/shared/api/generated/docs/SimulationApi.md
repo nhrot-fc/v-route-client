@@ -4,52 +4,39 @@ All URIs are relative to *http://localhost:8080*
 
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
-|[**createSimulation**](#createsimulation) | **POST** /api/simulation | Crear nueva simulación|
-|[**deleteSimulation**](#deletesimulation) | **DELETE** /api/simulation/{id} | Eliminar simulación|
-|[**getAllReports**](#getallreports) | **GET** /api/simulation/reports | Listar todos los reportes de simulación|
-|[**getAllSimulations**](#getallsimulations) | **GET** /api/simulation | Listar todas las simulaciones|
-|[**getBlockages**](#getblockages) | **GET** /api/simulation/{id}/blockages | Listar bloqueos|
-|[**getEnvironment**](#getenvironment) | **GET** /api/simulation/{id}/environment | Obtener detalles del entorno|
-|[**getOrders**](#getorders) | **GET** /api/simulation/{id}/orders | Listar órdenes|
-|[**getSimulationReport**](#getsimulationreport) | **GET** /api/simulation/{id}/report | Obtener reporte de simulación|
-|[**getSimulationStatus**](#getsimulationstatus) | **GET** /api/simulation/{id}/status | Obtener estado de una simulación|
-|[**getVehicles**](#getvehicles) | **GET** /api/simulation/{id}/vehicles | Listar vehículos|
-|[**pauseSimulation**](#pausesimulation) | **POST** /api/simulation/{id}/pause | Pausar simulación|
-|[**repairVehicle**](#repairvehicle) | **POST** /api/simulation/{id}/vehicle/{vehicleId}/repair | Reparar vehículo|
-|[**setSimulationSpeed**](#setsimulationspeed) | **POST** /api/simulation/{id}/speed | Ajustar velocidad de simulación|
-|[**simulateVehicleBreakdown**](#simulatevehiclebreakdown) | **POST** /api/simulation/{id}/vehicle/{vehicleId}/breakdown | Simular avería de vehículo|
-|[**startSimulation**](#startsimulation) | **POST** /api/simulation/{id}/start | Iniciar simulación|
+|[**createSimulation**](#createsimulation) | **POST** /api/simulation | Create a new time-based simulation|
+|[**getDailyOperations**](#getdailyoperations) | **GET** /api/simulation/daily | Get daily operations simulation|
+|[**getDailyOperationsState**](#getdailyoperationsstate) | **GET** /api/simulation/daily/state | Get daily operations state|
+|[**getSimulationState**](#getsimulationstate) | **GET** /api/simulation/{id}/state | Get simulation state|
+|[**getSimulationStatus**](#getsimulationstatus) | **GET** /api/simulation/{id} | Get simulation status|
+|[**listSimulations**](#listsimulations) | **GET** /api/simulation | List all simulations|
+|[**pauseSimulation**](#pausesimulation) | **POST** /api/simulation/{id}/pause | Pause a simulation|
+|[**startSimulation**](#startsimulation) | **POST** /api/simulation/{id}/start | Start a simulation|
+|[**stopSimulation**](#stopsimulation) | **POST** /api/simulation/{id}/stop | Stop a simulation|
 
 # **createSimulation**
-> { [key: string]: object; } createSimulation()
+> SimulationDTO createSimulation(simulationCreateDTO)
 
-Crea una nueva instancia de simulación según el tipo especificado
+Creates a new simulation with the specified parameters
 
 ### Example
 
 ```typescript
 import {
     SimulationApi,
-    Configuration
+    Configuration,
+    SimulationCreateDTO
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new SimulationApi(configuration);
 
-let simulationType: string; // (default to undefined)
-let name: string; // (optional) (default to undefined)
-let description: string; // (optional) (default to undefined)
-let startDate: string; // (optional) (default to undefined)
-let dataSource: string; // (optional) (default to undefined)
-let durationDays: number; // (optional) (default to undefined)
+let simulationCreateDTO: SimulationCreateDTO; //
+let type: 'DAILY_OPERATIONS' | 'WEEKLY' | 'INFINITE' | 'CUSTOM'; // (optional) (default to 'CUSTOM')
 
 const { status, data } = await apiInstance.createSimulation(
-    simulationType,
-    name,
-    description,
-    startDate,
-    dataSource,
-    durationDays
+    simulationCreateDTO,
+    type
 );
 ```
 
@@ -57,17 +44,13 @@ const { status, data } = await apiInstance.createSimulation(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **simulationType** | [**string**] |  | defaults to undefined|
-| **name** | [**string**] |  | (optional) defaults to undefined|
-| **description** | [**string**] |  | (optional) defaults to undefined|
-| **startDate** | [**string**] |  | (optional) defaults to undefined|
-| **dataSource** | [**string**] |  | (optional) defaults to undefined|
-| **durationDays** | [**number**] |  | (optional) defaults to undefined|
+| **simulationCreateDTO** | **SimulationCreateDTO**|  | |
+| **type** | [**&#39;DAILY_OPERATIONS&#39; | &#39;WEEKLY&#39; | &#39;INFINITE&#39; | &#39;CUSTOM&#39;**]**Array<&#39;DAILY_OPERATIONS&#39; &#124; &#39;WEEKLY&#39; &#124; &#39;INFINITE&#39; &#124; &#39;CUSTOM&#39;>** |  | (optional) defaults to 'CUSTOM'|
 
 
 ### Return type
 
-**{ [key: string]: object; }**
+**SimulationDTO**
 
 ### Authorization
 
@@ -75,21 +58,21 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: Not defined
+ - **Content-Type**: application/json
  - **Accept**: */*
 
 
 ### HTTP response details
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
-|**200** | OK |  -  |
+|**201** | Simulation created successfully |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **deleteSimulation**
-> deleteSimulation()
+# **getDailyOperations**
+> SimulationDTO getDailyOperations()
 
-Elimina una simulación existente
+Returns the current status of the daily operations simulation
 
 ### Example
 
@@ -102,58 +85,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new SimulationApi(configuration);
 
-let id: string; //ID de la simulación (default to undefined)
-
-const { status, data } = await apiInstance.deleteSimulation(
-    id
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | ID de la simulación | defaults to undefined|
-
-
-### Return type
-
-void (empty response body)
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: Not defined
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | OK |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **getAllReports**
-> Array<SimulationReportDTO> getAllReports()
-
-Obtiene todos los reportes de simulaciones finalizadas
-
-### Example
-
-```typescript
-import {
-    SimulationApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new SimulationApi(configuration);
-
-const { status, data } = await apiInstance.getAllReports();
+const { status, data } = await apiInstance.getDailyOperations();
 ```
 
 ### Parameters
@@ -162,7 +94,7 @@ This endpoint does not have any parameters.
 
 ### Return type
 
-**Array<SimulationReportDTO>**
+**SimulationDTO**
 
 ### Authorization
 
@@ -181,10 +113,10 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getAllSimulations**
-> Array<{ [key: string]: object; }> getAllSimulations()
+# **getDailyOperationsState**
+> SimulationStateDTO getDailyOperationsState()
 
-Obtiene una lista de todas las simulaciones disponibles
+Returns the current detailed state of the daily operations simulation
 
 ### Example
 
@@ -197,116 +129,11 @@ import {
 const configuration = new Configuration();
 const apiInstance = new SimulationApi(configuration);
 
-const { status, data } = await apiInstance.getAllSimulations();
+const { status, data } = await apiInstance.getDailyOperationsState();
 ```
 
 ### Parameters
 This endpoint does not have any parameters.
-
-
-### Return type
-
-**Array<{ [key: string]: object; }>**
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: */*
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | OK |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **getBlockages**
-> Array<Blockage> getBlockages()
-
-Obtiene la lista de bloqueos activos en la simulación
-
-### Example
-
-```typescript
-import {
-    SimulationApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new SimulationApi(configuration);
-
-let id: string; //ID de la simulación (default to undefined)
-let activeOnly: boolean; // (optional) (default to true)
-
-const { status, data } = await apiInstance.getBlockages(
-    id,
-    activeOnly
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | ID de la simulación | defaults to undefined|
-| **activeOnly** | [**boolean**] |  | (optional) defaults to true|
-
-
-### Return type
-
-**Array<Blockage>**
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: */*
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | OK |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **getEnvironment**
-> SimulationStateDTO getEnvironment()
-
-Obtiene información detallada del entorno de simulación
-
-### Example
-
-```typescript
-import {
-    SimulationApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new SimulationApi(configuration);
-
-let id: string; //ID de la simulación (default to undefined)
-
-const { status, data } = await apiInstance.getEnvironment(
-    id
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | ID de la simulación | defaults to undefined|
 
 
 ### Return type
@@ -330,67 +157,10 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getOrders**
-> Array<Order> getOrders()
+# **getSimulationState**
+> SimulationStateDTO getSimulationState()
 
-Obtiene la lista de órdenes en la simulación
-
-### Example
-
-```typescript
-import {
-    SimulationApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new SimulationApi(configuration);
-
-let id: string; //ID de la simulación (default to undefined)
-let pendingOnly: boolean; // (optional) (default to false)
-let overdueOnly: boolean; // (optional) (default to false)
-
-const { status, data } = await apiInstance.getOrders(
-    id,
-    pendingOnly,
-    overdueOnly
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | ID de la simulación | defaults to undefined|
-| **pendingOnly** | [**boolean**] |  | (optional) defaults to false|
-| **overdueOnly** | [**boolean**] |  | (optional) defaults to false|
-
-
-### Return type
-
-**Array<Order>**
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: */*
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | OK |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **getSimulationReport**
-> SimulationReportDTO getSimulationReport()
-
-Obtiene el reporte de una simulación finalizada
+Returns the current detailed state of a specific simulation
 
 ### Example
 
@@ -403,9 +173,9 @@ import {
 const configuration = new Configuration();
 const apiInstance = new SimulationApi(configuration);
 
-let id: string; //ID de la simulación (default to undefined)
+let id: string; // (default to undefined)
 
-const { status, data } = await apiInstance.getSimulationReport(
+const { status, data } = await apiInstance.getSimulationState(
     id
 );
 ```
@@ -414,12 +184,12 @@ const { status, data } = await apiInstance.getSimulationReport(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | ID de la simulación | defaults to undefined|
+| **id** | [**string**] |  | defaults to undefined|
 
 
 ### Return type
 
-**SimulationReportDTO**
+**SimulationStateDTO**
 
 ### Authorization
 
@@ -439,9 +209,9 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getSimulationStatus**
-> SimulationStateDTO getSimulationStatus()
+> SimulationDTO getSimulationStatus()
 
-Obtiene el estado actual de una simulación específica
+Returns the current status of a specific simulation
 
 ### Example
 
@@ -454,7 +224,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new SimulationApi(configuration);
 
-let id: string; //ID de la simulación (default to undefined)
+let id: string; // (default to undefined)
 
 const { status, data } = await apiInstance.getSimulationStatus(
     id
@@ -465,12 +235,12 @@ const { status, data } = await apiInstance.getSimulationStatus(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | ID de la simulación | defaults to undefined|
+| **id** | [**string**] |  | defaults to undefined|
 
 
 ### Return type
 
-**SimulationStateDTO**
+**SimulationDTO**
 
 ### Authorization
 
@@ -489,10 +259,10 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getVehicles**
-> Array<Vehicle> getVehicles()
+# **listSimulations**
+> { [key: string]: SimulationDTO; } listSimulations()
 
-Obtiene la lista de vehículos en la simulación
+Returns a list of all active simulations
 
 ### Example
 
@@ -505,26 +275,16 @@ import {
 const configuration = new Configuration();
 const apiInstance = new SimulationApi(configuration);
 
-let id: string; //ID de la simulación (default to undefined)
-let status: 'AVAILABLE' | 'DRIVING' | 'MAINTENANCE' | 'REFUELING' | 'RELOADING' | 'SERVING' | 'INCIDENT' | 'IDLE'; // (optional) (default to undefined)
-
-const { status, data } = await apiInstance.getVehicles(
-    id,
-    status
-);
+const { status, data } = await apiInstance.listSimulations();
 ```
 
 ### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | ID de la simulación | defaults to undefined|
-| **status** | [**&#39;AVAILABLE&#39; | &#39;DRIVING&#39; | &#39;MAINTENANCE&#39; | &#39;REFUELING&#39; | &#39;RELOADING&#39; | &#39;SERVING&#39; | &#39;INCIDENT&#39; | &#39;IDLE&#39;**]**Array<&#39;AVAILABLE&#39; &#124; &#39;DRIVING&#39; &#124; &#39;MAINTENANCE&#39; &#124; &#39;REFUELING&#39; &#124; &#39;RELOADING&#39; &#124; &#39;SERVING&#39; &#124; &#39;INCIDENT&#39; &#124; &#39;IDLE&#39;>** |  | (optional) defaults to undefined|
+This endpoint does not have any parameters.
 
 
 ### Return type
 
-**Array<Vehicle>**
+**{ [key: string]: SimulationDTO; }**
 
 ### Authorization
 
@@ -544,9 +304,9 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **pauseSimulation**
-> { [key: string]: object; } pauseSimulation()
+> SimulationDTO pauseSimulation()
 
-Pausa la ejecución de una simulación
+Pauses a running simulation
 
 ### Example
 
@@ -559,7 +319,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new SimulationApi(configuration);
 
-let id: string; //ID de la simulación (default to undefined)
+let id: string; // (default to undefined)
 
 const { status, data } = await apiInstance.pauseSimulation(
     id
@@ -570,174 +330,12 @@ const { status, data } = await apiInstance.pauseSimulation(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | ID de la simulación | defaults to undefined|
+| **id** | [**string**] |  | defaults to undefined|
 
 
 ### Return type
 
-**{ [key: string]: object; }**
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: */*
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | OK |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **repairVehicle**
-> { [key: string]: object; } repairVehicle()
-
-Simula la reparación de un vehículo averiado
-
-### Example
-
-```typescript
-import {
-    SimulationApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new SimulationApi(configuration);
-
-let id: string; //ID de la simulación (default to undefined)
-let vehicleId: string; //ID del vehículo (default to undefined)
-
-const { status, data } = await apiInstance.repairVehicle(
-    id,
-    vehicleId
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | ID de la simulación | defaults to undefined|
-| **vehicleId** | [**string**] | ID del vehículo | defaults to undefined|
-
-
-### Return type
-
-**{ [key: string]: object; }**
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: */*
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | OK |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **setSimulationSpeed**
-> { [key: string]: object; } setSimulationSpeed()
-
-Ajusta la velocidad de ejecución de la simulación
-
-### Example
-
-```typescript
-import {
-    SimulationApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new SimulationApi(configuration);
-
-let id: string; //ID de la simulación (default to undefined)
-let speedFactor: number; // (default to undefined)
-
-const { status, data } = await apiInstance.setSimulationSpeed(
-    id,
-    speedFactor
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | ID de la simulación | defaults to undefined|
-| **speedFactor** | [**number**] |  | defaults to undefined|
-
-
-### Return type
-
-**{ [key: string]: object; }**
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: */*
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | OK |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **simulateVehicleBreakdown**
-> { [key: string]: object; } simulateVehicleBreakdown()
-
-Simula una avería en un vehículo específico
-
-### Example
-
-```typescript
-import {
-    SimulationApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new SimulationApi(configuration);
-
-let id: string; //ID de la simulación (default to undefined)
-let vehicleId: string; //ID del vehículo (default to undefined)
-
-const { status, data } = await apiInstance.simulateVehicleBreakdown(
-    id,
-    vehicleId
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | ID de la simulación | defaults to undefined|
-| **vehicleId** | [**string**] | ID del vehículo | defaults to undefined|
-
-
-### Return type
-
-**{ [key: string]: object; }**
+**SimulationDTO**
 
 ### Authorization
 
@@ -757,9 +355,9 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **startSimulation**
-> { [key: string]: object; } startSimulation()
+> SimulationDTO startSimulation()
 
-Inicia o reanuda la ejecución de una simulación
+Starts or resumes a paused simulation
 
 ### Example
 
@@ -772,7 +370,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new SimulationApi(configuration);
 
-let id: string; //ID de la simulación (default to undefined)
+let id: string; // (default to undefined)
 
 const { status, data } = await apiInstance.startSimulation(
     id
@@ -783,12 +381,63 @@ const { status, data } = await apiInstance.startSimulation(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] | ID de la simulación | defaults to undefined|
+| **id** | [**string**] |  | defaults to undefined|
 
 
 ### Return type
 
-**{ [key: string]: object; }**
+**SimulationDTO**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **stopSimulation**
+> SimulationDTO stopSimulation()
+
+Permanently stops a simulation
+
+### Example
+
+```typescript
+import {
+    SimulationApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new SimulationApi(configuration);
+
+let id: string; // (default to undefined)
+
+const { status, data } = await apiInstance.stopSimulation(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**SimulationDTO**
 
 ### Authorization
 

@@ -1,13 +1,17 @@
 import { useState, useEffect, useCallback } from "react";
-import { ordersApi, type Order, type OrderDTO, type DeliveryRecordDTO } from "@/lib/api-client";
+import {
+  ordersApi,
+  type OrderDTO,
+  type DeliveryRecordDTO,
+} from "@/lib/api-client";
 import { useToast } from "@/components/ui/use-toast";
 
 // Define an interface that combines the old field names with the new ones for transition
-interface OrderWithLegacyFields extends Order {
+interface OrderWithLegacyFields extends OrderDTO {
   glpRequest?: number; // Legacy field mapping to glpRequestM3
   remainingGLP?: number; // Legacy field mapping to remainingGlpM3
-  arriveDate?: string; // Legacy field mapping to arriveTime
-  dueDate?: string; // Legacy field mapping to dueTime
+  arriveDate?: string; // Legacy field mapping to arrivalTime
+  dueDate?: string; // Legacy field mapping to deadlineTime
   deliveryDate?: string; // Legacy field that might not be in the new API
   routeId?: string; // ID de la ruta asignada
 }
@@ -28,7 +32,7 @@ interface OrderFilterParams {
 }
 
 export function useOrders(
-  filterTab?: string, 
+  filterTab?: string,
   paginationParams?: PaginationParams,
   filterParams?: OrderFilterParams
 ) {
@@ -44,9 +48,10 @@ export function useOrders(
   const size = paginationParams?.size;
   const sortBy = paginationParams?.sortBy;
   const direction = paginationParams?.direction;
-  
+
   // Extract filter values
-  const pending = filterParams?.pending || (filterTab === 'pendiente' ? true : undefined);
+  const pending =
+    filterParams?.pending || (filterTab === "pendiente" ? true : undefined);
   const overdueAt = filterParams?.overdueAt;
   const availableAt = filterParams?.availableAt;
 
@@ -57,27 +62,29 @@ export function useOrders(
 
       // Set up pagination parameters
       const isPaginated = !!paginationParams;
-      const paginatedParams = isPaginated ? {
-        paginated: true,
-        page: page || 0,
-        size: size || 10,
-        sortBy,
-        direction
-      } : {};
-      
+      const paginatedParams = isPaginated
+        ? {
+            paginated: true,
+            page: page || 0,
+            size: size || 10,
+            sortBy,
+            direction,
+          }
+        : {};
+
       // Set up filter parameters
       const filterParams = {
         pending,
         overdueAt,
-        availableAt
+        availableAt,
       };
-      
+
       // Combine parameters
       const params = {
         ...paginatedParams,
-        ...filterParams
+        ...filterParams,
       };
-      
+
       // Call API with parameters
       const response = await ordersApi.list2(
         params.pending as boolean | undefined,
@@ -89,36 +96,51 @@ export function useOrders(
         params.sortBy,
         params.direction
       );
-      
+
       const responseData = response.data;
-      
+
       // Handle paginated response
-      if (isPaginated && responseData && typeof responseData === 'object' && 'content' in responseData) {
-        const { content, totalElements, totalPages: pages } = responseData as any;
+      if (
+        isPaginated &&
+        responseData &&
+        typeof responseData === "object" &&
+        "content" in responseData
+      ) {
+        const {
+          content,
+          totalElements,
+          totalPages: pages,
+        } = responseData as {
+          content: OrderDTO[];
+          totalElements: number;
+          totalPages: number;
+        };
         setOrders(content);
-        setTotalItems(totalElements);
-        setTotalPages(pages);
+        setTotalItems(totalElements || content.length);
+        setTotalPages(pages || 1);
       } else {
         // Handle non-paginated response
-        const ordersList = Array.isArray(responseData) ? responseData : [];
+        const ordersList = Array.isArray(responseData)
+          ? responseData
+          : [responseData].filter(Boolean);
         setOrders(ordersList);
         setTotalItems(ordersList.length);
         setTotalPages(1);
       }
-      
-      setLoading(false);
     } catch (err) {
-      setLoading(false);
-      const errorMessage = err instanceof Error ? err.message : "Error al cargar pedidos";
+      const errorMessage =
+        err instanceof Error ? err.message : "Error al cargar pedidos";
       setError(errorMessage);
-      
+
       toast({
         title: "Error",
         description: errorMessage,
         variant: "destructive",
       });
-      
+
       console.error("Error fetching orders:", err);
+    } finally {
+      setLoading(false);
     }
   }, [page, size, sortBy, direction, pending, overdueAt, availableAt, toast]);
 
@@ -133,9 +155,9 @@ export function useOrders(
         ...orderData,
         glpRequestM3: orderData.glpRequest ?? orderData.glpRequestM3,
         remainingGlpM3: orderData.remainingGLP ?? orderData.remainingGlpM3,
-        arriveTime: orderData.arriveDate ?? orderData.arriveTime,
-        dueTime: orderData.dueDate ?? orderData.dueTime,
-      } as any;
+        arrivalTime: orderData.arriveDate ?? orderData.arrivalTime,
+        deadlineTime: orderData.dueDate ?? orderData.deadlineTime,
+      } as OrderDTO;
 
       const response = await ordersApi.create2(orderDTO);
       await fetchOrders(); // Refresh the list
@@ -145,7 +167,8 @@ export function useOrders(
       });
       return response.data;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Error al crear pedido";
+      const errorMessage =
+        err instanceof Error ? err.message : "Error al crear pedido";
       toast({
         title: "Error",
         description: errorMessage,
@@ -155,16 +178,19 @@ export function useOrders(
     }
   };
 
-  const updateOrder = async (id: string, orderData: Partial<OrderWithLegacyFields>) => {
+  const updateOrder = async (
+    id: string,
+    orderData: Partial<OrderWithLegacyFields>
+  ) => {
     try {
       // Map the legacy fields to the new API format
       const orderDTO: OrderDTO = {
         ...orderData,
         glpRequestM3: orderData.glpRequest ?? orderData.glpRequestM3,
         remainingGlpM3: orderData.remainingGLP ?? orderData.remainingGlpM3,
-        arriveTime: orderData.arriveDate ?? orderData.arriveTime,
-        dueTime: orderData.dueDate ?? orderData.dueTime,
-      } as any;
+        arrivalTime: orderData.arriveDate ?? orderData.arrivalTime,
+        deadlineTime: orderData.dueDate ?? orderData.deadlineTime,
+      } as OrderDTO;
 
       await ordersApi.update1(id, orderDTO);
       await fetchOrders();
@@ -173,7 +199,8 @@ export function useOrders(
         description: "Pedido actualizado exitosamente",
       });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Error al actualizar pedido";
+      const errorMessage =
+        err instanceof Error ? err.message : "Error al actualizar pedido";
       toast({
         title: "Error",
         description: errorMessage,
@@ -188,9 +215,9 @@ export function useOrders(
       const deliveryRecordDTO: DeliveryRecordDTO = {
         vehicleId: "DEFAULT", // This should be replaced with the actual vehicle ID
         volumeM3: amount,
-        serveDate: new Date().toISOString()
+        serveDate: new Date().toISOString(),
       };
-      
+
       await ordersApi.recordDelivery(id, deliveryRecordDTO);
       await fetchOrders();
       toast({
@@ -198,7 +225,8 @@ export function useOrders(
         description: "Entrega registrada exitosamente",
       });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Error al registrar entrega";
+      const errorMessage =
+        err instanceof Error ? err.message : "Error al registrar entrega";
       toast({
         title: "Error",
         description: errorMessage,
@@ -217,7 +245,38 @@ export function useOrders(
         description: "Pedido eliminado exitosamente",
       });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Error al eliminar pedido";
+      const errorMessage =
+        err instanceof Error ? err.message : "Error al eliminar pedido";
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      throw err;
+    }
+  };
+
+  const createBulkOrders = async (ordersData: Partial<OrderWithLegacyFields>[]) => {
+    try {
+      // Map the legacy fields to the new API format for each order
+      const orderDTOs: OrderDTO[] = ordersData.map(orderData => ({
+        ...orderData,
+        glpRequestM3: orderData.glpRequest ?? orderData.glpRequestM3,
+        remainingGlpM3: orderData.remainingGLP ?? orderData.remainingGlpM3,
+        arrivalTime: orderData.arriveDate ?? orderData.arrivalTime,
+        deadlineTime: orderData.dueDate ?? orderData.deadlineTime,
+      }) as OrderDTO);
+
+      const response = await ordersApi.createBulk(orderDTOs);
+      await fetchOrders(); // Refresh the list
+      toast({
+        title: "Éxito",
+        description: `${orderDTOs.length} pedidos creados exitosamente`,
+      });
+      return response.data;
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Error al crear pedidos en masa";
       toast({
         title: "Error",
         description: errorMessage,
@@ -236,6 +295,7 @@ export function useOrders(
     updateOrder,
     deleteOrder,
     recordDelivery,
+    createBulkOrders,
     totalItems,
     totalPages,
   };
@@ -259,25 +319,50 @@ export function usePendingOrders(paginationParams?: PaginationParams) {
     try {
       setLoading(true);
       setError(null);
-      
+
       const isPaginated = !!paginationParams;
-      const { page, size, sortBy, direction } = paginationParams || { page: 0, size: 10 };
-      
-      const response = await ordersApi.list2(true, undefined, undefined, isPaginated, page, size, sortBy, direction);
-      
+      const { page, size, sortBy, direction } = paginationParams || {
+        page: 0,
+        size: 10,
+      };
+
+      const response = await ordersApi.list2(
+        true,
+        undefined,
+        undefined,
+        isPaginated,
+        page,
+        size,
+        sortBy,
+        direction
+      );
+
       const responseData = response.data;
 
       // Handle paginated response
-      if (isPaginated && responseData && typeof responseData === 'object' && 'content' in responseData) {
-        const { content, totalElements, totalPages: pages } = responseData as any;
-        
+      if (
+        isPaginated &&
+        responseData &&
+        typeof responseData === "object" &&
+        "content" in responseData
+      ) {
+        const {
+          content,
+          totalElements,
+          totalPages: pages,
+        } = responseData as {
+          content: OrderDTO[];
+          totalElements: number;
+          totalPages: number;
+        };
+
         // Process the data and map legacy fields
         const mappedOrders = content.map((order: OrderDTO) => ({
           ...order,
           glpRequest: order.glpRequestM3,
           remainingGLP: order.remainingGlpM3,
-          arriveDate: order.arriveTime,
-          dueDate: order.dueTime,
+          arriveDate: order.arrivalTime,
+          dueDate: order.deadlineTime,
         }));
 
         setOrders(mappedOrders);
@@ -285,13 +370,15 @@ export function usePendingOrders(paginationParams?: PaginationParams) {
         setTotalPages(pages || 1);
       } else {
         // Handle non-paginated response (backward compatibility)
-        const ordersData = Array.isArray(responseData) ? responseData : [responseData].filter(Boolean);
-        const mappedOrders = ordersData.map(order => ({
+        const ordersData = Array.isArray(responseData)
+          ? responseData
+          : [responseData].filter(Boolean);
+        const mappedOrders = ordersData.map((order) => ({
           ...order,
           glpRequest: order.glpRequestM3,
           remainingGLP: order.remainingGlpM3,
-          arriveDate: order.arriveTime,
-          dueDate: order.dueTime,
+          arriveDate: order.arrivalTime,
+          dueDate: order.deadlineTime,
         }));
 
         setOrders(mappedOrders);
@@ -299,7 +386,10 @@ export function usePendingOrders(paginationParams?: PaginationParams) {
         setTotalPages(1);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Error al cargar pedidos pendientes";
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Error al cargar pedidos pendientes";
       setError(errorMessage);
       toast({
         title: "Error",
@@ -315,17 +405,20 @@ export function usePendingOrders(paginationParams?: PaginationParams) {
     fetchPendingOrders();
   }, [fetchPendingOrders]);
 
-  return { 
-    orders, 
-    loading, 
+  return {
+    orders,
+    loading,
     error,
     totalItems,
     totalPages,
-    refetch: fetchPendingOrders
+    refetch: fetchPendingOrders,
   };
 }
 
-export function useUrgentOrders(hoursAhead: number = 24, paginationParams?: PaginationParams) {
+export function useUrgentOrders(
+  hoursAhead: number = 24,
+  paginationParams?: PaginationParams
+) {
   const [orders, setOrders] = useState<OrderWithLegacyFields[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -343,38 +436,54 @@ export function useUrgentOrders(hoursAhead: number = 24, paginationParams?: Pagi
     try {
       setLoading(true);
       setError(null);
-      
+
       // We'll use overdueAt parameter with current time to get urgent orders
       const now = new Date();
       const overdueDate = new Date(now.getTime() + hoursAhead * 60 * 60 * 1000);
-      
+
       const isPaginated = !!paginationParams;
-      const { page, size, sortBy, direction } = paginationParams || { page: 0, size: 10 };
-      
+      const { page, size, sortBy, direction } = paginationParams || {
+        page: 0,
+        size: 10,
+      };
+
       const response = await ordersApi.list2(
-        true, 
-        overdueDate.toISOString(), 
-        undefined, 
-        isPaginated, 
-        page, 
-        size, 
-        sortBy, 
+        true,
+        overdueDate.toISOString(),
+        undefined,
+        isPaginated,
+        page,
+        size,
+        sortBy,
         direction
       );
-      
+
       const responseData = response.data;
 
       // Handle paginated response
-      if (isPaginated && responseData && typeof responseData === 'object' && 'content' in responseData) {
-        const { content, totalElements, totalPages: pages } = responseData as any;
-        
+      if (
+        isPaginated &&
+        responseData &&
+        typeof responseData === "object" &&
+        "content" in responseData
+      ) {
+        const {
+          content,
+          totalElements,
+          totalPages: pages,
+        } = responseData as {
+          content: OrderDTO[];
+          totalElements: number;
+          totalPages: number;
+        };
+
         // Process the data and map legacy fields
         const mappedOrders = content.map((order: OrderDTO) => ({
           ...order,
           glpRequest: order.glpRequestM3,
           remainingGLP: order.remainingGlpM3,
-          arriveDate: order.arriveTime,
-          dueDate: order.dueTime,
+          arriveDate: order.arrivalTime,
+          dueDate: order.deadlineTime,
         }));
 
         setOrders(mappedOrders);
@@ -382,13 +491,15 @@ export function useUrgentOrders(hoursAhead: number = 24, paginationParams?: Pagi
         setTotalPages(pages || 1);
       } else {
         // Handle non-paginated response (backward compatibility)
-        const ordersData = Array.isArray(responseData) ? responseData : [responseData].filter(Boolean);
-        const mappedOrders = ordersData.map(order => ({
+        const ordersData = Array.isArray(responseData)
+          ? responseData
+          : [responseData].filter(Boolean);
+        const mappedOrders = ordersData.map((order) => ({
           ...order,
           glpRequest: order.glpRequestM3,
           remainingGLP: order.remainingGlpM3,
-          arriveDate: order.arriveTime,
-          dueDate: order.dueTime,
+          arriveDate: order.arrivalTime,
+          dueDate: order.deadlineTime,
         }));
 
         setOrders(mappedOrders);
@@ -396,7 +507,8 @@ export function useUrgentOrders(hoursAhead: number = 24, paginationParams?: Pagi
         setTotalPages(1);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Error al cargar pedidos urgentes";
+      const errorMessage =
+        err instanceof Error ? err.message : "Error al cargar pedidos urgentes";
       setError(errorMessage);
       toast({
         title: "Error",
@@ -412,12 +524,12 @@ export function useUrgentOrders(hoursAhead: number = 24, paginationParams?: Pagi
     fetchUrgentOrders();
   }, [fetchUrgentOrders]);
 
-  return { 
-    orders, 
-    loading, 
+  return {
+    orders,
+    loading,
     error,
     totalItems,
     totalPages,
-    refetch: fetchUrgentOrders
+    refetch: fetchUrgentOrders,
   };
 }

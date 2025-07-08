@@ -75,7 +75,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new IncidentControllerApi(configuration);
 
-let id: number; // (default to undefined)
+let id: string; // (default to undefined)
 
 const { status, data } = await apiInstance.getById3(
     id
@@ -86,7 +86,7 @@ const { status, data } = await apiInstance.getById3(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**number**] |  | defaults to undefined|
+| **id** | [**string**] |  | defaults to undefined|
 
 
 ### Return type
@@ -126,6 +126,8 @@ const configuration = new Configuration();
 const apiInstance = new IncidentControllerApi(configuration);
 
 let vehicleId: string; // (optional) (default to undefined)
+let type: 'TI1' | 'TI2' | 'TI3'; // (optional) (default to undefined)
+let shift: 'T1' | 'T2' | 'T3'; // (optional) (default to undefined)
 let startDate: string; // (optional) (default to undefined)
 let endDate: string; // (optional) (default to undefined)
 let resolved: boolean; // (optional) (default to undefined)
@@ -137,6 +139,8 @@ let direction: string; // (optional) (default to 'desc')
 
 const { status, data } = await apiInstance.list3(
     vehicleId,
+    type,
+    shift,
     startDate,
     endDate,
     resolved,
@@ -153,6 +157,8 @@ const { status, data } = await apiInstance.list3(
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **vehicleId** | [**string**] |  | (optional) defaults to undefined|
+| **type** | [**&#39;TI1&#39; | &#39;TI2&#39; | &#39;TI3&#39;**]**Array<&#39;TI1&#39; &#124; &#39;TI2&#39; &#124; &#39;TI3&#39;>** |  | (optional) defaults to undefined|
+| **shift** | [**&#39;T1&#39; | &#39;T2&#39; | &#39;T3&#39;**]**Array<&#39;T1&#39; &#124; &#39;T2&#39; &#124; &#39;T3&#39;>** |  | (optional) defaults to undefined|
 | **startDate** | [**string**] |  | (optional) defaults to undefined|
 | **endDate** | [**string**] |  | (optional) defaults to undefined|
 | **resolved** | [**boolean**] |  | (optional) defaults to undefined|
@@ -199,7 +205,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new IncidentControllerApi(configuration);
 
-let id: number; // (default to undefined)
+let id: string; // (default to undefined)
 
 const { status, data } = await apiInstance.resolveIncident(
     id
@@ -210,7 +216,7 @@ const { status, data } = await apiInstance.resolveIncident(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**number**] |  | defaults to undefined|
+| **id** | [**string**] |  | defaults to undefined|
 
 
 ### Return type

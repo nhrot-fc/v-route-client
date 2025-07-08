@@ -1,107 +1,51 @@
-import { useState, useEffect, useCallback } from 'react'
-import { dashboardApi, ordersApi, vehiclesApi, VehicleStatusEnum, Vehicle } from '@/lib/api-client'
-import { useToast } from '@/components/ui/use-toast'
-
-// Define an interface for legacy fields
-interface VehicleWithLegacyFields extends Vehicle {
-  currentGLP?: number; // Legacy field
-  currentFuel?: number; // Legacy field
-}
-
-export function useDashboardOverview() {
-  const [data, setData] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const { toast } = useToast()
-
-  useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const response = await dashboardApi.getDashboardOverview()
-        setData(response.data)
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Error al cargar datos del dashboard'
-        setError(errorMessage)
-        toast({
-          title: 'Error',
-          description: errorMessage,
-          variant: 'destructive',
-        })
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchDashboardData()
-  }, [toast])
-
-  return { data, loading, error }
-}
-
-export function useSystemHealth() {
-  const [health, setHealth] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const { toast } = useToast()
-
-  useEffect(() => {
-    const fetchSystemHealth = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const response = await dashboardApi.getSystemHealth()
-        setHealth(response.data)
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Error al cargar estado del sistema'
-        setError(errorMessage)
-        toast({
-          title: 'Error',
-          description: errorMessage,
-          variant: 'destructive',
-        })
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchSystemHealth()
-  }, [toast])
-
-  return { health, loading, error }
-}
+import { useState, useEffect, useCallback } from "react";
+import { dashboardApi, type VehicleDTO } from "@/lib/api-client";
+import { useToast } from "@/components/ui/use-toast";
 
 export function useVehicleStatusSummary() {
-  const [summary, setSummary] = useState<Record<string, number>>({})
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const { toast } = useToast()
+  const [summary, setSummary] = useState<VehicleDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const fetchVehicleStatusSummary = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await dashboardApi.getVehicleStatusBreakdown();
+
+      // Map to include legacy fields if needed
+      const vehicles = Array.isArray(response.data)
+        ? response.data
+        : [response.data].filter(Boolean);
+      const mappedVehicles = vehicles.map((vehicle: VehicleDTO) => ({
+        ...vehicle,
+        currentGLP: vehicle.currentGlpM3, // Map new field to legacy field
+        currentFuel: vehicle.currentFuelGal, // Map new field to legacy field
+      }));
+
+      setSummary(mappedVehicles);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Error al cargar estado de vehículos";
+      setError(errorMessage);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [toast]);
 
   useEffect(() => {
-    const fetchVehicleStatusSummary = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const response = await dashboardApi.getVehicleStatusBreakdown()
-        setSummary(response.data as Record<string, number>)
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Error al cargar resumen de vehículos'
-        setError(errorMessage)
-        toast({
-          title: 'Error',
-          description: errorMessage,
-          variant: 'destructive',
-        })
-      } finally {
-        setLoading(false)
-      }
-    }
+    fetchVehicleStatusSummary();
+  }, [fetchVehicleStatusSummary]);
 
-    fetchVehicleStatusSummary()
-  }, [toast])
-
-  return { summary, loading, error }
+  return { summary, loading, error, refetch: fetchVehicleStatusSummary };
 }
 
 export interface DashboardMetrics {
@@ -124,118 +68,118 @@ export interface DashboardMetrics {
   };
 }
 
+// Define a type for the dashboard overview response
+interface DashboardOverview {
+  pendingOrdersChangePercent?: number;
+  completedOrdersCount?: number;
+  completedOrdersChangePercent?: number;
+  fuelConsumptionTotal?: number;
+  fuelConsumptionChangePercent?: number;
+}
+
 export function useDashboardMetrics() {
+  // Initialize with default values instead of null
   const [metrics, setMetrics] = useState<DashboardMetrics>({
-    pendingOrders: { count: 0, changePercent: 0 },
-    completedOrders: { count: 0, changePercent: 0 },
-    activeVehicles: { active: 0, total: 0, inMaintenance: 0 },
-    fuelConsumption: { total: 0, changePercent: 0 },
+    pendingOrders: {
+      count: 0,
+      changePercent: 0,
+    },
+    completedOrders: {
+      count: 0,
+      changePercent: 0,
+    },
+    activeVehicles: {
+      active: 0,
+      total: 0,
+      inMaintenance: 0,
+    },
+    fuelConsumption: {
+      total: 0,
+      changePercent: 0,
+    },
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const fetchMetrics = useCallback(async () => {
+  const fetchDashboardMetrics = useCallback(async () => {
     try {
       setLoading(true);
-      
-      // Fetch data needed for the metrics in parallel
-      const [pendingResponse, completedResponse, vehicleResponse] = await Promise.all([
-        ordersApi.list2(true), // pendingOnly = true for pending orders
-        ordersApi.list2(false), // pendingOnly = false for completed orders
-        vehiclesApi.list() // Get all vehicles
-      ]);
-      
-      // Calculate pending orders metrics
-      const pendingOrders = Array.isArray(pendingResponse.data) ? pendingResponse.data.length : 0;
-      // In a real app, you would compare with historical data
-      // Simulating a change percentage for visualization
-      const pendingChangePercent = Math.round((Math.random() > 0.5 ? -1 : 1) * Math.random() * 15);
-      
-      // Calculate completed orders metrics
-      const completedOrders = Array.isArray(completedResponse.data) ? completedResponse.data.length : 0;
-      // Simulating a change percentage for visualization
-      const completedChangePercent = Math.round((Math.random() > 0.5 ? -1 : 1) * Math.random() * 15);
-      
-      // Calculate vehicle metrics
-      let totalVehicles = 0;
-      let activeVehicles = 0;
-      let inMaintenance = 0;
-      let totalFuel = 0;
-      
-      if (Array.isArray(vehicleResponse.data)) {
-        const vehicles = vehicleResponse.data as VehicleWithLegacyFields[];
-        totalVehicles = vehicles.length;
-        
-        vehicles.forEach(vehicle => {
-          // Check active vehicles (Available or Driving status)
-          if (vehicle.status === VehicleStatusEnum.Available || vehicle.status === VehicleStatusEnum.Driving) {
-            activeVehicles++;
-          }
-          
-          // Check maintenance vehicles
-          if (vehicle.status === VehicleStatusEnum.Maintenance) {
-            inMaintenance++;
-          }
-          
-          // Get fuel consumption - first check legacy field, fall back to new field name
-          const currentFuel = vehicle.currentFuel !== undefined ? 
-            vehicle.currentFuel : 
-            vehicle.currentFuelGal;
-            
-          if (currentFuel !== undefined) {
-            totalFuel += currentFuel;
-          }
-        });
+      setError(null);
+
+      // Make API calls to compose our metrics
+      const dashboardOverviewData: DashboardOverview = {};
+
+      try {
+        // Since getDashboardOverview returns void, we'll handle it separately
+        await dashboardApi.getDashboardOverview();
+        // In a real implementation, the API would return data instead of void
+        // We're using default empty object for now
+      } catch (overviewError) {
+        console.error("Error fetching dashboard overview:", overviewError);
       }
       
-      // Simulating a change percentage for fuel consumption
-      const fuelChangePercent = Math.round((Math.random() > 0.5 ? -1 : 1) * Math.random() * 10);
+      // Get urgent orders and vehicle status data
+      const [urgentOrdersResponse, vehicleStatusResponse] = await Promise.all([
+        dashboardApi.getUrgentOrders(24), // Orders due in next 24 hours
+        dashboardApi.getVehicleStatusBreakdown(),
+      ]);
+
+      // Process the responses to create the metrics object
+      const urgentOrders = Array.isArray(urgentOrdersResponse.data) 
+        ? urgentOrdersResponse.data 
+        : [];
+        
+      const vehicleStatus = Array.isArray(vehicleStatusResponse.data) 
+        ? vehicleStatusResponse.data 
+        : [];
+
+      // Count vehicles with maintenance status
+      const inMaintenance = vehicleStatus.filter(v => v.status === 'MAINTENANCE').length;
+      const active = vehicleStatus.filter(v => v.status === 'ACTIVE' || v.status === 'SERVING').length;
       
-      // Update metrics state
-      setMetrics({
+      // Build metrics object from API responses
+      const dashboardMetrics: DashboardMetrics = {
         pendingOrders: {
-          count: pendingOrders,
-          changePercent: pendingChangePercent
+          count: urgentOrders.length,
+          changePercent: dashboardOverviewData.pendingOrdersChangePercent || 0,
         },
         completedOrders: {
-          count: completedOrders,
-          changePercent: completedChangePercent
+          count: dashboardOverviewData.completedOrdersCount || 0,
+          changePercent: dashboardOverviewData.completedOrdersChangePercent || 0,
         },
         activeVehicles: {
-          active: activeVehicles,
-          total: totalVehicles,
-          inMaintenance: inMaintenance
+          active: active,
+          total: vehicleStatus.length,
+          inMaintenance: inMaintenance,
         },
         fuelConsumption: {
-          total: Math.round(totalFuel),
-          changePercent: fuelChangePercent
-        }
-      });
-      
-      return true;
+          total: dashboardOverviewData.fuelConsumptionTotal || 0,
+          changePercent: dashboardOverviewData.fuelConsumptionChangePercent || 0,
+        },
+      };
+
+      setMetrics(dashboardMetrics);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al cargar métricas del dashboard';
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Error al cargar métricas del dashboard";
       setError(errorMessage);
       toast({
-        title: 'Error',
+        title: "Error",
         description: errorMessage,
-        variant: 'destructive',
+        variant: "destructive",
       });
-      return false;
     } finally {
       setLoading(false);
     }
   }, [toast]);
 
   useEffect(() => {
-    fetchMetrics();
-  }, [fetchMetrics]);
+    fetchDashboardMetrics();
+  }, [fetchDashboardMetrics]);
 
-  // Función para actualizar manualmente las métricas
-  const refreshMetrics = useCallback(async () => {
-    return await fetchMetrics();
-  }, [fetchMetrics]);
-
-  return { metrics, loading, error, refreshMetrics };
+  // Rename refetch to refreshMetrics
+  return { metrics, loading, error, refreshMetrics: fetchDashboardMetrics };
 }

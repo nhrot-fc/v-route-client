@@ -363,7 +363,7 @@ export default function BlockagesPage() {
               <FileUp className="h-5 w-5 mr-2 text-primary" />
               <span>Carga Masiva de Bloqueos</span>
             </DialogTitle>
-            <DialogDescription>Sube un archivo CSV con bloqueos</DialogDescription>
+            <DialogDescription>Sube un archivo de texto con bloqueos</DialogDescription>
           </DialogHeader>
           <Divider className="my-2" />
           <BlockageUploadForm />

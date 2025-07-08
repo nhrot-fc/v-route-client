@@ -1,4 +1,4 @@
-# DepotDTO
+# SimulationDTO
 
 
 ## Properties
@@ -6,22 +6,24 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **string** |  | [optional] [default to undefined]
-**position** | [**Position**](Position.md) |  | [optional] [default to undefined]
-**glpCapacityM3** | **number** |  | [optional] [default to undefined]
+**currentTime** | **string** |  | [optional] [default to undefined]
 **type** | **string** |  | [optional] [default to undefined]
-**currentGlpM3** | **number** |  | [optional] [default to undefined]
+**status** | **string** |  | [optional] [default to undefined]
+**startTime** | **string** |  | [optional] [default to undefined]
+**endTime** | **string** |  | [optional] [default to undefined]
 
 ## Example
 
 ```typescript
-import { DepotDTO } from './api';
+import { SimulationDTO } from './api';
 
-const instance: DepotDTO = {
+const instance: SimulationDTO = {
     id,
-    position,
-    glpCapacityM3,
+    currentTime,
     type,
-    currentGlpM3,
+    status,
+    startTime,
+    endTime,
 };
 ```
 

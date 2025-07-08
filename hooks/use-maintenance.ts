@@ -1,11 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { maintenanceApi, type MaintenanceDTO } from '@/lib/api-client'
+import { maintenanceApi, type MaintenanceDTO, type MaintenanceCreateDTO } from '@/lib/api-client'
 import { useToast } from '@/components/ui/use-toast'
-
-// Define an interface for legacy fields if needed
-interface MaintenanceWithLegacyFields extends MaintenanceDTO {
-  // No legacy fields needed for now
-}
 
 // Define pagination parameters
 interface PaginationParams {
@@ -15,20 +10,19 @@ interface PaginationParams {
   direction?: string;
 }
 
-// Export with original name for backward compatibility
 export function useMaintenance(paginationParams?: PaginationParams) {
-  const [maintenance, setMaintenance] = useState<MaintenanceWithLegacyFields[]>([])
+  const [maintenance, setMaintenance] = useState<MaintenanceDTO[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [totalItems, setTotalItems] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
   const { toast } = useToast()
 
   // Extract pagination values to use in dependencies
-  const page = paginationParams?.page;
-  const size = paginationParams?.size;
-  const sortBy = paginationParams?.sortBy;
-  const direction = paginationParams?.direction;
+  const page = paginationParams?.page
+  const size = paginationParams?.size
+  const sortBy = paginationParams?.sortBy
+  const direction = paginationParams?.direction
 
   const fetchMaintenance = useCallback(async () => {
     try {
@@ -36,35 +30,25 @@ export function useMaintenance(paginationParams?: PaginationParams) {
       setError(null)
       
       // Set up pagination parameters
-      const isPaginated = !!paginationParams;
-      const { page, size, sortBy, direction } = paginationParams || { page: 0, size: 10 };
+      const isPaginated = !!paginationParams
+      const { page, size, sortBy, direction } = paginationParams || { page: 0, size: 10 }
       
       const response = await maintenanceApi.listMaintenances(undefined, undefined, undefined, undefined, isPaginated, page, size, sortBy, direction)
       
-      const responseData = response.data;
+      const responseData = response.data
       
       // Handle paginated response
       if (isPaginated && responseData && typeof responseData === 'object' && 'content' in responseData) {
-        const { content, totalElements, totalPages: pages } = responseData as any;
-        
-        // Map the response data to include legacy fields if needed
-        const mappedMaintenance = content.map((record: MaintenanceDTO) => ({
-          ...record
-        }));
-        
-        setMaintenance(mappedMaintenance);
-        setTotalItems(totalElements || content.length);
-        setTotalPages(pages || 1);
+        const { content, totalElements, totalPages: pages } = responseData as { content: MaintenanceDTO[]; totalElements: number; totalPages: number }
+        setMaintenance(content)
+        setTotalItems(totalElements || content.length)
+        setTotalPages(pages || 1)
       } else {
-        // Map the response data to include legacy fields if needed
+        // Handle non-paginated response
         const maintenanceData = Array.isArray(responseData) ? responseData : [responseData].filter(Boolean)
-        const mappedMaintenance = maintenanceData.map(record => ({
-          ...record
-        }))
-        
-        setMaintenance(mappedMaintenance);
-        setTotalItems(mappedMaintenance.length);
-        setTotalPages(1);
+        setMaintenance(maintenanceData)
+        setTotalItems(maintenanceData.length)
+        setTotalPages(1)
       }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al cargar registros de mantenimiento'
@@ -83,10 +67,10 @@ export function useMaintenance(paginationParams?: PaginationParams) {
     fetchMaintenance()
   }, [fetchMaintenance])
 
-  const createMaintenance = async (maintenanceData: Partial<MaintenanceWithLegacyFields>) => {
+  const createMaintenance = async (maintenanceData: Partial<MaintenanceDTO>) => {
     try {
       // Prepare the maintenance create data
-      const data = {
+      const data: MaintenanceCreateDTO = {
         vehicleId: maintenanceData.vehicleId,
         assignedDate: maintenanceData.assignedDate || new Date().toISOString()
       }
@@ -109,174 +93,134 @@ export function useMaintenance(paginationParams?: PaginationParams) {
     }
   }
 
-  const scheduleMaintenance = async (vehicleId: string, assignedDate: string) => {
-    try {
-      // Prepare the maintenance create data
-      const data = {
-        vehicleId,
-        assignedDate
-      }
-      
-      await maintenanceApi.createMaintenance(data)
-      await fetchMaintenance() // Refresh the list
-      toast({
-        title: 'Éxito',
-        description: 'Mantenimiento programado exitosamente',
-      })
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al programar mantenimiento'
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      })
-      throw err
-    }
-  }
-
-  const completeMaintenanceRecord = async (id: number) => {
-    try {
-      // In the updated API, we might not have a direct "complete maintenance" endpoint
-      // So this functionality might need to be implemented differently
-      // For now, we'll just refresh the maintenance list
-      
-      await fetchMaintenance() // Refresh the list
-      
-      toast({
-        title: 'Éxito',
-        description: 'Registro de mantenimiento completado',
-      })
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al completar mantenimiento'
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      })
-      throw err
-    }
-  }
-
-  const cancelMaintenanceRecord = async (id: number) => {
-    try {
-      // The delete method might not be directly available in the API
-      // We'll need to check the API documentation for the correct method
-      
-      // For now, just refresh the maintenance list
-      await fetchMaintenance()
-      
-      toast({
-        title: 'Éxito',
-        description: 'Registro de mantenimiento cancelado',
-      })
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al cancelar mantenimiento'
-      toast({
-        title: 'Error',
-        description: errorMessage,
-        variant: 'destructive',
-      })
-      throw err
-    }
-  }
-
   return {
     maintenance,
     loading,
     error,
-    refetch: fetchMaintenance,
-    createMaintenance,
-    scheduleMaintenance,
-    completeMaintenanceRecord,
-    cancelMaintenanceRecord,
     totalItems,
     totalPages,
+    createMaintenance,
+    refetch: fetchMaintenance
   }
 }
 
-// Alias for the original function name
-export const useMaintenanceRecords = useMaintenance
-
 export function useActiveMaintenance() {
-  const [maintenance, setMaintenance] = useState<MaintenanceWithLegacyFields[]>([])
+  const [maintenance, setMaintenance] = useState<MaintenanceDTO[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [totalItems, setTotalItems] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
   const { toast } = useToast()
 
-  useEffect(() => {
-    const fetchActiveMaintenanceRecords = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const response = await maintenanceApi.listActiveMaintenances()
-        
-        // Map the response data to include legacy fields if needed
-        const maintenanceData = Array.isArray(response.data) ? response.data : [response.data].filter(Boolean)
-        const mappedMaintenance = maintenanceData.map(record => ({
-          ...record
-        }))
-        
-        setMaintenance(mappedMaintenance)
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Error al cargar mantenimientos activos'
-        setError(errorMessage)
-        toast({
-          title: 'Error',
-          description: errorMessage,
-          variant: 'destructive',
-        })
-      } finally {
-        setLoading(false)
+  const fetchActiveMaintenances = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      // Configurar para obtener solo mantenimientos activos
+      const response = await maintenanceApi.listActiveMaintenances()
+      
+      const responseData = response.data
+      
+      if (responseData && typeof responseData === 'object' && 'content' in responseData) {
+        const { content, totalElements, totalPages: pages } = responseData as { content: MaintenanceDTO[]; totalElements: number; totalPages: number }
+        setMaintenance(content)
+        setTotalItems(totalElements || content.length)
+        setTotalPages(pages || 1)
+      } else {
+        const maintenanceData = Array.isArray(responseData) ? responseData : [responseData].filter(Boolean)
+        setMaintenance(maintenanceData)
+        setTotalItems(maintenanceData.length)
+        setTotalPages(1)
       }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al cargar mantenimientos activos'
+      setError(errorMessage)
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      })
+    } finally {
+      setLoading(false)
     }
-
-    fetchActiveMaintenanceRecords()
   }, [toast])
 
-  return { maintenance, loading, error }
+  useEffect(() => {
+    fetchActiveMaintenances()
+  }, [fetchActiveMaintenances])
+
+  return { 
+    maintenance, 
+    loading, 
+    error,
+    totalItems,
+    totalPages,
+    refetch: fetchActiveMaintenances 
+  }
 }
 
 // Alias for the new function name
 export const useActiveMaintenanceRecords = useActiveMaintenance
 
 export function useMaintenanceByVehicle(vehicleId: string) {
-  const [maintenance, setMaintenance] = useState<MaintenanceWithLegacyFields[]>([])
+  const [maintenance, setMaintenance] = useState<MaintenanceDTO[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [totalItems, setTotalItems] = useState(0)
+  const [totalPages, setTotalPages] = useState(1)
   const { toast } = useToast()
 
-  useEffect(() => {
-    const fetchMaintenanceByVehicle = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        // Use the listMaintenances endpoint with vehicleId filter
-        const response = await maintenanceApi.listMaintenances(vehicleId)
-        
-        // Map the response data to include legacy fields if needed
-        const maintenanceData = Array.isArray(response.data) ? response.data : [response.data].filter(Boolean)
-        const mappedMaintenance = maintenanceData.map(record => ({
-          ...record
-        }))
-        
-        setMaintenance(mappedMaintenance)
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Error al cargar mantenimientos del vehículo'
-        setError(errorMessage)
-        toast({
-          title: 'Error',
-          description: errorMessage,
-          variant: 'destructive',
-        })
-      } finally {
+  const fetchMaintenanceByVehicle = useCallback(async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      if (!vehicleId) {
+        setMaintenance([])
         setLoading(false)
+        return
       }
-    }
-
-    if (vehicleId) {
-      fetchMaintenanceByVehicle()
+      
+      // Use the listMaintenances endpoint with vehicleId filter
+      const response = await maintenanceApi.listMaintenances(vehicleId)
+      
+      const responseData = response.data
+      
+      if (responseData && typeof responseData === 'object' && 'content' in responseData) {
+        const { content, totalElements, totalPages: pages } = responseData as { content: MaintenanceDTO[]; totalElements: number; totalPages: number }
+        setMaintenance(content)
+        setTotalItems(totalElements || content.length)
+        setTotalPages(pages || 1)
+      } else {
+        const maintenanceData = Array.isArray(responseData) ? responseData : [responseData].filter(Boolean)
+        setMaintenance(maintenanceData)
+        setTotalItems(maintenanceData.length)
+        setTotalPages(1)
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Error al cargar mantenimientos del vehículo'
+      setError(errorMessage)
+      toast({
+        title: 'Error',
+        description: errorMessage,
+        variant: 'destructive',
+      })
+    } finally {
+      setLoading(false)
     }
   }, [vehicleId, toast])
 
-  return { maintenance, loading, error }
+  useEffect(() => {
+    fetchMaintenanceByVehicle()
+  }, [fetchMaintenanceByVehicle])
+
+  return { 
+    maintenance, 
+    loading, 
+    error,
+    totalItems,
+    totalPages,
+    refetch: fetchMaintenanceByVehicle 
+  }
 }

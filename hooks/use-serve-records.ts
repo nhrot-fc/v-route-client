@@ -1,13 +1,7 @@
-import { useState, useEffect, useCallback } from 'react';
-import { serveRecordApi, type ServeRecordDTO } from '@/lib/api-client';
-import { useToast } from '@/components/ui/use-toast';
+import { useState, useEffect, useCallback } from "react";
+import { serveRecordApi, type ServeRecordDTO } from "@/lib/api-client";
+import { useToast } from "@/components/ui/use-toast";
 
-// Define an interface that extends ServeRecordDTO if needed
-interface ServeRecordWithLegacyFields extends ServeRecordDTO {
-  // Add any legacy fields here if needed for compatibility
-}
-
-// Define pagination parameters
 interface PaginationParams {
   page: number;
   size: number;
@@ -21,39 +15,41 @@ export function useServeRecords(
     vehicleId?: string;
     startDate?: string;
     endDate?: string;
-  }, 
+  },
   paginationParams?: PaginationParams
 ) {
-  const [records, setRecords] = useState<ServeRecordWithLegacyFields[]>([]);
+  const [serveRecords, setServeRecords] = useState<ServeRecordDTO[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const { toast } = useToast();
 
-  // Extract pagination and filter values to use in dependencies
+  // Extract pagination values to use in dependencies
   const page = paginationParams?.page;
   const size = paginationParams?.size;
   const sortBy = paginationParams?.sortBy;
   const direction = paginationParams?.direction;
+
+  // Extract filter values
   const orderId = filter?.orderId;
   const vehicleId = filter?.vehicleId;
   const startDate = filter?.startDate;
   const endDate = filter?.endDate;
 
-  const fetchRecords = useCallback(async () => {
+  const fetchServeRecords = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
 
       // Set up pagination parameters
       const isPaginated = !!paginationParams;
-      const { page, size, sortBy, direction } = paginationParams || { page: 0, size: 10 };
-      
-      // Extract filter parameters
-      const { orderId, vehicleId, startDate, endDate } = filter || {};
-      
-      // Call the API with all parameters
+      const { page, size, sortBy, direction } = paginationParams || {
+        page: 0,
+        size: 10,
+      };
+
+      // Call API with parameters
       const response = await serveRecordApi.list1(
         orderId,
         vehicleId,
@@ -65,99 +61,117 @@ export function useServeRecords(
         sortBy,
         direction
       );
-      
+
       const responseData = response.data;
-      
+
       // Handle paginated response
-      if (isPaginated && responseData && typeof responseData === 'object' && 'content' in responseData) {
-        const { content, totalElements, totalPages: pages } = responseData as any;
-        
-        // Map the received records to include any legacy fields if needed
-        const mappedRecords = content.map((record: ServeRecordDTO) => ({
-          ...record,
-          // Map new fields to legacy fields if needed
-        }));
-        
-        setRecords(mappedRecords);
-        setTotalItems(totalElements);
-        setTotalPages(pages);
+      if (
+        isPaginated &&
+        responseData &&
+        typeof responseData === "object" &&
+        "content" in responseData
+      ) {
+        const {
+          content,
+          totalElements,
+          totalPages: pages,
+        } = responseData as {
+          content: ServeRecordDTO[];
+          totalElements: number;
+          totalPages: number;
+        };
+        setServeRecords(content);
+        setTotalItems(totalElements || content.length);
+        setTotalPages(pages || 1);
       } else {
         // Handle non-paginated response
-        const recordsList = Array.isArray(responseData) ? responseData : [];
-        setRecords(recordsList);
+        const recordsList = Array.isArray(responseData)
+          ? responseData
+          : [responseData].filter(Boolean);
+        setServeRecords(recordsList);
         setTotalItems(recordsList.length);
         setTotalPages(1);
       }
-      
-      setLoading(false);
     } catch (err) {
-      setLoading(false);
-      const errorMessage = err instanceof Error ? err.message : "Error al cargar registros de entrega";
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Error al cargar registros de entrega";
       setError(errorMessage);
-      
       toast({
         title: "Error",
         description: errorMessage,
         variant: "destructive",
       });
-      
-      console.error("Error fetching serve records:", err);
+    } finally {
+      setLoading(false);
     }
-  }, [page, size, sortBy, direction, orderId, vehicleId, startDate, endDate, toast]);
+  }, [
+    orderId,
+    vehicleId,
+    startDate,
+    endDate,
+    page,
+    size,
+    sortBy,
+    direction,
+    toast,
+  ]);
 
   useEffect(() => {
-    fetchRecords();
-  }, [fetchRecords]);
+    fetchServeRecords();
+  }, [fetchServeRecords]);
 
   const createRecord = async (recordData: ServeRecordDTO) => {
     try {
-      await serveRecordApi.create1(recordData);
-      await fetchRecords();
-      
+      const response = await serveRecordApi.create1(recordData);
+      await fetchServeRecords(); // Refresh the list
       toast({
         title: "Éxito",
         description: "Registro de entrega creado exitosamente",
       });
+      return response.data;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Error al crear registro de entrega";
-      
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Error al crear registro de entrega";
       toast({
         title: "Error",
         description: errorMessage,
         variant: "destructive",
       });
-      
       throw err;
     }
   };
 
-  const deleteRecord = async (id: number) => {
+  const deleteRecord = async (id: string) => {
     try {
       await serveRecordApi.delete1(id);
-      await fetchRecords();
-      
+      await fetchServeRecords(); // Refresh the list
       toast({
         title: "Éxito",
         description: "Registro de entrega eliminado exitosamente",
       });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Error al eliminar registro de entrega";
-      
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Error al eliminar registro de entrega";
       toast({
         title: "Error",
         description: errorMessage,
         variant: "destructive",
       });
-      
       throw err;
     }
   };
 
   return {
-    records,
+    serveRecords,
     loading,
     error,
-    refetch: fetchRecords,
+    refetch: fetchServeRecords,
     createRecord,
     deleteRecord,
     totalItems,
@@ -165,46 +179,49 @@ export function useServeRecords(
   };
 }
 
-export function useServeRecord(id: number) {
-  const [record, setRecord] = useState<ServeRecordWithLegacyFields | null>(null);
+export function useServeRecord(id: string) {
+  const [serveRecord, setServeRecord] = useState<ServeRecordDTO | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const fetchRecord = useCallback(async () => {
+  const fetchServeRecord = useCallback(async () => {
+    if (!id) {
+      setServeRecord(null);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await serveRecordApi.getById1(id);
-      
-      setRecord(response.data);
-      setLoading(false);
+      setServeRecord(response.data);
     } catch (err) {
-      setLoading(false);
-      const errorMessage = err instanceof Error ? err.message : "Error al cargar el registro de entrega";
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : `Error al cargar el registro de entrega ${id}`;
       setError(errorMessage);
-      
       toast({
         title: "Error",
         description: errorMessage,
         variant: "destructive",
       });
-      
-      console.error("Error fetching serve record:", err);
+    } finally {
+      setLoading(false);
     }
   }, [id, toast]);
 
   useEffect(() => {
-    if (id) {
-      fetchRecord();
-    }
-  }, [id, fetchRecord]);
+    fetchServeRecord();
+  }, [fetchServeRecord]);
 
   return {
-    record,
+    serveRecord,
     loading,
     error,
-    refetch: fetchRecord,
+    refetch: fetchServeRecord,
   };
-} 
+}

@@ -117,13 +117,13 @@ export default function PedidosPage() {
     },
     {
       header: "Hora Llegada",
-      accessorKey: "arriveTime" as keyof OrderWithStatus,
-      cell: (order: OrderWithStatus) => order.arriveTime ? formatDate(new Date(order.arriveTime)) : 'N/A',
+      accessorKey: "arrivalTime" as keyof OrderWithStatus,
+      cell: (order: OrderWithStatus) => order.arrivalTime ? formatDate(new Date(order.arrivalTime)) : 'N/A',
     },
     {
       header: "Fecha Límite",
-      accessorKey: "dueTime" as keyof OrderWithStatus,
-      cell: (order: OrderWithStatus) => order.dueTime ? formatDate(new Date(order.dueTime)) : 'N/A',
+      accessorKey: "deadlineTime" as keyof OrderWithStatus,
+      cell: (order: OrderWithStatus) => order.deadlineTime ? formatDate(new Date(order.deadlineTime)) : 'N/A',
     },
     {
       header: "GLP Solicitado",
@@ -408,7 +408,7 @@ export default function PedidosPage() {
               <CardTitle>Carga Masiva</CardTitle>
             </div>
             <CardDescription>
-              Importa múltiples pedidos desde un archivo CSV
+              Importa múltiples pedidos desde archivos de texto
             </CardDescription>
           </CardHeader>
           <Divider className="mx-6" />

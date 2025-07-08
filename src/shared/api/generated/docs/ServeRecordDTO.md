@@ -5,10 +5,10 @@
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **number** |  | [optional] [default to undefined]
+**id** | **string** |  | [optional] [default to undefined]
 **vehicleId** | **string** |  | [optional] [default to undefined]
 **orderId** | **string** |  | [optional] [default to undefined]
-**volumeM3** | **number** |  | [optional] [default to undefined]
+**glpVolumeM3** | **number** |  | [optional] [default to undefined]
 **serveDate** | **string** |  | [optional] [default to undefined]
 
 ## Example
@@ -20,7 +20,7 @@ const instance: ServeRecordDTO = {
     id,
     vehicleId,
     orderId,
-    volumeM3,
+    glpVolumeM3,
     serveDate,
 };
 ```

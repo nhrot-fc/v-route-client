@@ -10,7 +10,6 @@ Name | Type | Description | Notes
 **shift** | **string** |  | [optional] [default to undefined]
 **occurrenceTime** | **string** |  | [optional] [default to undefined]
 **location** | [**Position**](Position.md) |  | [optional] [default to undefined]
-**transferableGlp** | **number** |  | [optional] [default to undefined]
 
 ## Example
 
@@ -23,7 +22,6 @@ const instance: IncidentCreateDTO = {
     shift,
     occurrenceTime,
     location,
-    transferableGlp,
 };
 ```
 

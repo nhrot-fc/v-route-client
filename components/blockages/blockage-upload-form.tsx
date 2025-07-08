@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle, CheckCircle2, Upload, Loader2 } from "lucide-react"
+import { AlertCircle, CheckCircle2, Upload, Loader2, Download, CalendarIcon } from "lucide-react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useBlockages } from "@/hooks/use-blockages"
 import { Blockage } from "@/lib/api-client"
@@ -15,65 +15,42 @@ export function BlockageUploadForm() {
   const [isUploading, setIsUploading] = useState(false)
   const [uploadStatus, setUploadStatus] = useState<"idle" | "success" | "error">("idle")
   const [errorMessage, setErrorMessage] = useState("")
-  const { createBlockage } = useBlockages()
+  const [year, setYear] = useState<number>(new Date().getFullYear())
+  const [month, setMonth] = useState<number>(new Date().getMonth() + 1)
+  const { createBulkBlockages } = useBlockages()
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       const selectedFile = e.target.files[0]
-      
-      // Validate file name format (aaaamm.bloqueos.txt)
-      const fileNameRegex = /^\d{6}\.bloqueos.txt$/
-      if (!fileNameRegex.test(selectedFile.name)) {
-        setErrorMessage("El nombre del archivo debe tener el formato aaaamm.bloqueos.txt (ejemplo: 202501.bloqueos.txt)")
-        setUploadStatus("error")
-        setFile(null)
-        return
-      }
-      
       setFile(selectedFile)
       setUploadStatus("idle")
       setErrorMessage("")
     }
   }
 
-  // Helper function to parse date string in format ##d##h##m to ISO date
-  const parseDateString = (dateStr: string, baseDate: Date = new Date()): string => {
+  // Helper function to parse date string in format ##d##h##m to Date
+  const parseDateString = (dateStr: string, refYear: number, refMonth: number): string => {
     const match = dateStr.match(/^(\d{2})d(\d{2})h(\d{2})m$/)
     if (!match) return new Date().toISOString()
     
     const [, days, hours, minutes] = match
     
-    const result = new Date(baseDate)
-    result.setDate(result.getDate() + parseInt(days))
-    result.setHours(parseInt(hours))
-    result.setMinutes(parseInt(minutes))
-    result.setSeconds(0)
-    
+    // Usar el año y mes de referencia proporcionados
+    const result = new Date(refYear, refMonth - 1, parseInt(days), parseInt(hours), parseInt(minutes), 0)
     return result.toISOString()
   }
 
   // Parse blockage line to create blockage objects
-  const parseBlockageLine = (line: string): Blockage => {
+  const parseBlockageLine = (line: string, refYear: number, refMonth: number): Blockage => {
     // Format: ##d##h##m-##d##h##m:x1,y1,x2,y2,...,xn,yn
     const [timeRange, coordinates] = line.split(':')
     const [startTimeStr, endTimeStr] = timeRange.split('-')
     
-    // Parse the coordinates - now we handle any number of points
+    // Parse the coordinates
     const linePoints = coordinates.trim()
     
-    // Parse the file name to get year and month for the base date
-    // The file name format is aaaamm.bloqueos.txt (e.g., 202501.bloqueos.txt)
-    const fileName = file?.name || ''
-    const yearMonth = fileName.match(/^(\d{4})(\d{2})/)
-    
-    let baseDate = new Date()
-    if (yearMonth) {
-      const [, year, month] = yearMonth
-      baseDate = new Date(parseInt(year), parseInt(month) - 1, 1) // Month is 0-indexed
-    }
-    
-    const startTime = parseDateString(startTimeStr, baseDate)
-    const endTime = parseDateString(endTimeStr, baseDate)
+    const startTime = parseDateString(startTimeStr, refYear, refMonth)
+    const endTime = parseDateString(endTimeStr, refYear, refMonth)
     
     return {
       linePoints,
@@ -81,6 +58,40 @@ export function BlockageUploadForm() {
       endTime
     }
   }
+
+  const handleDownloadTemplate = () => {
+    // Crear contenido de la plantilla según el formato requerido
+    const templateContent = [
+      "# PLANTILLA PARA CARGA MASIVA DE BLOQUEOS",
+      "#",
+      "# INSTRUCCIONES:",
+      "# Agregue sus bloqueos debajo de esta sección siguiendo el formato:",
+      "# DDdHHhMMm-DDdHHhMMm:x1,y1,x2,y2,...,xn,yn",
+      "#",
+      "# Donde:",
+      "# - DDdHHhMMm = Día, hora y minuto de inicio/fin (ej: 01d08h30m)",
+      "# - x1,y1,x2,y2,... = Coordenadas de los puntos que forman el bloqueo",
+      "#",
+      "# Ejemplo de formato correcto:",
+      "# 01d00h31m-01d21h35m:15,10,30,10,30,18",
+      "# 01d01h13m-01d20h38m:08,03,08,23,20,23",
+      "# 01d02h40m-01d22h32m:57,30,57,45",
+      "#",
+      "# AGREGAR BLOQUEOS AQUI:",
+      "",
+    ].join("\n");
+
+    // Crear y descargar el archivo
+    const blob = new Blob([templateContent], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "plantilla_bloqueos.txt");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   const handleUpload = async () => {
     if (!file) return
@@ -94,13 +105,18 @@ export function BlockageUploadForm() {
       const fileContent = await file.text()
       const lines = fileContent.trim().split('\n')
       
-      // Parse each line and create blockages
-      for (const line of lines) {
-        if (line.trim()) {
-          const blockage = parseBlockageLine(line.trim())
-          await createBlockage(blockage)
-        }
+      // Parse each line and collect all blockages
+      const blockages = lines
+        .map(line => line.trim())
+        .filter(line => line && !line.startsWith('#')) // Filter out empty lines and comments
+        .map(line => parseBlockageLine(line, year, month))
+      
+      if (blockages.length === 0) {
+        throw new Error("No se encontraron bloqueos válidos en el archivo")
       }
+      
+      // Create blockages in bulk
+      await createBulkBlockages(blockages)
       
       // Reset file input and show success
       setFile(null)
@@ -124,26 +140,76 @@ export function BlockageUploadForm() {
       <CardHeader>
         <CardTitle>Carga Masiva de Bloqueos</CardTitle>
         <CardDescription>
-          Suba un archivo con formato aaaamm.bloqueos.txt para importar múltiples bloqueos
+          Suba un archivo en formato de texto para importar múltiples bloqueos
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid w-full max-w-sm items-center gap-1.5">
           <Label htmlFor="blockage-file">Archivo de Bloqueos</Label>
-          <Input 
-            id="blockage-file" 
-            type="file" 
-            accept=".bloqueos.txt"
-            onChange={handleFileChange}
-            disabled={isUploading}
-          />
+          <div className="flex gap-2">
+            <Input 
+              id="blockage-file" 
+              type="file" 
+              accept=".csv,.txt,text/plain"
+              onChange={handleFileChange}
+              disabled={isUploading}
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={handleDownloadTemplate}
+              disabled={isUploading}
+              title="Descargar plantilla"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
+          </div>
           <p className="text-sm text-muted-foreground mt-1">
-            El archivo debe tener el formato aaaamm.bloqueos.txt y cada línea debe seguir el formato:
+            Cada línea debe seguir el formato:
             <br />
             <code className="text-xs">##d##h##m-##d##h##m:x1,y1,x2,y2,...</code>
             <br />
-            <span className="text-xs">Ejemplo: 01d08h30m-01d18h00m:10,15,20,15,20,25</span>
+            <span className="text-xs">Ejemplo: 01d00h31m-01d21h35m:15,10,30,10,30,18</span>
           </p>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label htmlFor="year">Año de referencia</Label>
+            <Input
+              id="year"
+              type="number"
+              min="2023"
+              max="2100"
+              value={year}
+              onChange={(e) => setYear(parseInt(e.target.value))}
+              disabled={isUploading}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="month">Mes de referencia</Label>
+            <Input
+              id="month"
+              type="number"
+              min="1"
+              max="12"
+              value={month}
+              onChange={(e) => setMonth(parseInt(e.target.value))}
+              disabled={isUploading}
+            />
+          </div>
+        </div>
+
+        <div className="bg-muted/50 rounded-md p-2 text-xs text-muted-foreground">
+          <div className="flex items-start gap-2">
+            <CalendarIcon className="h-4 w-4 mt-0.5" />
+            <div>
+              <p className="font-medium">Nota sobre fechas</p>
+              <p>El archivo sólo contiene días, horas y minutos. El año y mes seleccionados se usarán como referencia.</p>
+            </div>
+          </div>
         </div>
         
         {uploadStatus === "success" && (

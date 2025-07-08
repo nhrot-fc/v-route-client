@@ -75,7 +75,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new MaintenanceControllerApi(configuration);
 
-let id: number; // (default to undefined)
+let id: string; // (default to undefined)
 
 const { status, data } = await apiInstance.getMaintenanceById(
     id
@@ -86,7 +86,7 @@ const { status, data } = await apiInstance.getMaintenanceById(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**number**] |  | defaults to undefined|
+| **id** | [**string**] |  | defaults to undefined|
 
 
 ### Return type

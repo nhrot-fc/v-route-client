@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
-import { FileText, Upload, Download } from "lucide-react";
-import { ordersApi } from "@/lib/api-client";
+import { FileText, Upload, Download, CalendarIcon } from "lucide-react";
+import { useOrders } from "@/hooks/use-orders";
+import { type OrderDTO } from "@/lib/api-client";
 
 interface OrderUploadFormProps {
   onOrdersUploaded?: () => void;
@@ -19,7 +20,10 @@ export function OrderUploadForm({ onOrdersUploaded }: OrderUploadFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [year, setYear] = useState<number>(new Date().getFullYear());
+  const [month, setMonth] = useState<number>(new Date().getMonth() + 1);
   const { toast } = useToast();
+  const { createBulkOrders } = useOrders();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -33,19 +37,21 @@ export function OrderUploadForm({ onOrdersUploaded }: OrderUploadFormProps) {
       "# PLANTILLA PARA CARGA MASIVA DE PEDIDOS",
       "#",
       "# INSTRUCCIONES:",
-      "# Agregue sus pedidos debajo de esta seccion siguiendo el formato:",
-      "# DDdHHhMMm,Px,Py,c-CC,Qm3,PPh",
+      "# Agregue sus pedidos debajo de esta sección siguiendo el formato:",
+      "# DDdHHhMMm:Px,Py,c-CC,Qm3,PPh",
       "#",
       "# Donde:",
       "# - DDdHHhMMm = Dia, hora y minuto de llegada (ej: 01d11h25m)",
       "# - Px = Coordenada X del cliente (0-70)",
       "# - Py = Coordenada Y del cliente (0-50)",
       "# - c-CC = Codigo del cliente (ej: c-123)",
-      "# - Qm3 = Volumen solicitado en metros cubicos (ej: 25)",
-      "# - PPh = Plazo de entrega en horas (ej: 12)",
+      "# - Qm3 = Volumen solicitado en metros cubicos (ej: 3m3)",
+      "# - PPh = Plazo de entrega en horas (ej: 12h)",
       "#",
       "# Ejemplo de formato correcto:",
-      "# 01d11h25m,69,49,c-999,25,12",
+      "# 01d00h24m:16,13,c-198,3m3,4h",
+      "# 01d00h48m:5,18,c-12,9m3,17h",
+      "# 01d01h12m:63,13,c-83,2m3,9h",
       "#",
       "# AGREGAR PEDIDOS AQUI:",
       "",
@@ -63,6 +69,100 @@ export function OrderUploadForm({ onOrdersUploaded }: OrderUploadFormProps) {
     URL.revokeObjectURL(url);
   }, []);
 
+  const parseCsv = (csvContent: string, refYear: number, refMonth: number) => {
+    const lines = csvContent.split("\n");
+    const orders: OrderDTO[] = [];
+
+    for (const line of lines) {
+      // Skip comments and empty lines
+      if (line.trim().startsWith("#") || line.trim().length === 0) {
+        continue;
+      }
+
+      // Nueva estructura: DDdHHhMMm:Px,Py,c-CC,Qm3,PPh
+      const parts = line.split(":");
+      if (parts.length !== 2) {
+        continue; // Skip invalid lines
+      }
+
+      const timeStr = parts[0].trim();
+      const dataParts = parts[1].split(",");
+
+      if (dataParts.length < 5) {
+        continue; // Skip invalid lines
+      }
+
+      const [posX, posY, clientId, glpRequestStr, deadlineStr] = dataParts;
+
+      // Parse arrival time from format DDdHHhMMm
+      let arrivalTime = "";
+      try {
+        const dayMatch = timeStr.match(/(\d+)d/);
+        const hourMatch = timeStr.match(/(\d+)h/);
+        const minuteMatch = timeStr.match(/(\d+)m/);
+
+        const days = dayMatch ? parseInt(dayMatch[1]) : 0;
+        const hours = hourMatch ? parseInt(hourMatch[1]) : 0;
+        const minutes = minuteMatch ? parseInt(minuteMatch[1]) : 0;
+
+        // Crear la fecha con el año y mes de referencia
+        const date = new Date(refYear, refMonth - 1, days, hours, minutes, 0);
+        arrivalTime = date.toISOString();
+      } catch (err) {
+        console.error("Error parsing arrival time:", err);
+        continue;
+      }
+
+      // Parse GLP request (remove m3 suffix)
+      let glpRequestM3 = 0;
+      try {
+        glpRequestM3 = parseFloat(glpRequestStr.replace("m3", ""));
+      } catch (err) {
+        console.error("Error parsing GLP request:", err);
+        continue;
+      }
+
+      // Parse deadline hours (remove h suffix)
+      let deadlineHours = 0;
+      try {
+        deadlineHours = parseInt(deadlineStr.replace("h", ""));
+      } catch (err) {
+        console.error("Error parsing deadline hours:", err);
+        continue;
+      }
+
+      // Calculate deadline time based on arrival time plus deadline hours
+      let deadlineTime = "";
+      try {
+        const arrivalDate = new Date(arrivalTime);
+        arrivalDate.setHours(arrivalDate.getHours() + deadlineHours);
+        deadlineTime = arrivalDate.toISOString();
+
+        const stringId = `${clientId}-${arrivalDate.getFullYear()}-${arrivalDate.getMonth()}-${arrivalDate.getDate()}T${arrivalDate.getHours()}:${arrivalDate.getMinutes()}`;
+
+        // Create order DTO
+        const order: OrderDTO = {
+          id: stringId,
+          position: {
+            x: parseFloat(posX),
+            y: parseFloat(posY),
+          },
+          arrivalTime,
+          deadlineTime,
+          glpRequestM3: glpRequestM3,
+          remainingGlpM3: glpRequestM3, // Initially, remaining = requested
+          delivered: false,
+        };
+
+        orders.push(order);
+      } catch (err) {
+        console.error("Error calculating deadline time:", err);
+      }
+    }
+
+    return orders;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -74,9 +174,6 @@ export function OrderUploadForm({ onOrdersUploaded }: OrderUploadFormProps) {
       });
       return;
     }
-
-    const formData = new FormData();
-    formData.append("file", file);
 
     try {
       setUploading(true);
@@ -90,20 +187,25 @@ export function OrderUploadForm({ onOrdersUploaded }: OrderUploadFormProps) {
         setProgress(Math.min(currentProgress, 90));
       }, 200);
 
-      // Usar axios del API client para hacer la solicitud
-      const response = await ordersApi.importCsv(formData);
+      // Leer el contenido del archivo
+      const fileContent = await file.text();
+
+      // Parsear el archivo como texto plano
+      const orders = parseCsv(fileContent, year, month);
+
+      if (orders.length === 0) {
+        throw new Error("No se encontraron pedidos válidos en el archivo");
+      }
+
+      // Usar createBulkOrders de useOrders hook para crear los pedidos
+      await createBulkOrders(orders);
 
       clearInterval(interval);
       setProgress(100);
 
-      // Parse the response to get information about the processed orders
-      const result = response.data;
-
       toast({
         title: "Carga completada",
-        description: `Se han procesado ${
-          result.processedOrders || "varios"
-        } pedidos correctamente`,
+        description: `Se han procesado ${orders.length} pedidos correctamente`,
       });
 
       // Reset form
@@ -128,12 +230,12 @@ export function OrderUploadForm({ onOrdersUploaded }: OrderUploadFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid w-full max-w-sm items-center gap-1.5">
-        <Label htmlFor="file">Archivo de pedidos (CSV)</Label>
+        <Label htmlFor="file">Archivo de pedidos</Label>
         <div className="flex items-center gap-2">
           <Input
             id="file"
             type="file"
-            accept=".csv"
+            accept=".csv,.txt,text/plain"
             onChange={handleFileChange}
             disabled={uploading}
           />
@@ -149,8 +251,48 @@ export function OrderUploadForm({ onOrdersUploaded }: OrderUploadFormProps) {
           onClick={handleDownloadTemplate}
         >
           <Download className="mr-1 h-3 w-3" />
-          Descargar plantilla CSV
+          Descargar plantilla
         </Button>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="year">Año de referencia</Label>
+          <Input
+            id="year"
+            type="number"
+            min="2023"
+            max="2100"
+            value={year}
+            onChange={(e) => setYear(parseInt(e.target.value))}
+            disabled={uploading}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="month">Mes de referencia</Label>
+          <Input
+            id="month"
+            type="number"
+            min="1"
+            max="12"
+            value={month}
+            onChange={(e) => setMonth(parseInt(e.target.value))}
+            disabled={uploading}
+          />
+        </div>
+      </div>
+
+      <div className="bg-muted/50 rounded-md p-2 text-xs text-muted-foreground">
+        <div className="flex items-start gap-2">
+          <CalendarIcon className="h-4 w-4 mt-0.5" />
+          <div>
+            <p className="font-medium">Nota sobre fechas</p>
+            <p>
+              El archivo sólo contiene días, horas y minutos. El año y mes
+              seleccionados se usarán como referencia.
+            </p>
+          </div>
+        </div>
       </div>
 
       {file && (

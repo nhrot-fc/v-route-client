@@ -1,6 +1,12 @@
-import { useState, useEffect, useCallback } from 'react'
-import { vehiclesApi, type Vehicle, VehicleStatusEnum, ListStatusEnum, ListTypeEnum } from '@/lib/api-client'
-import { useToast } from '@/components/ui/use-toast'
+import { useState, useEffect, useCallback } from "react";
+import {
+  vehiclesApi,
+  type VehicleDTO,
+  VehicleStatusEnum,
+  ListStatusEnum,
+  ListTypeEnum,
+} from "@/lib/api-client";
+import { useToast } from "@/components/ui/use-toast";
 
 // Define pagination parameters
 interface PaginationParams {
@@ -19,58 +25,62 @@ interface VehicleFilterParams {
 }
 
 export function useVehicles(
-  filterTab?: string, 
+  filterTab?: string,
   paginationParams?: PaginationParams,
   filterParams?: VehicleFilterParams
 ) {
-  const [vehicles, setVehicles] = useState<Vehicle[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [vehicles, setVehicles] = useState<VehicleDTO[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
-  const { toast } = useToast()
+  const { toast } = useToast();
 
   // Extract pagination and filter values to use in dependencies
   const page = paginationParams?.page;
   const size = paginationParams?.size;
   const sortBy = paginationParams?.sortBy;
   const direction = paginationParams?.direction;
-  
+
   // Extract filter values
-  const status = filterParams?.status || (filterTab ? mapFilterTabToStatus(filterTab) : undefined);
+  const status =
+    filterParams?.status ||
+    (filterTab ? mapFilterTabToStatus(filterTab) : undefined);
   const type = filterParams?.type;
   const minGlp = filterParams?.minGlp;
   const minFuel = filterParams?.minFuel;
 
   const fetchVehicles = useCallback(async () => {
     try {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
 
       // Set up pagination parameters
       const isPaginated = !!paginationParams;
-      const paginatedParams = isPaginated ? {
-        paginated: true,
-        page: page || 0,
-        size: size || 10,
-        sortBy,
-        direction
-      } : {};
-      
+      const paginatedParams = isPaginated
+        ? {
+            paginated: true,
+            page: page || 0,
+            size: size || 10,
+            sortBy,
+            direction,
+          }
+        : {};
+
       // Set up filter parameters
       const filterParams = {
         status: status as ListStatusEnum | undefined,
         type: type as ListTypeEnum | undefined,
         minGlp,
-        minFuel
+        minFuel,
       };
-      
+
       // Combine parameters
       const params = {
         ...paginatedParams,
-        ...filterParams
+        ...filterParams,
       };
-      
+
       // Call API with parameters
       const response = await vehiclesApi.list(
         params.type,
@@ -83,141 +93,159 @@ export function useVehicles(
         params.sortBy,
         params.direction
       );
-      
+
       const responseData = response.data;
-      
+
       // Handle paginated response
-      if (isPaginated && responseData && typeof responseData === 'object' && 'content' in responseData) {
-        const { content, totalElements, totalPages: pages } = responseData as { content: Vehicle[], totalElements: number, totalPages: number };
+      if (
+        isPaginated &&
+        responseData &&
+        typeof responseData === "object" &&
+        "content" in responseData
+      ) {
+        const {
+          content,
+          totalElements,
+          totalPages: pages,
+        } = responseData as {
+          content: VehicleDTO[];
+          totalElements: number;
+          totalPages: number;
+        };
         setVehicles(content);
         setTotalItems(totalElements);
         setTotalPages(pages);
       } else {
         // Handle non-paginated response
-        const vehiclesList = Array.isArray(responseData) ? responseData : [];
+        const vehiclesList = Array.isArray(responseData)
+          ? responseData
+          : [responseData].filter(Boolean);
         setVehicles(vehiclesList);
         setTotalItems(vehiclesList.length);
         setTotalPages(1);
       }
-      
-      setLoading(false);
     } catch (err) {
-      setLoading(false);
-      const errorMessage = err instanceof Error ? err.message : "Error al cargar vehículos";
+      const errorMessage =
+        err instanceof Error ? err.message : "Error al cargar vehículos";
       setError(errorMessage);
-      
+
       toast({
         title: "Error",
         description: errorMessage,
         variant: "destructive",
       });
-      
+
       console.error("Error fetching vehicles:", err);
+    } finally {
+      setLoading(false);
     }
-  }, [page, size, sortBy, direction, status, type, minGlp, minFuel, toast])
+  }, [page, size, sortBy, direction, status, type, minGlp, minFuel, toast]);
 
   useEffect(() => {
-    fetchVehicles()
-  }, [fetchVehicles])
+    fetchVehicles();
+  }, [fetchVehicles]);
 
-  const createVehicle = async (vehicleData: Partial<Vehicle>) => {
+  const createVehicle = async (vehicleData: Partial<VehicleDTO>) => {
     try {
-      // Create a new vehicle DTO with the correct field names
-      const vehicleDTO = {
-        ...vehicleData,
-      } 
-      
-      const response = await vehiclesApi.create(vehicleDTO)
-      await fetchVehicles() // Refresh the list
+      const response = await vehiclesApi.create(vehicleData);
+      await fetchVehicles(); // Refresh the list
       toast({
-        title: 'Éxito',
-        description: 'Vehículo creado exitosamente',
-      })
-      return response.data
+        title: "Éxito",
+        description: "Vehículo creado exitosamente",
+      });
+      return response.data;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al crear vehículo'
+      const errorMessage =
+        err instanceof Error ? err.message : "Error al crear vehículo";
       toast({
-        title: 'Error',
+        title: "Error",
         description: errorMessage,
-        variant: 'destructive',
-      })
-      throw err
+        variant: "destructive",
+      });
+      throw err;
     }
-  }
+  };
 
-  const updateVehicleStatus = async (vehicleId: string, newStatus: VehicleStatusEnum) => {
+  const updateVehicleStatus = async (
+    vehicleId: string,
+    newStatus: VehicleStatusEnum
+  ) => {
     try {
       // Get the current vehicle first
       const vehicleResponse = await vehiclesApi.getById(vehicleId);
       const currentVehicle = vehicleResponse.data;
-      
+
       // Update only the status
       const vehicleDTO = {
         ...currentVehicle,
-        status: newStatus
+        status: newStatus,
       };
-      
+
       await vehiclesApi.update(vehicleId, vehicleDTO);
-      
+
       // Update local state
-      setVehicles(prevVehicles => 
-        prevVehicles.map(vehicle => 
+      setVehicles((prevVehicles) =>
+        prevVehicles.map((vehicle) =>
           vehicle.id === vehicleId ? { ...vehicle, status: newStatus } : vehicle
         )
       );
-      
+
       toast({
         title: "Éxito",
-        description: `Estado del vehículo ${vehicleId} actualizado a ${getStatusLabel(newStatus)}`,
+        description: `Estado del vehículo ${vehicleId} actualizado a ${getStatusLabel(
+          newStatus
+        )}`,
       });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Error al actualizar estado";
-      
+      const errorMessage =
+        err instanceof Error ? err.message : "Error al actualizar estado";
+
       toast({
         title: "Error",
         description: errorMessage,
         variant: "destructive",
       });
     }
-  }
+  };
 
   const deleteVehicle = async (vehicleId: string) => {
     try {
       await vehiclesApi._delete(vehicleId);
-      
+
       // Update local state
-      setVehicles(prevVehicles => prevVehicles.filter(vehicle => vehicle.id !== vehicleId));
-      
+      setVehicles((prevVehicles) =>
+        prevVehicles.filter((vehicle) => vehicle.id !== vehicleId)
+      );
+
       toast({
         title: "Éxito",
         description: `Vehículo ${vehicleId} eliminado correctamente`,
       });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Error al eliminar vehículo";
-      
+      const errorMessage =
+        err instanceof Error ? err.message : "Error al eliminar vehículo";
+
       toast({
         title: "Error",
         description: errorMessage,
         variant: "destructive",
       });
     }
-  }
-  
-  const updateVehicle = async (id: string, data: Partial<Vehicle>) => {
+  };
+
+  const updateVehicle = async (id: string, data: Partial<VehicleDTO>) => {
     try {
-      const vehicleDTO = {
-        ...data,
-      }
-      
-      await vehiclesApi.update(id, vehicleDTO)
-      await fetchVehicles()
-      toast({ title: 'Éxito', description: 'Vehículo actualizado' })
+      await vehiclesApi.update(id, data);
+      await fetchVehicles();
+      toast({ title: "Éxito", description: "Vehículo actualizado" });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : 'Error al actualizar vehículo'
-      toast({ title: 'Error', description: msg, variant: 'destructive' })
-      throw err
+      const msg =
+        err instanceof Error ? err.message : "Error al actualizar vehículo";
+      toast({ title: "Error", description: msg, variant: "destructive" });
+      throw err;
     }
-  }
+  };
+
   return {
     vehicles,
     loading,
@@ -229,53 +257,65 @@ export function useVehicles(
     updateVehicle,
     totalItems,
     totalPages,
-  }
+  };
 }
 
 export function useVehicle(id: string) {
-  const [vehicle, setVehicle] = useState<Vehicle | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const { toast } = useToast()
+  const [vehicle, setVehicle] = useState<VehicleDTO | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  const fetchVehicle = useCallback(async () => {
+    if (!id) {
+      setVehicle(null);
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await vehiclesApi.getById(id);
+      setVehicle(response.data);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Error al cargar vehículo";
+      setError(errorMessage);
+      toast({
+        title: "Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [id, toast]);
 
   useEffect(() => {
-    const fetchVehicle = async () => {
-      try {
-        setLoading(true)
-        setError(null)
-        const response = await vehiclesApi.getById(id)
-        setVehicle(response.data)
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Error al cargar vehículo'
-        setError(errorMessage)
-        toast({
-          title: 'Error',
-          description: errorMessage,
-          variant: 'destructive',
-        })
-      } finally {
-        setLoading(false)
-      }
-    }
+    fetchVehicle();
+  }, [fetchVehicle]);
 
-    if (id) {
-      fetchVehicle()
-    }
-  }, [id, toast])
-
-  return { vehicle, loading, error }
+  return {
+    vehicle,
+    loading,
+    error,
+    refetch: fetchVehicle,
+  };
 }
 
 // Helper function to map filter tab IDs to vehicle status enum
-function mapFilterTabToStatus(filterTab: string): VehicleStatusEnum | undefined {
+function mapFilterTabToStatus(
+  filterTab: string
+): VehicleStatusEnum | undefined {
   switch (filterTab) {
-    case 'disponibles':
+    case "disponibles":
       return VehicleStatusEnum.Available;
-    case 'en-ruta':
+    case "en-ruta":
       return VehicleStatusEnum.Driving;
-    case 'mantenimiento':
+    case "mantenimiento":
       return VehicleStatusEnum.Maintenance;
-    case 'averiados':
+    case "averiados":
       return VehicleStatusEnum.Incident;
     default:
       return undefined;

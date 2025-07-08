@@ -5,13 +5,14 @@ All URIs are relative to *http://localhost:8080*
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
 |[**create5**](#create5) | **POST** /api/blockages | |
+|[**createBulk1**](#createbulk1) | **POST** /api/blockages/bulk | |
 |[**delete4**](#delete4) | **DELETE** /api/blockages/{id} | |
 |[**getById5**](#getbyid5) | **GET** /api/blockages/{id} | |
 |[**list5**](#list5) | **GET** /api/blockages | |
 |[**update3**](#update3) | **PUT** /api/blockages/{id} | |
 
 # **create5**
-> Blockage create5(blockage)
+> Blockage create5(blockageDTO)
 
 
 ### Example
@@ -20,16 +21,16 @@ All URIs are relative to *http://localhost:8080*
 import {
     BlockageControllerApi,
     Configuration,
-    Blockage
+    BlockageDTO
 } from './api';
 
 const configuration = new Configuration();
 const apiInstance = new BlockageControllerApi(configuration);
 
-let blockage: Blockage; //
+let blockageDTO: BlockageDTO; //
 
 const { status, data } = await apiInstance.create5(
-    blockage
+    blockageDTO
 );
 ```
 
@@ -37,12 +38,62 @@ const { status, data } = await apiInstance.create5(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **blockage** | **Blockage**|  | |
+| **blockageDTO** | **BlockageDTO**|  | |
 
 
 ### Return type
 
 **Blockage**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **createBulk1**
+> Array<Blockage> createBulk1(blockageDTO)
+
+
+### Example
+
+```typescript
+import {
+    BlockageControllerApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new BlockageControllerApi(configuration);
+
+let blockageDTO: Array<BlockageDTO>; //
+
+const { status, data } = await apiInstance.createBulk1(
+    blockageDTO
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **blockageDTO** | **Array<BlockageDTO>**|  | |
+
+
+### Return type
+
+**Array<Blockage>**
 
 ### Authorization
 
@@ -76,7 +127,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new BlockageControllerApi(configuration);
 
-let id: number; // (default to undefined)
+let id: string; // (default to undefined)
 
 const { status, data } = await apiInstance.delete4(
     id
@@ -87,7 +138,7 @@ const { status, data } = await apiInstance.delete4(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**number**] |  | defaults to undefined|
+| **id** | [**string**] |  | defaults to undefined|
 
 
 ### Return type
@@ -126,7 +177,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new BlockageControllerApi(configuration);
 
-let id: number; // (default to undefined)
+let id: string; // (default to undefined)
 
 const { status, data } = await apiInstance.getById5(
     id
@@ -137,7 +188,7 @@ const { status, data } = await apiInstance.getById5(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**number**] |  | defaults to undefined|
+| **id** | [**string**] |  | defaults to undefined|
 
 
 ### Return type
@@ -248,7 +299,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new BlockageControllerApi(configuration);
 
-let id: number; // (default to undefined)
+let id: string; // (default to undefined)
 let blockage: Blockage; //
 
 const { status, data } = await apiInstance.update3(
@@ -262,7 +313,7 @@ const { status, data } = await apiInstance.update3(
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
 | **blockage** | **Blockage**|  | |
-| **id** | [**number**] |  | defaults to undefined|
+| **id** | [**string**] |  | defaults to undefined|
 
 
 ### Return type

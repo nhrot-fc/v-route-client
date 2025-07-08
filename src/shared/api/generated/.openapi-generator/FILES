@@ -7,6 +7,7 @@ common.ts
 configuration.ts
 docs/Blockage.md
 docs/BlockageControllerApi.md
+docs/BlockageDTO.md
 docs/DashboardApi.md
 docs/DeliveryRecordDTO.md
 docs/Depot.md
@@ -28,9 +29,8 @@ docs/ServeRecord.md
 docs/ServeRecordControllerApi.md
 docs/ServeRecordDTO.md
 docs/SimulationApi.md
-docs/SimulationReportDTO.md
-docs/SimulationReportDTOTotalDuration.md
-docs/SimulationReportDTOTotalDurationUnitsInner.md
+docs/SimulationCreateDTO.md
+docs/SimulationDTO.md
 docs/SimulationStateDTO.md
 docs/Vehicle.md
 docs/VehicleControllerApi.md

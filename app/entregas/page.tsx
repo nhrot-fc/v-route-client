@@ -66,7 +66,7 @@ export default function EntregasPage() {
   
   // Get serve records with pagination and filter
   const {
-    records,
+    serveRecords,
     loading,
     error,
     refetch,
@@ -124,11 +124,11 @@ export default function EntregasPage() {
     },
     {
       header: "Volumen (m³)",
-      accessorKey: "volumeM3" as keyof ServeRecordDTO,
+      accessorKey: "glpVolumeM3" as keyof ServeRecordDTO,
       cell: (record: ServeRecordDTO) => (
         <div className="flex items-center">
           <DropletIcon className="h-4 w-4 mr-1.5 text-blue-500" />
-          {record.volumeM3?.toFixed(2)}
+          {record.glpVolumeM3?.toFixed(2)}
         </div>
       ),
     },
@@ -169,7 +169,7 @@ export default function EntregasPage() {
   ];
 
   // Filter records for tabs
-  const last7DaysRecords = records.filter((r: ServeRecordDTO) => {
+  const last7DaysRecords = serveRecords.filter((r: ServeRecordDTO) => {
     if (!r.serveDate) return false;
     const date = new Date(r.serveDate);
     const sevenDaysAgo = new Date();
@@ -177,7 +177,7 @@ export default function EntregasPage() {
     return date >= sevenDaysAgo;
   });
 
-  const last30DaysRecords = records.filter((r: ServeRecordDTO) => {
+  const last30DaysRecords = serveRecords.filter((r: ServeRecordDTO) => {
     if (!r.serveDate) return false;
     const date = new Date(r.serveDate);
     const thirtyDaysAgo = new Date();
@@ -203,7 +203,7 @@ export default function EntregasPage() {
             <TabsList>
               <TabsTrigger value="todos" className="flex gap-2">
                 Todos
-                <Badge variant="outline">{records.length}</Badge>
+                <Badge variant="outline">{serveRecords.length}</Badge>
               </TabsTrigger>
               <TabsTrigger value="ultimos7dias" className="flex gap-2">
                 Últimos 7 días
@@ -226,7 +226,7 @@ export default function EntregasPage() {
               </CardHeader>
               <CardContent>
                 <DataTable
-                  data={records}
+                  data={serveRecords}
                   columns={columns}
                   actions={actions}
                   isLoading={loading}

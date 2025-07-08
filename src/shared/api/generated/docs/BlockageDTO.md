@@ -1,27 +1,23 @@
-# Blockage
+# BlockageDTO
 
 
 ## Properties
 
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**id** | **string** |  | [optional] [default to undefined]
 **startTime** | **string** |  | [optional] [default to undefined]
 **endTime** | **string** |  | [optional] [default to undefined]
-**linePoints** | **string** |  | [optional] [default to undefined]
-**lines** | [**Array&lt;Position&gt;**](Position.md) |  | [optional] [default to undefined]
+**blockageLines** | [**Array&lt;Position&gt;**](Position.md) |  | [optional] [default to undefined]
 
 ## Example
 
 ```typescript
-import { Blockage } from './api';
+import { BlockageDTO } from './api';
 
-const instance: Blockage = {
-    id,
+const instance: BlockageDTO = {
     startTime,
     endTime,
-    linePoints,
-    lines,
+    blockageLines,
 };
 ```
 

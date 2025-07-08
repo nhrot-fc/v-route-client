@@ -6,8 +6,8 @@
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **id** | **string** |  | [optional] [default to undefined]
-**arriveTime** | **string** |  | [optional] [default to undefined]
-**dueTime** | **string** |  | [optional] [default to undefined]
+**arrivalTime** | **string** |  | [optional] [default to undefined]
+**deadlineTime** | **string** |  | [optional] [default to undefined]
 **glpRequestM3** | **number** |  | [optional] [default to undefined]
 **remainingGlpM3** | **number** |  | [optional] [default to undefined]
 **position** | [**Position**](Position.md) |  | [optional] [default to undefined]
@@ -20,8 +20,8 @@ import { OrderDTO } from './api';
 
 const instance: OrderDTO = {
     id,
-    arriveTime,
-    dueTime,
+    arrivalTime,
+    deadlineTime,
     glpRequestM3,
     remainingGlpM3,
     position,

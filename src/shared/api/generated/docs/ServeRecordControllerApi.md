@@ -75,7 +75,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new ServeRecordControllerApi(configuration);
 
-let id: number; // (default to undefined)
+let id: string; // (default to undefined)
 
 const { status, data } = await apiInstance.delete1(
     id
@@ -86,7 +86,7 @@ const { status, data } = await apiInstance.delete1(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**number**] |  | defaults to undefined|
+| **id** | [**string**] |  | defaults to undefined|
 
 
 ### Return type
@@ -125,7 +125,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new ServeRecordControllerApi(configuration);
 
-let id: number; // (default to undefined)
+let id: string; // (default to undefined)
 
 const { status, data } = await apiInstance.getById1(
     id
@@ -136,7 +136,7 @@ const { status, data } = await apiInstance.getById1(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **id** | [**number**] |  | defaults to undefined|
+| **id** | [**string**] |  | defaults to undefined|
 
 
 ### Return type
