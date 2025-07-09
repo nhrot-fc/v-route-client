@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="128" height="64" viewBox="0 0 128 64" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+    <linearGradient id="flameGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="50%" stop-color="#ef4444" />
+      <stop offset="100%" stop-color="#dc2626" />
+    </linearGradient>
+    <linearGradient id="cylinderGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#94a3b8" />
+      <stop offset="50%" stop-color="#d1d5db" />
+      <stop offset="100%" stop-color="#64748b" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Base shape -->
+  <rect x="4" y="4" width="120" height="56" rx="28" fill="url(#bgGradient)" />
+  
+  <!-- Cilindro más simple -->
+  <g transform="translate(16, 12)">
+    <rect x="0" y="8" width="16" height="32" rx="3" fill="url(#cylinderGradient)" stroke="#475569" stroke-width="1.5" />
+    <rect x="3" y="4" width="10" height="4" rx="1" fill="#94a3b8" stroke="#475569" stroke-width="1.5" />
+    <line x1="8" y1="4" x2="8" y2="0" stroke="#475569" stroke-width="2" stroke-linecap="round" />
+  </g>
+  
+  <!-- Llama minimalista -->
+  <path d="M32,12 C33,16 36,19 34,22 C33,25 30,24 32,27 C34,24 37,25 36,22 C34,19 37,16 38,12 C35,15 33,15 32,12 Z" 
+        fill="url(#flameGradient)" />
+  
+  <!-- Texto moderno -->
+  <text x="72" y="36" text-anchor="middle" font-family="Arial, sans-serif" font-weight="bold" font-size="18" fill="white">V-ROUTE</text>
+  <text x="72" y="48" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" fill="#d1d5db">GLP DELIVERY</text>
+</svg> 
