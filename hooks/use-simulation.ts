@@ -3,6 +3,7 @@ import {
   simulationApi,
   SimulationCreateDTO,
   SimulationDTOTypeEnum,
+  uploadFileToSimulation,
 } from "@/lib/api-client";
 import { AxiosError } from "axios";
 
@@ -10,17 +11,15 @@ export function useSimulation() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const createSimulation = async (
-    simulationData: {
-      startDateTime?: string;
-      endDateTime?: string;
-      type?: SimulationDTOTypeEnum;
-      taVehicles?: number;
-      tbVehicles?: number;
-      tcVehicles?: number;
-      tdVehicles?: number;
-    }
-  ) => {
+  const createSimulation = async (simulationData: {
+    startDateTime?: string;
+    endDateTime?: string;
+    type?: SimulationDTOTypeEnum;
+    taVehicles?: number;
+    tbVehicles?: number;
+    tcVehicles?: number;
+    tdVehicles?: number;
+  }) => {
     setIsLoading(true);
     setError(null);
 
@@ -32,7 +31,7 @@ export function useSimulation() {
         taVehicles: simulationData.taVehicles,
         tbVehicles: simulationData.tbVehicles,
         tcVehicles: simulationData.tcVehicles,
-        tdVehicles: simulationData.tdVehicles
+        tdVehicles: simulationData.tdVehicles,
       };
 
       const response = await simulationApi.createSimulation(
@@ -97,80 +96,6 @@ export function useSimulation() {
     }
   };
 
-  const getSimulationStatus = async (id: string) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await simulationApi.getSimulationStatus(id);
-      setIsLoading(false);
-      return response;
-    } catch (err) {
-      setIsLoading(false);
-      const axiosError = err as AxiosError;
-      setError(
-        axiosError.message || "Error al obtener el estado de la simulación"
-      );
-      return null;
-    }
-  };
-
-  const getSimulationState = async (id: string) => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await simulationApi.getSimulationState(id);
-      setIsLoading(false);
-      return response;
-    } catch (err) {
-      setIsLoading(false);
-      const axiosError = err as AxiosError;
-      setError(
-        axiosError.message ||
-          "Error al obtener el estado detallado de la simulación"
-      );
-      return null;
-    }
-  };
-
-  const getDailyOperations = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await simulationApi.getDailyOperations();
-      setIsLoading(false);
-      return response;
-    } catch (err) {
-      setIsLoading(false);
-      const axiosError = err as AxiosError;
-      setError(
-        axiosError.message || "Error al obtener las operaciones diarias"
-      );
-      return null;
-    }
-  };
-
-  const getDailyOperationsState = async () => {
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const response = await simulationApi.getDailyOperationsState();
-      setIsLoading(false);
-      return response;
-    } catch (err) {
-      setIsLoading(false);
-      const axiosError = err as AxiosError;
-      setError(
-        axiosError.message ||
-          "Error al obtener el estado de las operaciones diarias"
-      );
-      return null;
-    }
-  };
-
   const listSimulations = async () => {
     setIsLoading(true);
     setError(null);
@@ -189,6 +114,80 @@ export function useSimulation() {
     }
   };
 
+  const loadOrders = async (
+    id: string,
+    year: number,
+    month: number,
+    file: File
+  ) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await uploadFileToSimulation(
+        "load-orders",
+        id,
+        year,
+        month,
+        file
+      );
+      setIsLoading(false);
+      return response;
+    } catch (err) {
+      setIsLoading(false);
+      const axiosError = err as AxiosError;
+      setError(
+        axiosError.message || "Error al cargar órdenes para la simulación"
+      );
+      return null;
+    }
+  };
+
+  const loadBlockages = async (
+    id: string,
+    year: number,
+    month: number,
+    file: File
+  ) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await uploadFileToSimulation(
+        "load-blockages",
+        id,
+        year,
+        month,
+        file
+      );
+      setIsLoading(false);
+      return response;
+    } catch (err) {
+      setIsLoading(false);
+      const axiosError = err as AxiosError;
+      setError(
+        axiosError.message || "Error al cargar bloqueos para la simulación"
+      );
+      return null;
+    }
+  };
+
+  const replanSimulation = async (id: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await simulationApi.replanSimulation(id);
+      setIsLoading(false);
+      return response;
+    } catch (err) {
+      setIsLoading(false);
+      const axiosError = err as AxiosError;
+      setError(axiosError.message || "Error al replanificar la simulación");
+      return null;
+    }
+  };
+
   return {
     isLoading,
     error,
@@ -196,10 +195,9 @@ export function useSimulation() {
     startSimulation,
     pauseSimulation,
     stopSimulation,
-    getSimulationStatus,
-    getSimulationState,
-    getDailyOperations,
-    getDailyOperationsState,
     listSimulations,
+    loadOrders,
+    loadBlockages,
+    replanSimulation,
   };
 }

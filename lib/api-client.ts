@@ -59,6 +59,28 @@ const configuration = new Configuration({
   basePath: BASE_URL,
 });
 
+// Custom file uploader functions for multipart/form-data requests
+export const uploadFileToSimulation = async (endpoint: string, id: string, year: number, month: number, file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const response = await axiosInstance.post(
+      `${BASE_URL}/api/simulation/${id}/${endpoint}?year=${year}&month=${month}`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error(`Error uploading ${endpoint}:`, error);
+    throw error;
+  }
+};
+
 // Export API instances
 export const vehiclesApi = new VehicleControllerApi(
   configuration,
@@ -117,6 +139,7 @@ export type {
   Maintenance,
   Position,
   ServeRecord,
+  LoadOrdersRequest,
 } from "@/src/shared/api/generated";
 
 // Export DTO for use in components

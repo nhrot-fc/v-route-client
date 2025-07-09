@@ -12,6 +12,7 @@ Name | Type | Description | Notes
 **realEndTime** | **string** |  | [optional] [default to undefined]
 **type** | **string** |  | [optional] [default to undefined]
 **status** | **string** |  | [optional] [default to undefined]
+**state** | [**SimulationStateDTO**](SimulationStateDTO.md) |  | [optional] [default to undefined]
 
 ## Example
 
@@ -26,6 +27,7 @@ const instance: SimulationDTO = {
     realEndTime,
     type,
     status,
+    state,
 };
 ```
 

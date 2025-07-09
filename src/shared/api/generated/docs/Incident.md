@@ -12,8 +12,8 @@ Name | Type | Description | Notes
 **occurrenceTime** | **string** |  | [optional] [default to undefined]
 **location** | [**Position**](Position.md) |  | [optional] [default to undefined]
 **resolved** | **boolean** |  | [optional] [default to undefined]
-**availabilityTime** | **string** |  | [optional] [default to undefined]
 **immobilizationEndTime** | **string** |  | [optional] [default to undefined]
+**availabilityTime** | **string** |  | [optional] [default to undefined]
 **returnToDepotRequired** | **boolean** |  | [optional] [default to undefined]
 
 ## Example
@@ -29,8 +29,8 @@ const instance: Incident = {
     occurrenceTime,
     location,
     resolved,
-    availabilityTime,
     immobilizationEndTime,
+    availabilityTime,
     returnToDepotRequired,
 };
 ```

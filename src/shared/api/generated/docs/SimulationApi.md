@@ -5,12 +5,11 @@ All URIs are relative to *http://localhost:8080*
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
 |[**createSimulation**](#createsimulation) | **POST** /api/simulation | Create a new simplified simulation|
-|[**getDailyOperations**](#getdailyoperations) | **GET** /api/simulation/daily | Get daily operations simulation|
-|[**getDailyOperationsState**](#getdailyoperationsstate) | **GET** /api/simulation/daily/state | Get daily operations state|
-|[**getSimulationState**](#getsimulationstate) | **GET** /api/simulation/{id}/state | Get simulation state|
-|[**getSimulationStatus**](#getsimulationstatus) | **GET** /api/simulation/{id} | Get simulation status|
 |[**listSimulations**](#listsimulations) | **GET** /api/simulation | List all simulations|
+|[**loadBlockages**](#loadblockages) | **POST** /api/simulation/{id}/load-blockages | Cargar bloqueos para una simulación|
+|[**loadOrders**](#loadorders) | **POST** /api/simulation/{id}/load-orders | Cargar órdenes para una simulación|
 |[**pauseSimulation**](#pausesimulation) | **POST** /api/simulation/{id}/pause | Pause a simulation|
+|[**replanSimulation**](#replansimulation) | **POST** /api/simulation/{id}/replan | |
 |[**startSimulation**](#startsimulation) | **POST** /api/simulation/{id}/start | Start a simulation|
 |[**stopSimulation**](#stopsimulation) | **POST** /api/simulation/{id}/stop | Stop a simulation|
 
@@ -66,196 +65,6 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
-# **getDailyOperations**
-> SimulationDTO getDailyOperations()
-
-Returns the current status of the daily operations simulation
-
-### Example
-
-```typescript
-import {
-    SimulationApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new SimulationApi(configuration);
-
-const { status, data } = await apiInstance.getDailyOperations();
-```
-
-### Parameters
-This endpoint does not have any parameters.
-
-
-### Return type
-
-**SimulationDTO**
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: */*
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | OK |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **getDailyOperationsState**
-> SimulationStateDTO getDailyOperationsState()
-
-Returns the current detailed state of the daily operations simulation
-
-### Example
-
-```typescript
-import {
-    SimulationApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new SimulationApi(configuration);
-
-const { status, data } = await apiInstance.getDailyOperationsState();
-```
-
-### Parameters
-This endpoint does not have any parameters.
-
-
-### Return type
-
-**SimulationStateDTO**
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: */*
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | OK |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **getSimulationState**
-> SimulationStateDTO getSimulationState()
-
-Returns the current detailed state of a specific simulation
-
-### Example
-
-```typescript
-import {
-    SimulationApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new SimulationApi(configuration);
-
-let id: string; // (default to undefined)
-
-const { status, data } = await apiInstance.getSimulationState(
-    id
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
-
-
-### Return type
-
-**SimulationStateDTO**
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: */*
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | OK |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
-# **getSimulationStatus**
-> SimulationDTO getSimulationStatus()
-
-Returns the current status of a specific simulation
-
-### Example
-
-```typescript
-import {
-    SimulationApi,
-    Configuration
-} from './api';
-
-const configuration = new Configuration();
-const apiInstance = new SimulationApi(configuration);
-
-let id: string; // (default to undefined)
-
-const { status, data } = await apiInstance.getSimulationStatus(
-    id
-);
-```
-
-### Parameters
-
-|Name | Type | Description  | Notes|
-|------------- | ------------- | ------------- | -------------|
-| **id** | [**string**] |  | defaults to undefined|
-
-
-### Return type
-
-**SimulationDTO**
-
-### Authorization
-
-No authorization required
-
-### HTTP request headers
-
- - **Content-Type**: Not defined
- - **Accept**: */*
-
-
-### HTTP response details
-| Status code | Description | Response headers |
-|-------------|-------------|------------------|
-|**200** | OK |  -  |
-
-[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
-
 # **listSimulations**
 > { [key: string]: SimulationDTO; } listSimulations()
 
@@ -300,6 +109,128 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **loadBlockages**
+> string loadBlockages()
+
+Carga un archivo de bloqueos para un año y mes específico en una simulación
+
+### Example
+
+```typescript
+import {
+    SimulationApi,
+    Configuration,
+    LoadOrdersRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new SimulationApi(configuration);
+
+let id: string; // (default to undefined)
+let year: number; // (default to undefined)
+let month: number; // (default to undefined)
+let loadOrdersRequest: LoadOrdersRequest; // (optional)
+
+const { status, data } = await apiInstance.loadBlockages(
+    id,
+    year,
+    month,
+    loadOrdersRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **loadOrdersRequest** | **LoadOrdersRequest**|  | |
+| **id** | [**string**] |  | defaults to undefined|
+| **year** | [**number**] |  | defaults to undefined|
+| **month** | [**number**] |  | defaults to undefined|
+
+
+### Return type
+
+**string**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **loadOrders**
+> string loadOrders()
+
+Carga un archivo de órdenes para un año y mes específico en una simulación
+
+### Example
+
+```typescript
+import {
+    SimulationApi,
+    Configuration,
+    LoadOrdersRequest
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new SimulationApi(configuration);
+
+let id: string; // (default to undefined)
+let year: number; // (default to undefined)
+let month: number; // (default to undefined)
+let loadOrdersRequest: LoadOrdersRequest; // (optional)
+
+const { status, data } = await apiInstance.loadOrders(
+    id,
+    year,
+    month,
+    loadOrdersRequest
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **loadOrdersRequest** | **LoadOrdersRequest**|  | |
+| **id** | [**string**] |  | defaults to undefined|
+| **year** | [**number**] |  | defaults to undefined|
+| **month** | [**number**] |  | defaults to undefined|
+
+
+### Return type
+
+**string**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **pauseSimulation**
 > SimulationDTO pauseSimulation()
 
@@ -319,6 +250,56 @@ const apiInstance = new SimulationApi(configuration);
 let id: string; // (default to undefined)
 
 const { status, data } = await apiInstance.pauseSimulation(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**SimulationDTO**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **replanSimulation**
+> SimulationDTO replanSimulation()
+
+
+### Example
+
+```typescript
+import {
+    SimulationApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new SimulationApi(configuration);
+
+let id: string; // (default to undefined)
+
+const { status, data } = await apiInstance.replanSimulation(
     id
 );
 ```
