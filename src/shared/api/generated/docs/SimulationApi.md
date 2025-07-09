@@ -5,6 +5,7 @@ All URIs are relative to *http://localhost:8080*
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
 |[**createSimulation**](#createsimulation) | **POST** /api/simulation | Create a new simplified simulation|
+|[**getSimulation**](#getsimulation) | **GET** /api/simulation/{id} | Get simulation by ID|
 |[**listSimulations**](#listsimulations) | **GET** /api/simulation | List all simulations|
 |[**loadBlockages**](#loadblockages) | **POST** /api/simulation/{id}/load-blockages | Cargar bloqueos para una simulación|
 |[**loadOrders**](#loadorders) | **POST** /api/simulation/{id}/load-orders | Cargar órdenes para una simulación|
@@ -65,6 +66,57 @@ No authorization required
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
+# **getSimulation**
+> SimulationDTO getSimulation()
+
+Returns a specific simulation by its ID
+
+### Example
+
+```typescript
+import {
+    SimulationApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new SimulationApi(configuration);
+
+let id: string; // (default to undefined)
+
+const { status, data } = await apiInstance.getSimulation(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**SimulationDTO**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
 # **listSimulations**
 > { [key: string]: SimulationDTO; } listSimulations()
 
@@ -119,8 +171,7 @@ Carga un archivo de bloqueos para un año y mes específico en una simulación
 ```typescript
 import {
     SimulationApi,
-    Configuration,
-    LoadOrdersRequest
+    Configuration
 } from './api';
 
 const configuration = new Configuration();
@@ -129,13 +180,13 @@ const apiInstance = new SimulationApi(configuration);
 let id: string; // (default to undefined)
 let year: number; // (default to undefined)
 let month: number; // (default to undefined)
-let loadOrdersRequest: LoadOrdersRequest; // (optional)
+let file: File; // (default to undefined)
 
 const { status, data } = await apiInstance.loadBlockages(
     id,
     year,
     month,
-    loadOrdersRequest
+    file
 );
 ```
 
@@ -143,10 +194,10 @@ const { status, data } = await apiInstance.loadBlockages(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **loadOrdersRequest** | **LoadOrdersRequest**|  | |
 | **id** | [**string**] |  | defaults to undefined|
 | **year** | [**number**] |  | defaults to undefined|
 | **month** | [**number**] |  | defaults to undefined|
+| **file** | [**File**] |  | defaults to undefined|
 
 
 ### Return type
@@ -159,7 +210,7 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: multipart/form-data
  - **Accept**: */*
 
 
@@ -180,8 +231,7 @@ Carga un archivo de órdenes para un año y mes específico en una simulación
 ```typescript
 import {
     SimulationApi,
-    Configuration,
-    LoadOrdersRequest
+    Configuration
 } from './api';
 
 const configuration = new Configuration();
@@ -190,13 +240,13 @@ const apiInstance = new SimulationApi(configuration);
 let id: string; // (default to undefined)
 let year: number; // (default to undefined)
 let month: number; // (default to undefined)
-let loadOrdersRequest: LoadOrdersRequest; // (optional)
+let file: File; // (default to undefined)
 
 const { status, data } = await apiInstance.loadOrders(
     id,
     year,
     month,
-    loadOrdersRequest
+    file
 );
 ```
 
@@ -204,10 +254,10 @@ const { status, data } = await apiInstance.loadOrders(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **loadOrdersRequest** | **LoadOrdersRequest**|  | |
 | **id** | [**string**] |  | defaults to undefined|
 | **year** | [**number**] |  | defaults to undefined|
 | **month** | [**number**] |  | defaults to undefined|
+| **file** | [**File**] |  | defaults to undefined|
 
 
 ### Return type
@@ -220,7 +270,7 @@ No authorization required
 
 ### HTTP request headers
 
- - **Content-Type**: application/json
+ - **Content-Type**: multipart/form-data
  - **Accept**: */*
 
 

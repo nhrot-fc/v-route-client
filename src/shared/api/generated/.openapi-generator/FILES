@@ -17,7 +17,6 @@ docs/Incident.md
 docs/IncidentControllerApi.md
 docs/IncidentCreateDTO.md
 docs/IncidentDTO.md
-docs/LoadOrdersRequest.md
 docs/Maintenance.md
 docs/MaintenanceControllerApi.md
 docs/MaintenanceCreateDTO.md

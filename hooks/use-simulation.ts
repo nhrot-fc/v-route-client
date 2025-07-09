@@ -3,7 +3,6 @@ import {
   simulationApi,
   SimulationCreateDTO,
   SimulationDTOTypeEnum,
-  uploadFileToSimulation,
 } from "@/lib/api-client";
 import { AxiosError } from "axios";
 
@@ -124,13 +123,12 @@ export function useSimulation() {
     setError(null);
 
     try {
-      const response = await uploadFileToSimulation(
-        "load-orders",
-        id,
-        year,
-        month,
-        file
-      );
+      const response = await simulationApi.loadOrders(id, year, month, file, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        data: file,
+      });
       setIsLoading(false);
       return response;
     } catch (err) {
@@ -153,13 +151,12 @@ export function useSimulation() {
     setError(null);
 
     try {
-      const response = await uploadFileToSimulation(
-        "load-blockages",
-        id,
-        year,
-        month,
-        file
-      );
+      const response = await simulationApi.loadBlockages(id, year, month, file, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        data: file,
+      });
       setIsLoading(false);
       return response;
     } catch (err) {

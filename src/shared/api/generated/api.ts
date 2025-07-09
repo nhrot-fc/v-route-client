@@ -434,19 +434,6 @@ export type IncidentDTOShiftEnum = typeof IncidentDTOShiftEnum[keyof typeof Inci
 /**
  * 
  * @export
- * @interface LoadOrdersRequest
- */
-export interface LoadOrdersRequest {
-    /**
-     * 
-     * @type {File}
-     * @memberof LoadOrdersRequest
-     */
-    'file': File;
-}
-/**
- * 
- * @export
  * @interface Maintenance
  */
 export interface Maintenance {
@@ -4205,6 +4192,40 @@ export const SimulationApiAxiosParamCreator = function (configuration?: Configur
             };
         },
         /**
+         * Returns a specific simulation by its ID
+         * @summary Get simulation by ID
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getSimulation: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('getSimulation', 'id', id)
+            const localVarPath = `/api/simulation/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Returns a list of all active simulations
          * @summary List all simulations
          * @param {*} [options] Override http request option.
@@ -4240,17 +4261,19 @@ export const SimulationApiAxiosParamCreator = function (configuration?: Configur
          * @param {string} id 
          * @param {number} year 
          * @param {number} month 
-         * @param {LoadOrdersRequest} [loadOrdersRequest] 
+         * @param {File} file 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        loadBlockages: async (id: string, year: number, month: number, loadOrdersRequest?: LoadOrdersRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        loadBlockages: async (id: string, year: number, month: number, file: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('loadBlockages', 'id', id)
             // verify required parameter 'year' is not null or undefined
             assertParamExists('loadBlockages', 'year', year)
             // verify required parameter 'month' is not null or undefined
             assertParamExists('loadBlockages', 'month', month)
+            // verify required parameter 'file' is not null or undefined
+            assertParamExists('loadBlockages', 'file', file)
             const localVarPath = `/api/simulation/{id}/load-blockages`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -4263,6 +4286,7 @@ export const SimulationApiAxiosParamCreator = function (configuration?: Configur
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
 
             if (year !== undefined) {
                 localVarQueryParameter['year'] = year;
@@ -4273,13 +4297,17 @@ export const SimulationApiAxiosParamCreator = function (configuration?: Configur
             }
 
 
+            if (file !== undefined) { 
+                localVarFormParams.append('file', file as any);
+            }
     
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(loadOrdersRequest, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = localVarFormParams;
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -4292,17 +4320,19 @@ export const SimulationApiAxiosParamCreator = function (configuration?: Configur
          * @param {string} id 
          * @param {number} year 
          * @param {number} month 
-         * @param {LoadOrdersRequest} [loadOrdersRequest] 
+         * @param {File} file 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        loadOrders: async (id: string, year: number, month: number, loadOrdersRequest?: LoadOrdersRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        loadOrders: async (id: string, year: number, month: number, file: File, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'id' is not null or undefined
             assertParamExists('loadOrders', 'id', id)
             // verify required parameter 'year' is not null or undefined
             assertParamExists('loadOrders', 'year', year)
             // verify required parameter 'month' is not null or undefined
             assertParamExists('loadOrders', 'month', month)
+            // verify required parameter 'file' is not null or undefined
+            assertParamExists('loadOrders', 'file', file)
             const localVarPath = `/api/simulation/{id}/load-orders`
                 .replace(`{${"id"}}`, encodeURIComponent(String(id)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
@@ -4315,6 +4345,7 @@ export const SimulationApiAxiosParamCreator = function (configuration?: Configur
             const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
             const localVarHeaderParameter = {} as any;
             const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
 
             if (year !== undefined) {
                 localVarQueryParameter['year'] = year;
@@ -4325,13 +4356,17 @@ export const SimulationApiAxiosParamCreator = function (configuration?: Configur
             }
 
 
+            if (file !== undefined) { 
+                localVarFormParams.append('file', file as any);
+            }
     
-            localVarHeaderParameter['Content-Type'] = 'application/json';
-
+    
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+    
             setSearchParams(localVarUrlObj, localVarQueryParameter);
             let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
             localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-            localVarRequestOptions.data = serializeDataIfNeeded(loadOrdersRequest, localVarRequestOptions, configuration)
+            localVarRequestOptions.data = localVarFormParams;
 
             return {
                 url: toPathString(localVarUrlObj),
@@ -4497,6 +4532,19 @@ export const SimulationApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * Returns a specific simulation by its ID
+         * @summary Get simulation by ID
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async getSimulation(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SimulationDTO>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getSimulation(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['SimulationApi.getSimulation']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Returns a list of all active simulations
          * @summary List all simulations
          * @param {*} [options] Override http request option.
@@ -4514,12 +4562,12 @@ export const SimulationApiFp = function(configuration?: Configuration) {
          * @param {string} id 
          * @param {number} year 
          * @param {number} month 
-         * @param {LoadOrdersRequest} [loadOrdersRequest] 
+         * @param {File} file 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async loadBlockages(id: string, year: number, month: number, loadOrdersRequest?: LoadOrdersRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.loadBlockages(id, year, month, loadOrdersRequest, options);
+        async loadBlockages(id: string, year: number, month: number, file: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.loadBlockages(id, year, month, file, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['SimulationApi.loadBlockages']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -4530,12 +4578,12 @@ export const SimulationApiFp = function(configuration?: Configuration) {
          * @param {string} id 
          * @param {number} year 
          * @param {number} month 
-         * @param {LoadOrdersRequest} [loadOrdersRequest] 
+         * @param {File} file 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async loadOrders(id: string, year: number, month: number, loadOrdersRequest?: LoadOrdersRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.loadOrders(id, year, month, loadOrdersRequest, options);
+        async loadOrders(id: string, year: number, month: number, file: File, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.loadOrders(id, year, month, file, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['SimulationApi.loadOrders']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -4612,6 +4660,16 @@ export const SimulationApiFactory = function (configuration?: Configuration, bas
             return localVarFp.createSimulation(simulationCreateDTO, options).then((request) => request(axios, basePath));
         },
         /**
+         * Returns a specific simulation by its ID
+         * @summary Get simulation by ID
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        getSimulation(id: string, options?: RawAxiosRequestConfig): AxiosPromise<SimulationDTO> {
+            return localVarFp.getSimulation(id, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Returns a list of all active simulations
          * @summary List all simulations
          * @param {*} [options] Override http request option.
@@ -4626,12 +4684,12 @@ export const SimulationApiFactory = function (configuration?: Configuration, bas
          * @param {string} id 
          * @param {number} year 
          * @param {number} month 
-         * @param {LoadOrdersRequest} [loadOrdersRequest] 
+         * @param {File} file 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        loadBlockages(id: string, year: number, month: number, loadOrdersRequest?: LoadOrdersRequest, options?: RawAxiosRequestConfig): AxiosPromise<string> {
-            return localVarFp.loadBlockages(id, year, month, loadOrdersRequest, options).then((request) => request(axios, basePath));
+        loadBlockages(id: string, year: number, month: number, file: File, options?: RawAxiosRequestConfig): AxiosPromise<string> {
+            return localVarFp.loadBlockages(id, year, month, file, options).then((request) => request(axios, basePath));
         },
         /**
          * Carga un archivo de órdenes para un año y mes específico en una simulación
@@ -4639,12 +4697,12 @@ export const SimulationApiFactory = function (configuration?: Configuration, bas
          * @param {string} id 
          * @param {number} year 
          * @param {number} month 
-         * @param {LoadOrdersRequest} [loadOrdersRequest] 
+         * @param {File} file 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        loadOrders(id: string, year: number, month: number, loadOrdersRequest?: LoadOrdersRequest, options?: RawAxiosRequestConfig): AxiosPromise<string> {
-            return localVarFp.loadOrders(id, year, month, loadOrdersRequest, options).then((request) => request(axios, basePath));
+        loadOrders(id: string, year: number, month: number, file: File, options?: RawAxiosRequestConfig): AxiosPromise<string> {
+            return localVarFp.loadOrders(id, year, month, file, options).then((request) => request(axios, basePath));
         },
         /**
          * Pauses a running simulation
@@ -4708,6 +4766,18 @@ export class SimulationApi extends BaseAPI {
     }
 
     /**
+     * Returns a specific simulation by its ID
+     * @summary Get simulation by ID
+     * @param {string} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SimulationApi
+     */
+    public getSimulation(id: string, options?: RawAxiosRequestConfig) {
+        return SimulationApiFp(this.configuration).getSimulation(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
      * Returns a list of all active simulations
      * @summary List all simulations
      * @param {*} [options] Override http request option.
@@ -4724,13 +4794,13 @@ export class SimulationApi extends BaseAPI {
      * @param {string} id 
      * @param {number} year 
      * @param {number} month 
-     * @param {LoadOrdersRequest} [loadOrdersRequest] 
+     * @param {File} file 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SimulationApi
      */
-    public loadBlockages(id: string, year: number, month: number, loadOrdersRequest?: LoadOrdersRequest, options?: RawAxiosRequestConfig) {
-        return SimulationApiFp(this.configuration).loadBlockages(id, year, month, loadOrdersRequest, options).then((request) => request(this.axios, this.basePath));
+    public loadBlockages(id: string, year: number, month: number, file: File, options?: RawAxiosRequestConfig) {
+        return SimulationApiFp(this.configuration).loadBlockages(id, year, month, file, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -4739,13 +4809,13 @@ export class SimulationApi extends BaseAPI {
      * @param {string} id 
      * @param {number} year 
      * @param {number} month 
-     * @param {LoadOrdersRequest} [loadOrdersRequest] 
+     * @param {File} file 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      * @memberof SimulationApi
      */
-    public loadOrders(id: string, year: number, month: number, loadOrdersRequest?: LoadOrdersRequest, options?: RawAxiosRequestConfig) {
-        return SimulationApiFp(this.configuration).loadOrders(id, year, month, loadOrdersRequest, options).then((request) => request(this.axios, this.basePath));
+    public loadOrders(id: string, year: number, month: number, file: File, options?: RawAxiosRequestConfig) {
+        return SimulationApiFp(this.configuration).loadOrders(id, year, month, file, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
