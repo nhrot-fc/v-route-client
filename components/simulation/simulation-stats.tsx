@@ -8,7 +8,10 @@ interface SimulationStatsProps {
   currentTime: string;
 }
 
-export function SimulationStats({ simulationState, currentTime }: SimulationStatsProps) {
+export function SimulationStats({
+  simulationState,
+  currentTime,
+}: SimulationStatsProps) {
   if (!simulationState) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
@@ -20,7 +23,7 @@ export function SimulationStats({ simulationState, currentTime }: SimulationStat
       </div>
     );
   }
-  
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
       <Card>
@@ -36,9 +39,14 @@ export function SimulationStats({ simulationState, currentTime }: SimulationStat
           <CardTitle className="text-sm">Órdenes Pendientes</CardTitle>
         </CardHeader>
         <CardContent className="p-4 pt-0">
-          <div className="text-2xl font-bold">{simulationState.pendingOrdersCount || 0}</div>
+          <div className="text-2xl font-bold">
+            {simulationState.pendingOrdersCount || 0}
+          </div>
           <p className="text-xs text-muted-foreground mt-1">
-            De un total de {(simulationState.pendingOrdersCount || 0) + (simulationState.deliveredOrdersCount || 0)} órdenes
+            De un total de{" "}
+            {(simulationState.pendingOrdersCount || 0) +
+              (simulationState.deliveredOrdersCount || 0)}{" "}
+            órdenes
           </p>
         </CardContent>
       </Card>
@@ -47,7 +55,9 @@ export function SimulationStats({ simulationState, currentTime }: SimulationStat
           <CardTitle className="text-sm">Órdenes Entregadas</CardTitle>
         </CardHeader>
         <CardContent className="p-4 pt-0">
-          <div className="text-2xl font-bold">{simulationState.deliveredOrdersCount || 0}</div>
+          <div className="text-2xl font-bold">
+            {simulationState.deliveredOrdersCount || 0}
+          </div>
           <div className="text-xs text-muted-foreground mt-1">
             {simulationState.overdueOrdersCount || 0} con retraso
           </div>
@@ -58,7 +68,9 @@ export function SimulationStats({ simulationState, currentTime }: SimulationStat
           <CardTitle className="text-sm">Vehículos Disponibles</CardTitle>
         </CardHeader>
         <CardContent className="p-4 pt-0">
-          <div className="text-2xl font-bold">{simulationState.availableVehiclesCount || 0}</div>
+          <div className="text-2xl font-bold">
+            {simulationState.availableVehiclesCount || 0}
+          </div>
           <p className="text-xs text-muted-foreground mt-1">
             De un total de {simulationState.vehicles?.length || 0} vehículos
           </p>
@@ -66,4 +78,4 @@ export function SimulationStats({ simulationState, currentTime }: SimulationStat
       </Card>
     </div>
   );
-} 
+}

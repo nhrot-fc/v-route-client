@@ -24,31 +24,39 @@ const iconCardVariants = cva("flex items-start", {
   },
 });
 
-const iconContainerVariants = cva("flex items-center justify-center rounded-md", {
-  variants: {
-    size: {
-      sm: "p-2",
-      md: "p-3",
-      lg: "p-4",
+const iconContainerVariants = cva(
+  "flex items-center justify-center rounded-md",
+  {
+    variants: {
+      size: {
+        sm: "p-2",
+        md: "p-3",
+        lg: "p-4",
+      },
+      colorScheme: {
+        primary:
+          "bg-primary-50 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400",
+        blue: "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
+        green:
+          "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400",
+        red: "bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400",
+        amber:
+          "bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400",
+        purple:
+          "bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
+        gray: "bg-gray-50 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400",
+      },
     },
-    colorScheme: {
-      primary: "bg-primary-50 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400",
-      blue: "bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400",
-      green: "bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400",
-      red: "bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400",
-      amber: "bg-amber-50 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400",
-      purple: "bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
-      gray: "bg-gray-50 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400",
+    defaultVariants: {
+      size: "md",
+      colorScheme: "primary",
     },
   },
-  defaultVariants: {
-    size: "md",
-    colorScheme: "primary",
-  },
-});
+);
 
-export interface IconCardProps extends React.HTMLAttributes<HTMLDivElement>,
-  VariantProps<typeof iconCardVariants> {
+export interface IconCardProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof iconCardVariants> {
   icon: React.ReactNode;
   title: string;
   value: React.ReactNode;
@@ -59,7 +67,14 @@ export interface IconCardProps extends React.HTMLAttributes<HTMLDivElement>,
     label?: string;
   };
   footer?: React.ReactNode;
-  colorScheme?: "primary" | "blue" | "green" | "red" | "amber" | "purple" | "gray";
+  colorScheme?:
+    | "primary"
+    | "blue"
+    | "green"
+    | "red"
+    | "amber"
+    | "purple"
+    | "gray";
   iconContainerClassName?: string;
   contentClassName?: string;
   valueClassName?: string;
@@ -88,64 +103,79 @@ export function IconCard({
   ...props
 }: IconCardProps) {
   return (
-    <Card className={cn(bg, iconCardVariants({ size, variant }), className)} {...props}>
-      <div className={cn(iconContainerVariants({ size, colorScheme }), iconContainerClassName)}>
-        <span className={cn("shrink-0", iconClassName)}>
-          {icon}
-        </span>
+    <Card
+      className={cn(bg, iconCardVariants({ size, variant }), className)}
+      {...props}
+    >
+      <div
+        className={cn(
+          iconContainerVariants({ size, colorScheme }),
+          iconContainerClassName,
+        )}
+      >
+        <span className={cn("shrink-0", iconClassName)}>{icon}</span>
       </div>
-      
+
       <div className={cn("flex flex-col justify-center", contentClassName)}>
         <div className={cn("text-sm text-muted-foreground", titleClassName)}>
           {title}
         </div>
-        
+
         <div className={cn("text-2xl font-semibold mt-0.5", valueClassName)}>
           {value}
         </div>
-        
+
         {subtitle && (
-          <div className="text-xs text-muted-foreground mt-1">
-            {subtitle}
-          </div>
+          <div className="text-xs text-muted-foreground mt-1">{subtitle}</div>
         )}
-        
+
         {trend && (
-          <div className={cn(
-            "flex items-center text-xs mt-1",
-            trend.isPositive ? "text-green-600" : "text-red-600"
-          )}>
+          <div
+            className={cn(
+              "flex items-center text-xs mt-1",
+              trend.isPositive ? "text-green-600" : "text-red-600",
+            )}
+          >
             {trend.isPositive ? (
-              <svg 
-                className="w-3 h-3 mr-1" 
-                viewBox="0 0 24 24" 
-                fill="none" 
+              <svg
+                className="w-3 h-3 mr-1"
+                viewBox="0 0 24 24"
+                fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <path d="M18 15L12 9L6 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path
+                  d="M18 15L12 9L6 15"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             ) : (
-              <svg 
-                className="w-3 h-3 mr-1" 
-                viewBox="0 0 24 24" 
-                fill="none" 
+              <svg
+                className="w-3 h-3 mr-1"
+                viewBox="0 0 24 24"
+                fill="none"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <path d="M6 9L12 15L18 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                <path
+                  d="M6 9L12 15L18 9"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             )}
             <span>
-              {Math.abs(trend.value)}% {trend.label || (trend.isPositive ? "aumento" : "descenso")}
+              {Math.abs(trend.value)}%{" "}
+              {trend.label || (trend.isPositive ? "aumento" : "descenso")}
             </span>
           </div>
         )}
-        
-        {footer && (
-          <div className="mt-2">
-            {footer}
-          </div>
-        )}
+
+        {footer && <div className="mt-2">{footer}</div>}
       </div>
     </Card>
   );
-} 
+}

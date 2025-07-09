@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   BarChart3,
   Truck,
@@ -16,11 +16,11 @@ import {
   HelpCircle,
   LogOut,
   Package,
-  FileBarChart
-} from "lucide-react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import Image from "next/image"
+  FileBarChart,
+} from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import Image from "next/image";
 
 import {
   Sidebar,
@@ -32,18 +32,22 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
   useSidebar,
-} from "@/components/ui/sidebar"
-import { cn } from "@/lib/utils"
-import { Badge } from "@/components/ui/badge"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+} from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function AppSidebar() {
-  const pathname = usePathname()
-  const [open, setOpen] = useState(true)
-  const { isMobile } = useSidebar()
+  const pathname = usePathname();
+  const [open, setOpen] = useState(true);
+  const { isMobile } = useSidebar();
 
-  const isActive = (path: string) => pathname === path
-  const toggleSidebar = () => setOpen((prev) => !prev)
+  const isActive = (path: string) => pathname === path;
+  const toggleSidebar = () => setOpen((prev) => !prev);
 
   return (
     <>
@@ -70,28 +74,32 @@ export function AppSidebar() {
       )}
 
       {/* Sidebar principal con animación */}
-      <div 
+      <div
         className={cn(
-          "fixed inset-y-0 left-0 z-40 transition-transform duration-300 ease-in-out transform", 
+          "fixed inset-y-0 left-0 z-40 transition-transform duration-300 ease-in-out transform",
           open ? "translate-x-0" : "-translate-x-full",
-          "md:relative"
+          "md:relative",
         )}
       >
         <Sidebar className="border-r shadow-sm">
           <SidebarHeader className="flex items-center px-4 py-3 border-b">
             <div className="flex items-center gap-2">
               <div className="relative w-8 h-8">
-                <Image 
-                  src="/icons/glp-icon.svg" 
+                <Image
+                  src="/icons/glp-icon.svg"
                   alt="V-Route Logo"
-                  width={32} 
+                  width={32}
                   height={32}
                   className="transition-transform duration-300 hover:scale-110"
                 />
               </div>
               <div>
-                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-blue-500">V-ROUTE</span>
-                <span className="text-xs block text-gray-500">Distribución GLP</span>
+                <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-blue-500">
+                  V-ROUTE
+                </span>
+                <span className="text-xs block text-gray-500">
+                  Distribución GLP
+                </span>
               </div>
             </div>
 
@@ -110,65 +118,133 @@ export function AppSidebar() {
           <SidebarContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/")} className={isActive("/") ? "bg-blue-50 text-blue-700" : ""}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive("/")}
+                  className={isActive("/") ? "bg-blue-50 text-blue-700" : ""}
+                >
                   <Link href="/">
-                    <BarChart3 className={isActive("/") ? "text-blue-600" : ""} />
+                    <BarChart3
+                      className={isActive("/") ? "text-blue-600" : ""}
+                    />
                     <span>Dashboard</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/pedidos")} className={isActive("/pedidos") ? "bg-blue-50 text-blue-700" : ""}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive("/pedidos")}
+                  className={
+                    isActive("/pedidos") ? "bg-blue-50 text-blue-700" : ""
+                  }
+                >
                   <Link href="/pedidos">
-                    <ClipboardList className={isActive("/pedidos") ? "text-blue-600" : ""} />
+                    <ClipboardList
+                      className={isActive("/pedidos") ? "text-blue-600" : ""}
+                    />
                     <span>Pedidos</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/entregas")} className={isActive("/entregas") ? "bg-blue-50 text-blue-700" : ""}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive("/entregas")}
+                  className={
+                    isActive("/entregas") ? "bg-blue-50 text-blue-700" : ""
+                  }
+                >
                   <Link href="/entregas">
-                    <Package className={isActive("/entregas") ? "text-blue-600" : ""} />
+                    <Package
+                      className={isActive("/entregas") ? "text-blue-600" : ""}
+                    />
                     <span>Entregas</span>
-                    <Badge variant="outline" className="ml-auto text-xs py-0 px-1.5 bg-blue-50">Nuevo</Badge>
+                    <Badge
+                      variant="outline"
+                      className="ml-auto text-xs py-0 px-1.5 bg-blue-50"
+                    >
+                      Nuevo
+                    </Badge>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/vehiculos")} className={isActive("/vehiculos") ? "bg-blue-50 text-blue-700" : ""}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive("/vehiculos")}
+                  className={
+                    isActive("/vehiculos") ? "bg-blue-50 text-blue-700" : ""
+                  }
+                >
                   <Link href="/vehiculos">
-                    <Truck className={isActive("/vehiculos") ? "text-blue-600" : ""} />
+                    <Truck
+                      className={isActive("/vehiculos") ? "text-blue-600" : ""}
+                    />
                     <span>Vehículos</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/mantenimientos")} className={isActive("/mantenimientos") ? "bg-blue-50 text-blue-700" : ""}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive("/mantenimientos")}
+                  className={
+                    isActive("/mantenimientos")
+                      ? "bg-blue-50 text-blue-700"
+                      : ""
+                  }
+                >
                   <Link href="/mantenimientos">
-                    <Wrench className={isActive("/mantenimientos") ? "text-blue-600" : ""} />
+                    <Wrench
+                      className={
+                        isActive("/mantenimientos") ? "text-blue-600" : ""
+                      }
+                    />
                     <span>Mantenimientos</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/incidentes")} className={isActive("/incidentes") ? "bg-blue-50 text-blue-700" : ""}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive("/incidentes")}
+                  className={
+                    isActive("/incidentes") ? "bg-blue-50 text-blue-700" : ""
+                  }
+                >
                   <Link href="/incidentes">
-                    <AlertCircle className={isActive("/incidentes") ? "text-blue-600" : ""} />
+                    <AlertCircle
+                      className={isActive("/incidentes") ? "text-blue-600" : ""}
+                    />
                     <span>Incidentes</span>
-                    <Badge variant="outline" className="ml-auto text-xs py-0 px-1.5 bg-blue-50">Nuevo</Badge>
+                    <Badge
+                      variant="outline"
+                      className="ml-auto text-xs py-0 px-1.5 bg-blue-50"
+                    >
+                      Nuevo
+                    </Badge>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/bloqueos")} className={isActive("/bloqueos") ? "bg-blue-50 text-blue-700" : ""}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive("/bloqueos")}
+                  className={
+                    isActive("/bloqueos") ? "bg-blue-50 text-blue-700" : ""
+                  }
+                >
                   <Link href="/bloqueos">
-                    <AlertTriangle className={isActive("/bloqueos") ? "text-blue-600" : ""} />
+                    <AlertTriangle
+                      className={isActive("/bloqueos") ? "text-blue-600" : ""}
+                    />
                     <span>Bloqueos</span>
                   </Link>
                 </SidebarMenuButton>
@@ -177,21 +253,47 @@ export function AppSidebar() {
               <SidebarSeparator />
 
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/simulacion")} className={isActive("/simulacion") ? "bg-blue-50 text-blue-700" : ""}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive("/simulacion")}
+                  className={
+                    isActive("/simulacion") ? "bg-blue-50 text-blue-700" : ""
+                  }
+                >
                   <Link href="/simulacion">
-                    <PlayCircle className={isActive("/simulacion") ? "text-blue-600" : ""} />
+                    <PlayCircle
+                      className={isActive("/simulacion") ? "text-blue-600" : ""}
+                    />
                     <span>Simulación</span>
-                    <Badge variant="outline" className="ml-auto text-xs py-0 px-1.5 bg-amber-50 text-amber-600 border-amber-200">Beta</Badge>
+                    <Badge
+                      variant="outline"
+                      className="ml-auto text-xs py-0 px-1.5 bg-amber-50 text-amber-600 border-amber-200"
+                    >
+                      Beta
+                    </Badge>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={isActive("/reportes")} className={isActive("/reportes") ? "bg-blue-50 text-blue-700" : ""}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={isActive("/reportes")}
+                  className={
+                    isActive("/reportes") ? "bg-blue-50 text-blue-700" : ""
+                  }
+                >
                   <Link href="/reportes">
-                    <FileBarChart className={isActive("/reportes") ? "text-blue-600" : ""} />
+                    <FileBarChart
+                      className={isActive("/reportes") ? "text-blue-600" : ""}
+                    />
                     <span>Reportes</span>
-                    <Badge variant="outline" className="ml-auto text-xs py-0 px-1.5 bg-amber-50 text-amber-600 border-amber-200">Beta</Badge>
+                    <Badge
+                      variant="outline"
+                      className="ml-auto text-xs py-0 px-1.5 bg-amber-50 text-amber-600 border-amber-200"
+                    >
+                      Beta
+                    </Badge>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -205,8 +307,12 @@ export function AppSidebar() {
                   <Flame className="h-4 w-4 text-primary-700" />
                 </div>
                 <div className="flex-1">
-                  <p className="text-sm font-medium truncate">GLP Distribución</p>
-                  <p className="text-xs text-muted-foreground">Sistema de Gestión</p>
+                  <p className="text-sm font-medium truncate">
+                    GLP Distribución
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Sistema de Gestión
+                  </p>
                 </div>
               </div>
             </div>
@@ -222,7 +328,7 @@ export function AppSidebar() {
                     <p>Explorar mapa</p>
                   </TooltipContent>
                 </Tooltip>
-                
+
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button className="p-2.5 text-gray-500 hover:text-primary rounded-full hover:bg-primary-50 transition-colors">
@@ -233,7 +339,7 @@ export function AppSidebar() {
                     <p>Reportar problema</p>
                   </TooltipContent>
                 </Tooltip>
-                
+
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button className="p-2.5 text-gray-500 hover:text-primary rounded-full hover:bg-primary-50 transition-colors">
@@ -244,7 +350,7 @@ export function AppSidebar() {
                     <p>Ayuda</p>
                   </TooltipContent>
                 </Tooltip>
-                
+
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button className="p-2.5 text-gray-500 hover:text-red-500 rounded-full hover:bg-red-50 transition-colors">
@@ -261,5 +367,5 @@ export function AppSidebar() {
         </Sidebar>
       </div>
     </>
-  )
+  );
 }

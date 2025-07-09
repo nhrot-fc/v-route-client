@@ -18,7 +18,7 @@ const pageHeaderVariants = cva(
     defaultVariants: {
       size: "default",
     },
-  }
+  },
 );
 
 export interface PageAction {
@@ -45,9 +45,13 @@ export function PageHeader({
   return (
     <div className={cn(pageHeaderVariants({ size }), className)}>
       <div className="space-y-1">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{title}</h1>
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">
+          {title}
+        </h1>
         {description && (
-          <p className="text-muted-foreground text-sm md:text-base">{description}</p>
+          <p className="text-muted-foreground text-sm md:text-base">
+            {description}
+          </p>
         )}
       </div>
       {actions && actions.length > 0 && (
@@ -67,4 +71,4 @@ export function PageHeader({
       )}
     </div>
   );
-} 
+}

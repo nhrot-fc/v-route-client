@@ -39,7 +39,7 @@ import {
   IncidentDTO,
   IncidentTypeEnum,
   IncidentCreateDTOShiftEnum,
-  IncidentCreateDTOTypeEnum
+  IncidentCreateDTOTypeEnum,
 } from "@/lib/api-client";
 
 // Define form schema
@@ -56,16 +56,22 @@ const formSchema = z.object({
   occurrenceTime: z.date({
     required_error: "Por favor seleccione la fecha y hora del incidente",
   }),
-  locationX: z.coerce.number().min(-100, {
-    message: "La coordenada X debe ser mayor a -100",
-  }).max(100, {
-    message: "La coordenada X debe ser menor a 100",
-  }),
-  locationY: z.coerce.number().min(-100, {
-    message: "La coordenada Y debe ser mayor a -100",
-  }).max(100, {
-    message: "La coordenada Y debe ser menor a 100",
-  }),
+  locationX: z.coerce
+    .number()
+    .min(-100, {
+      message: "La coordenada X debe ser mayor a -100",
+    })
+    .max(100, {
+      message: "La coordenada X debe ser menor a 100",
+    }),
+  locationY: z.coerce
+    .number()
+    .min(-100, {
+      message: "La coordenada Y debe ser mayor a -100",
+    })
+    .max(100, {
+      message: "La coordenada Y debe ser menor a 100",
+    }),
   description: z.string().optional(),
   resolved: z.boolean().default(false),
 });
@@ -78,11 +84,15 @@ export interface IncidentFormProps {
   onCancel: () => void;
 }
 
-export function IncidentForm({ incident, onSaved, onCancel }: IncidentFormProps) {
+export function IncidentForm({
+  incident,
+  onSaved,
+  onCancel,
+}: IncidentFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { vehicles, loading: loadingVehicles } = useVehicles();
   const { createIncident } = useIncidents();
-  
+
   const form = useForm<IncidentFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -96,11 +106,11 @@ export function IncidentForm({ incident, onSaved, onCancel }: IncidentFormProps)
       locationY: incident?.location?.y || 0,
     },
   });
-  
+
   async function onSubmit(values: IncidentFormValues) {
     try {
       setIsSubmitting(true);
-      
+
       // Convertir la fecha a formato ISO string usando UTC para evitar problemas con zona horaria
       // toISOString() ya convierte a UTC por defecto
       const incidentData: IncidentCreateDTO = {
@@ -111,11 +121,11 @@ export function IncidentForm({ incident, onSaved, onCancel }: IncidentFormProps)
         location: {
           x: values.locationX,
           y: values.locationY,
-        }
+        },
       };
-      
+
       await createIncident(incidentData);
-      
+
       form.reset();
       if (onSaved) {
         onSaved();
@@ -126,7 +136,7 @@ export function IncidentForm({ incident, onSaved, onCancel }: IncidentFormProps)
       setIsSubmitting(false);
     }
   }
-  
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -167,7 +177,7 @@ export function IncidentForm({ incident, onSaved, onCancel }: IncidentFormProps)
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="type"
@@ -186,16 +196,22 @@ export function IncidentForm({ incident, onSaved, onCancel }: IncidentFormProps)
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value={IncidentTypeEnum.Ti1}>Mecánico (TI1)</SelectItem>
-                    <SelectItem value={IncidentTypeEnum.Ti2}>Tráfico (TI2)</SelectItem>
-                    <SelectItem value={IncidentTypeEnum.Ti3}>Clima (TI3)</SelectItem>
+                    <SelectItem value={IncidentTypeEnum.Ti1}>
+                      Mecánico (TI1)
+                    </SelectItem>
+                    <SelectItem value={IncidentTypeEnum.Ti2}>
+                      Tráfico (TI2)
+                    </SelectItem>
+                    <SelectItem value={IncidentTypeEnum.Ti3}>
+                      Clima (TI3)
+                    </SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="shift"
@@ -223,7 +239,7 @@ export function IncidentForm({ incident, onSaved, onCancel }: IncidentFormProps)
               </FormItem>
             )}
           />
-          
+
           <FormField
             control={form.control}
             name="occurrenceTime"
@@ -237,7 +253,7 @@ export function IncidentForm({ incident, onSaved, onCancel }: IncidentFormProps)
                         variant={"outline"}
                         className={cn(
                           "w-full pl-3 text-left font-normal",
-                          !field.value && "text-muted-foreground"
+                          !field.value && "text-muted-foreground",
                         )}
                       >
                         {field.value ? (
@@ -262,7 +278,7 @@ export function IncidentForm({ incident, onSaved, onCancel }: IncidentFormProps)
               </FormItem>
             )}
           />
-          
+
           <div className="grid grid-cols-2 gap-2">
             <FormField
               control={form.control}
@@ -282,7 +298,7 @@ export function IncidentForm({ incident, onSaved, onCancel }: IncidentFormProps)
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="locationY"
@@ -303,11 +319,11 @@ export function IncidentForm({ incident, onSaved, onCancel }: IncidentFormProps)
             />
           </div>
         </div>
-        
+
         <div className="flex justify-between pt-4">
-          <Button 
-            type="button" 
-            variant="outline" 
+          <Button
+            type="button"
+            variant="outline"
             onClick={onCancel}
             disabled={isSubmitting}
           >
@@ -321,4 +337,4 @@ export function IncidentForm({ incident, onSaved, onCancel }: IncidentFormProps)
       </form>
     </Form>
   );
-} 
+}

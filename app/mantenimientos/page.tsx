@@ -8,9 +8,23 @@ import { PageLayout } from "@/components/ui/page-layout";
 import { DataTable } from "@/components/ui/data-table";
 import { SectionContainer } from "@/components/ui/section-container";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Divider } from "@/components/ui/divider";
-import { Wrench, FileUp, Plus, ClipboardList, Timer, CheckCircle, AlertTriangle } from "lucide-react";
+import {
+  Wrench,
+  FileUp,
+  Plus,
+  ClipboardList,
+  Timer,
+  CheckCircle,
+  AlertTriangle,
+} from "lucide-react";
 import { useMaintenance } from "@/hooks/use-maintenance";
 import { MaintenanceDTO } from "@/lib/api-client";
 import { PaginationFooter } from "@/components/ui/pagination-footer";
@@ -20,16 +34,17 @@ export default function MantenimientosPage() {
   const [activeTab, setActiveTab] = useState("list");
   const [newOpen, setNewOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
-  
+
   // Add pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  
+
   // Use pagination parameters in the hook
-  const { maintenance, loading, error, totalItems, totalPages } = useMaintenance({
-    page: currentPage - 1, // API uses 0-based index
-    size: pageSize
-  });
+  const { maintenance, loading, error, totalItems, totalPages } =
+    useMaintenance({
+      page: currentPage - 1, // API uses 0-based index
+      size: pageSize,
+    });
 
   // Handle page change
   const handlePageChange = (page: number) => {
@@ -43,9 +58,13 @@ export default function MantenimientosPage() {
   };
 
   // Count maintenance by status
-  const pendingCount = maintenance.filter(item => !item.active && !item.realEnd).length;
-  const activeCount = maintenance.filter(item => item.active).length;
-  const completedCount = maintenance.filter(item => !item.active && item.realEnd).length;
+  const pendingCount = maintenance.filter(
+    (item) => !item.active && !item.realEnd,
+  ).length;
+  const activeCount = maintenance.filter((item) => item.active).length;
+  const completedCount = maintenance.filter(
+    (item) => !item.active && item.realEnd,
+  ).length;
   const totalCount = maintenance.length;
 
   // Define maintenance status function
@@ -73,22 +92,31 @@ export default function MantenimientosPage() {
     {
       header: "Fecha Asignada",
       accessorKey: "assignedDate" as keyof MaintenanceDTO,
-      cell: (item: MaintenanceDTO) => item.assignedDate ? new Date(item.assignedDate).toLocaleDateString() : 'N/A',
+      cell: (item: MaintenanceDTO) =>
+        item.assignedDate
+          ? new Date(item.assignedDate).toLocaleDateString()
+          : "N/A",
     },
     {
       header: "Inicio Real",
       accessorKey: "realStart" as keyof MaintenanceDTO,
-      cell: (item: MaintenanceDTO) => item.realStart ? new Date(item.realStart).toLocaleDateString() : 'Pendiente',
+      cell: (item: MaintenanceDTO) =>
+        item.realStart
+          ? new Date(item.realStart).toLocaleDateString()
+          : "Pendiente",
     },
     {
       header: "Fin Real",
       accessorKey: "realEnd" as keyof MaintenanceDTO,
-      cell: (item: MaintenanceDTO) => item.realEnd ? new Date(item.realEnd).toLocaleDateString() : 'Pendiente',
+      cell: (item: MaintenanceDTO) =>
+        item.realEnd
+          ? new Date(item.realEnd).toLocaleDateString()
+          : "Pendiente",
     },
     {
       header: "Duración (horas)",
       accessorKey: "durationHours" as keyof MaintenanceDTO,
-      cell: (item: MaintenanceDTO) => item.durationHours || 'N/A',
+      cell: (item: MaintenanceDTO) => item.durationHours || "N/A",
     },
     {
       header: "Estado",
@@ -127,26 +155,26 @@ export default function MantenimientosPage() {
     if (activeTab === "list" || !activeTab) {
       return maintenance;
     }
-    const tabFilter = filterTabs.find(tab => tab.id === activeTab);
+    const tabFilter = filterTabs.find((tab) => tab.id === activeTab);
     return tabFilter ? maintenance.filter(tabFilter.filter) : maintenance;
   }, [maintenance, activeTab, filterTabs]);
 
   return (
-    <PageLayout 
-      title="Gestión de Mantenimientos" 
+    <PageLayout
+      title="Gestión de Mantenimientos"
       description="Administre los mantenimientos programados y repare los vehículos para mantener la flota operativa"
       actions={[
-        { 
-          icon: <FileUp className="h-4 w-4" />, 
-          label: "Importar", 
+        {
+          icon: <FileUp className="h-4 w-4" />,
+          label: "Importar",
           variant: "outline",
-          onClick: () => setImportOpen(true)
+          onClick: () => setImportOpen(true),
         },
-        { 
-          icon: <Plus className="h-4 w-4" />, 
-          label: "Nuevo Mantenimiento", 
-          onClick: () => setNewOpen(true) 
-        }
+        {
+          icon: <Plus className="h-4 w-4" />,
+          label: "Nuevo Mantenimiento",
+          onClick: () => setNewOpen(true),
+        },
       ]}
     >
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -161,7 +189,7 @@ export default function MantenimientosPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-white border">
           <CardContent className="p-4 flex items-center">
             <div className="bg-blue-50 p-3 rounded-md mr-3">
@@ -173,7 +201,7 @@ export default function MantenimientosPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-white border">
           <CardContent className="p-4 flex items-center">
             <div className="bg-amber-50 p-3 rounded-md mr-3">
@@ -185,7 +213,7 @@ export default function MantenimientosPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-white border">
           <CardContent className="p-4 flex items-center">
             <div className="bg-green-50 p-3 rounded-md mr-3">
@@ -212,7 +240,7 @@ export default function MantenimientosPage() {
           activeFilter={activeTab}
           onFilterChange={setActiveTab}
         />
-        
+
         <DataTable
           data={filteredData}
           columns={columns}
@@ -240,7 +268,9 @@ export default function MantenimientosPage() {
               <Plus className="h-5 w-5 mr-2 text-primary" />
               <span>Registro de Mantenimiento</span>
             </DialogTitle>
-            <DialogDescription>Añade un nuevo mantenimiento programado</DialogDescription>
+            <DialogDescription>
+              Añade un nuevo mantenimiento programado
+            </DialogDescription>
           </DialogHeader>
           <Divider className="my-2" />
           <MaintenanceForm />
@@ -255,12 +285,14 @@ export default function MantenimientosPage() {
               <FileUp className="h-5 w-5 mr-2 text-primary" />
               <span>Carga Masiva de Mantenimientos</span>
             </DialogTitle>
-            <DialogDescription>Sube un archivo de texto con mantenimientos</DialogDescription>
+            <DialogDescription>
+              Sube un archivo de texto con mantenimientos
+            </DialogDescription>
           </DialogHeader>
           <Divider className="my-2" />
           <MaintenanceUploadForm />
         </DialogContent>
       </Dialog>
     </PageLayout>
-  )
-} 
+  );
+}

@@ -18,7 +18,13 @@ import { SectionContainer } from "@/components/ui/section-container";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -39,62 +45,59 @@ import { ServeRecordDTO } from "@/lib/api-client";
 import { DataTable } from "@/components/ui/data-table";
 import { PaginationFooter } from "@/components/ui/pagination-footer";
 
-
-
-
 export default function EntregasPage() {
   // Filter state
   const [activeTab, setActiveTab] = useState("todos");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [selectedVehicleId, setSelectedVehicleId] = useState<string | undefined>(undefined);
-  const [selectedStartDate, setSelectedStartDate] = useState<string | undefined>(undefined);
-  const [selectedEndDate, setSelectedEndDate] = useState<string | undefined>(undefined);
-  
+  const [selectedVehicleId, setSelectedVehicleId] = useState<
+    string | undefined
+  >(undefined);
+  const [selectedStartDate, setSelectedStartDate] = useState<
+    string | undefined
+  >(undefined);
+  const [selectedEndDate, setSelectedEndDate] = useState<string | undefined>(
+    undefined,
+  );
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  
+
   // Get vehicles for filter dropdown
   const { vehicles } = useVehicles();
-  
+
   // Create filter object
   const filter = {
     vehicleId: selectedVehicleId,
     startDate: selectedStartDate,
     endDate: selectedEndDate,
   };
-  
+
   // Get serve records with pagination and filter
-  const {
-    serveRecords,
-    loading,
-    error,
-    refetch,
-    totalPages,
-    totalItems,
-  } = useServeRecords(filter, {
-    page: currentPage - 1, // API uses 0-based index
-    size: pageSize
-  });
-  
+  const { serveRecords, loading, error, refetch, totalPages, totalItems } =
+    useServeRecords(filter, {
+      page: currentPage - 1, // API uses 0-based index
+      size: pageSize,
+    });
+
   // Handle pagination changes
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-  
+
   // Handle page size change
   const handlePageSizeChange = (newSize: number | string) => {
-    setPageSize(typeof newSize === 'string' ? parseInt(newSize, 10) : newSize);
+    setPageSize(typeof newSize === "string" ? parseInt(newSize, 10) : newSize);
     setCurrentPage(1); // Reset to first page when changing page size
   };
-  
+
   // Reset filters
   const resetFilters = () => {
     setSelectedVehicleId(undefined);
     setSelectedStartDate(undefined);
     setSelectedEndDate(undefined);
   };
-  
+
   // Define columns for the DataTable
   const columns = [
     {
@@ -138,13 +141,15 @@ export default function EntregasPage() {
       cell: (record: ServeRecordDTO) => (
         <div className="flex items-center">
           <CalendarClock className="h-4 w-4 mr-1.5 text-gray-500" />
-          {record.serveDate && 
-            format(new Date(record.serveDate), "dd/MM/yyyy HH:mm", { locale: es })}
+          {record.serveDate &&
+            format(new Date(record.serveDate), "dd/MM/yyyy HH:mm", {
+              locale: es,
+            })}
         </div>
       ),
     },
   ];
-  
+
   // Define actions for the DataTable
   const actions = [
     {
@@ -194,11 +199,7 @@ export default function EntregasPage() {
       />
 
       <SectionContainer>
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="w-full"
-        >
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex justify-between items-center mb-6">
             <TabsList>
               <TabsTrigger value="todos" className="flex gap-2">
@@ -221,7 +222,8 @@ export default function EntregasPage() {
               <CardHeader>
                 <CardTitle>Todas las entregas</CardTitle>
                 <CardDescription>
-                  Lista completa de todas las entregas registradas en el sistema.
+                  Lista completa de todas las entregas registradas en el
+                  sistema.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -246,7 +248,7 @@ export default function EntregasPage() {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="ultimos7dias">
             <Card>
               <CardHeader>
@@ -267,7 +269,7 @@ export default function EntregasPage() {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="ultimos30dias">
             <Card>
               <CardHeader>
@@ -290,7 +292,7 @@ export default function EntregasPage() {
           </TabsContent>
         </Tabs>
       </SectionContainer>
-      
+
       {/* Filters Sheet */}
       <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
         <SheetContent className="sm:max-w-md">
@@ -305,7 +307,9 @@ export default function EntregasPage() {
               <h3 className="text-sm font-medium">Vehículo</h3>
               <Select
                 value={selectedVehicleId || ""}
-                onValueChange={(value) => setSelectedVehicleId(value === "" ? undefined : value)}
+                onValueChange={(value) =>
+                  setSelectedVehicleId(value === "" ? undefined : value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Todos los vehículos" />
@@ -320,24 +324,28 @@ export default function EntregasPage() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="space-y-2">
               <h3 className="text-sm font-medium">Fecha de inicio</h3>
               <input
                 type="date"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={selectedStartDate || ""}
-                onChange={(e) => setSelectedStartDate(e.target.value || undefined)}
+                onChange={(e) =>
+                  setSelectedStartDate(e.target.value || undefined)
+                }
               />
             </div>
-            
+
             <div className="space-y-2">
               <h3 className="text-sm font-medium">Fecha de fin</h3>
               <input
                 type="date"
                 className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={selectedEndDate || ""}
-                onChange={(e) => setSelectedEndDate(e.target.value || undefined)}
+                onChange={(e) =>
+                  setSelectedEndDate(e.target.value || undefined)
+                }
               />
             </div>
 
@@ -345,11 +353,13 @@ export default function EntregasPage() {
               <Button variant="outline" onClick={resetFilters}>
                 Restablecer
               </Button>
-              <Button onClick={() => {
-                setIsFilterOpen(false);
-                setCurrentPage(1); // Reset to first page when applying filters
-                refetch();
-              }}>
+              <Button
+                onClick={() => {
+                  setIsFilterOpen(false);
+                  setCurrentPage(1); // Reset to first page when applying filters
+                  refetch();
+                }}
+              >
                 Aplicar filtros
               </Button>
             </div>
@@ -358,4 +368,4 @@ export default function EntregasPage() {
       </Sheet>
     </PageContainer>
   );
-} 
+}

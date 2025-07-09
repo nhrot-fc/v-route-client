@@ -24,7 +24,11 @@ export function TableFilterTabs<T>({
   showAllTab = true,
 }: TableFilterTabsProps<T>) {
   return (
-    <Tabs value={activeFilter} onValueChange={onFilterChange} className="w-full">
+    <Tabs
+      value={activeFilter}
+      onValueChange={onFilterChange}
+      className="w-full"
+    >
       <TabsList className="w-full sm:w-auto">
         {showAllTab && (
           <TabsTrigger value="all" className="flex gap-1.5">
@@ -34,17 +38,19 @@ export function TableFilterTabs<T>({
             </Badge>
           </TabsTrigger>
         )}
-        
+
         {filterTabs.map((tab) => (
           <TabsTrigger key={tab.id} value={tab.id} className="flex gap-1.5">
             {tab.icon && <span className="h-4 w-4">{tab.icon}</span>}
             {tab.label}
             <Badge variant="outline" className="ml-1">
-              {tab.count !== undefined ? tab.count : data.filter(tab.filter).length}
+              {tab.count !== undefined
+                ? tab.count
+                : data.filter(tab.filter).length}
             </Badge>
           </TabsTrigger>
         ))}
       </TabsList>
     </Tabs>
   );
-} 
+}

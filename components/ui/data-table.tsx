@@ -81,10 +81,7 @@ export function DataTable<T>({
             <TableHeader>
               <TableRow>
                 {columns.map((column, i) => (
-                  <TableHead
-                    key={i}
-                    className={cn(column.className)}
-                  >
+                  <TableHead key={i} className={cn(column.className)}>
                     {column.header}
                   </TableHead>
                 ))}
@@ -98,14 +95,18 @@ export function DataTable<T>({
                 <TableRow key={rowIndex}>
                   {columns.map((column, colIndex) => {
                     // Handle both simple accessorKey and function accessorKey
-                    const cell = typeof column.accessorKey === 'function'
-                      ? column.accessorKey(row)
-                      : column.cell
-                        ? column.cell(row)
-                        : String(row[column.accessorKey as keyof T] || "");
-                    
+                    const cell =
+                      typeof column.accessorKey === "function"
+                        ? column.accessorKey(row)
+                        : column.cell
+                          ? column.cell(row)
+                          : String(row[column.accessorKey as keyof T] || "");
+
                     return (
-                      <TableCell key={colIndex} className={cn(column.className)}>
+                      <TableCell
+                        key={colIndex}
+                        className={cn(column.className)}
+                      >
                         {cell}
                       </TableCell>
                     );
@@ -129,7 +130,7 @@ export function DataTable<T>({
                                 )}
                                 <span className="sr-only">{action.label}</span>
                               </Button>
-                            )
+                            ),
                         )}
                       </div>
                     </TableCell>
@@ -146,9 +147,9 @@ export function DataTable<T>({
           </CardContent>
         </Card>
       )}
-      
+
       {/* Custom footer content */}
       {footerContent && <div>{footerContent}</div>}
     </div>
   );
-} 
+}

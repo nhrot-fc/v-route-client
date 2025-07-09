@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { SimulationDTOStatusEnum, SimulationDTO } from "@/lib/api-client";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { useWebSocket } from "@/lib/websocket-context";
 import { useSimulation } from "@/hooks/use-simulation";
@@ -30,7 +36,9 @@ export function SimulationMap() {
     error: apiError,
   } = useSimulation();
 
-  const [fetchedSimulations, setFetchedSimulations] = useState<Record<string, SimulationDTO>>({});
+  const [fetchedSimulations, setFetchedSimulations] = useState<
+    Record<string, SimulationDTO>
+  >({});
   const [error, setError] = useState<string | null>(null);
 
   // Function to fetch simulations from the API
@@ -39,7 +47,7 @@ export function SimulationMap() {
       const response = await listSimulations();
       if (response && response.data) {
         // The API might return data as an object already
-        if (typeof response.data === 'object') {
+        if (typeof response.data === "object") {
           setFetchedSimulations(response.data as Record<string, SimulationDTO>);
         }
       }
@@ -47,26 +55,33 @@ export function SimulationMap() {
       console.error("Error fetching simulations:", err);
     }
   }, [listSimulations]);
-  
+
   // Fetch simulations from API only once on initial connection
   useEffect(() => {
     let mounted = true;
-    
+
     if (isConnected && mounted) {
       fetchSimulations();
     }
-    
+
     return () => {
       mounted = false;
     };
   }, [isConnected]);
 
   // Combine websocket simulations with fetched ones (avoiding duplicates)
-  const combinedSimulations = { ...fetchedSimulations, ...availableSimulations };
-  
+  const combinedSimulations = {
+    ...fetchedSimulations,
+    ...availableSimulations,
+  };
+
   // Add a function to clear the current selection if it's no longer available
   useEffect(() => {
-    if (currentSimulationId && Object.keys(combinedSimulations).length > 0 && !combinedSimulations[currentSimulationId]) {
+    if (
+      currentSimulationId &&
+      Object.keys(combinedSimulations).length > 0 &&
+      !combinedSimulations[currentSimulationId]
+    ) {
       unsubscribeFromSimulation();
     }
   }, [combinedSimulations, currentSimulationId, unsubscribeFromSimulation]);
@@ -75,9 +90,9 @@ export function SimulationMap() {
   useEffect(() => {
     setError(wsError || apiError);
   }, [wsError, apiError]);
-  
+
   const handleSimulationChange = (simulationId: string) => {
-    if (simulationId === '') {
+    if (simulationId === "") {
       unsubscribeFromSimulation();
     } else {
       subscribeToSimulation(simulationId);
@@ -103,10 +118,12 @@ export function SimulationMap() {
   };
 
   // Get available simulations as array
-  const simulationsArray = Object.entries(combinedSimulations || {}).map(([id, data]) => ({
-    id,
-    ...data
-  }));
+  const simulationsArray = Object.entries(combinedSimulations || {}).map(
+    ([id, data]) => ({
+      id,
+      ...data,
+    }),
+  );
 
   return (
     <Card className="p-4">
@@ -126,29 +143,50 @@ export function SimulationMap() {
                   {simulationsArray.length > 0 ? (
                     simulationsArray.map((sim) => (
                       <SelectItem key={sim.id} value={sim.id}>
-                        {sim.type === 'DAILY_OPERATIONS' ? (
+                        {sim.type === "DAILY_OPERATIONS" ? (
                           <span className="flex items-center">
-                            {sim.type} <span className="ml-1 text-xs text-amber-600">(automático)</span> - {new Date(sim.creationTime || "").toLocaleString()}
+                            {sim.type}{" "}
+                            <span className="ml-1 text-xs text-amber-600">
+                              (automático)
+                            </span>{" "}
+                            -{" "}
+                            {new Date(sim.creationTime || "").toLocaleString()}
                           </span>
                         ) : (
-                          <span>{sim.type} - {new Date(sim.creationTime || "").toLocaleString()}</span>
+                          <span>
+                            {sim.type} -{" "}
+                            {new Date(sim.creationTime || "").toLocaleString()}
+                          </span>
                         )}
                       </SelectItem>
                     ))
                   ) : (
-                    <SelectItem value="no-simulations" disabled>No hay simulaciones disponibles</SelectItem>
+                    <SelectItem value="no-simulations" disabled>
+                      No hay simulaciones disponibles
+                    </SelectItem>
                   )}
                 </SelectContent>
               </Select>
-              <Button 
-                variant="outline" 
-                size="icon" 
+              <Button
+                variant="outline"
+                size="icon"
                 onClick={fetchSimulations}
                 disabled={isLoading}
                 title="Actualizar lista de simulaciones"
               >
                 {isLoading ? (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-spin lucide lucide-loader">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="animate-spin lucide lucide-loader"
+                  >
                     <line x1="12" y1="2" x2="12" y2="6" />
                     <line x1="12" y1="18" x2="12" y2="22" />
                     <line x1="4.93" y1="4.93" x2="7.76" y2="7.76" />
@@ -159,7 +197,18 @@ export function SimulationMap() {
                     <line x1="16.24" y1="7.76" x2="19.07" y2="4.93" />
                   </svg>
                 ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-refresh-cw">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="lucide lucide-refresh-cw"
+                  >
                     <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
                     <path d="M21 3v5h-5" />
                     <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
@@ -175,11 +224,12 @@ export function SimulationMap() {
                 <span className="text-red-600">WebSocket desconectado</span>
               )}
               <span>
-                Simulaciones disponibles: <strong>{simulationsArray.length}</strong>
+                Simulaciones disponibles:{" "}
+                <strong>{simulationsArray.length}</strong>
               </span>
             </div>
           </div>
-          
+
           <div className="flex flex-col">
             <div className="flex gap-2">
               <Button
@@ -187,10 +237,10 @@ export function SimulationMap() {
                 size="sm"
                 onClick={handleStartSimulation}
                 disabled={
-                  !currentSimulationId || 
-                  isLoading || 
-                  (simulationInfo?.status === SimulationDTOStatusEnum.Running) ||
-                  (simulationInfo?.type === 'DAILY_OPERATIONS')
+                  !currentSimulationId ||
+                  isLoading ||
+                  simulationInfo?.status === SimulationDTOStatusEnum.Running ||
+                  simulationInfo?.type === "DAILY_OPERATIONS"
                 }
               >
                 Iniciar
@@ -200,10 +250,10 @@ export function SimulationMap() {
                 size="sm"
                 onClick={handlePauseSimulation}
                 disabled={
-                  !currentSimulationId || 
-                  isLoading || 
-                  (simulationInfo?.status !== SimulationDTOStatusEnum.Running) ||
-                  (simulationInfo?.type === 'DAILY_OPERATIONS')
+                  !currentSimulationId ||
+                  isLoading ||
+                  simulationInfo?.status !== SimulationDTOStatusEnum.Running ||
+                  simulationInfo?.type === "DAILY_OPERATIONS"
                 }
               >
                 Pausar
@@ -213,45 +263,56 @@ export function SimulationMap() {
                 size="sm"
                 onClick={handleStopSimulation}
                 disabled={
-                  !currentSimulationId || 
-                  isLoading || 
-                  (simulationInfo?.status === SimulationDTOStatusEnum.Finished) ||
-                  (simulationInfo?.type === 'DAILY_OPERATIONS')
+                  !currentSimulationId ||
+                  isLoading ||
+                  simulationInfo?.status === SimulationDTOStatusEnum.Finished ||
+                  simulationInfo?.type === "DAILY_OPERATIONS"
                 }
               >
                 Detener
               </Button>
             </div>
-            {currentSimulationId && simulationInfo?.type === 'DAILY_OPERATIONS' && (
-              <div className="text-xs text-amber-600 mt-1">
-                Las operaciones diarias se controlan automáticamente por el sistema
-              </div>
-            )}
+            {currentSimulationId &&
+              simulationInfo?.type === "DAILY_OPERATIONS" && (
+                <div className="text-xs text-amber-600 mt-1">
+                  Las operaciones diarias se controlan automáticamente por el
+                  sistema
+                </div>
+              )}
           </div>
         </div>
-        
+
         {currentSimulationId && simulationInfo && (
           <div className="flex flex-col space-y-2">
             <div className="flex gap-4 text-sm">
               <div>
-                <span className="font-semibold">Estado:</span> {simulationInfo.status}
+                <span className="font-semibold">Estado:</span>{" "}
+                {simulationInfo.status}
               </div>
               <div>
-                <span className="font-semibold">Tipo:</span> {simulationInfo.type}
-                {simulationInfo.type === 'DAILY_OPERATIONS' && (
-                  <span className="ml-1 text-amber-600 font-semibold">(control automático)</span>
+                <span className="font-semibold">Tipo:</span>{" "}
+                {simulationInfo.type}
+                {simulationInfo.type === "DAILY_OPERATIONS" && (
+                  <span className="ml-1 text-amber-600 font-semibold">
+                    (control automático)
+                  </span>
                 )}
               </div>
               <div>
-                <span className="font-semibold">Tiempo actual:</span> {new Date(simulationInfo.simulatedCurrentTime || "").toLocaleString()}
+                <span className="font-semibold">Tiempo actual:</span>{" "}
+                {new Date(
+                  simulationInfo.simulatedCurrentTime || "",
+                ).toLocaleString()}
               </div>
               {simulationState && (
                 <>
                   <div>
-                    <span className="font-semibold">Pedidos pendientes:</span> {simulationState.pendingOrdersCount}
+                    <span className="font-semibold">Pedidos pendientes:</span>{" "}
+                    {simulationState.pendingOrdersCount}
                   </div>
                   <div>
-                    <span className="font-semibold">Pedidos entregados:</span> {simulationState.deliveredOrdersCount}
+                    <span className="font-semibold">Pedidos entregados:</span>{" "}
+                    {simulationState.deliveredOrdersCount}
                   </div>
                 </>
               )}
@@ -259,16 +320,12 @@ export function SimulationMap() {
           </div>
         )}
       </div>
-      
+
       <div className="bg-slate-50 border rounded-md p-2 h-[700px] overflow-hidden">
         <SimulationCanvas simulationState={simulationState} />
       </div>
-      
-      {error && (
-        <div className="mt-2 text-red-600 text-sm">
-          Error: {error}
-        </div>
-      )}
+
+      {error && <div className="mt-2 text-red-600 text-sm">Error: {error}</div>}
     </Card>
   );
 }

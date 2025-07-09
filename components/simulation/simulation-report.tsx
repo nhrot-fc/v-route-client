@@ -31,7 +31,7 @@ export function SimulationReport() {
     if (simulationState && simulationInfo) {
       const totalVehicles = simulationState.vehicles?.length || 0;
       const vehiclesAvailable = simulationState.availableVehiclesCount || 0;
-      
+
       setSimulationStats({
         totalVehicles,
         ordersDelivered: simulationState.deliveredOrdersCount || 0,
@@ -46,7 +46,7 @@ export function SimulationReport() {
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "N/A";
-    
+
     try {
       const date = new Date(dateStr);
       return format(date, "PPpp", { locale: es });
@@ -75,15 +75,15 @@ export function SimulationReport() {
           <dl className="space-y-2">
             <div className="flex justify-between">
               <dt className="font-medium">ID:</dt>
-              <dd>{simulationInfo.id || 'N/A'}</dd>
+              <dd>{simulationInfo.id || "N/A"}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="font-medium">Tipo:</dt>
-              <dd>{simulationInfo.type || 'N/A'}</dd>
+              <dd>{simulationInfo.type || "N/A"}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="font-medium">Estado:</dt>
-              <dd>{simulationInfo.status || 'N/A'}</dd>
+              <dd>{simulationInfo.status || "N/A"}</dd>
             </div>
             <div className="flex justify-between">
               <dt className="font-medium">Hora simulada:</dt>
@@ -113,7 +113,10 @@ export function SimulationReport() {
             </div>
             <div className="flex justify-between">
               <dt className="font-medium">Total:</dt>
-              <dd>{simulationStats.ordersDelivered + simulationStats.ordersPending}</dd>
+              <dd>
+                {simulationStats.ordersDelivered +
+                  simulationStats.ordersPending}
+              </dd>
             </div>
           </dl>
         </CardContent>
@@ -142,4 +145,4 @@ export function SimulationReport() {
       </Card>
     </div>
   );
-} 
+}

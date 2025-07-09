@@ -22,7 +22,7 @@ export function SimulationControls({
   onPause,
   onStop,
   onRefresh,
-  onSpeedChange
+  onSpeedChange,
 }: SimulationControlsProps) {
   return (
     <div className="flex flex-wrap items-center justify-between gap-4">
@@ -61,4 +61,4 @@ export function SimulationControls({
       </div>
     </div>
   );
-} 
+}

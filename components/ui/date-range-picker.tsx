@@ -1,24 +1,24 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { format } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
+import * as React from "react";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
 
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
 
 interface DateRangePickerProps {
-  className?: string
-  initialDateFrom?: Date
-  initialDateTo?: Date
-  onUpdate?: (date: { from: Date; to: Date }) => void
-  align?: "center" | "start" | "end"
+  className?: string;
+  initialDateFrom?: Date;
+  initialDateTo?: Date;
+  onUpdate?: (date: { from: Date; to: Date }) => void;
+  align?: "center" | "start" | "end";
 }
 
 export function DateRangePicker({
@@ -28,13 +28,17 @@ export function DateRangePicker({
   onUpdate,
   align = "center",
 }: DateRangePickerProps) {
-  const [dateFrom, setDateFrom] = React.useState<Date | undefined>(initialDateFrom || new Date())
-  const [dateTo, setDateTo] = React.useState<Date | undefined>(initialDateTo || new Date())
-  const [isOpen, setIsOpen] = React.useState(false)
+  const [dateFrom, setDateFrom] = React.useState<Date | undefined>(
+    initialDateFrom || new Date(),
+  );
+  const [dateTo, setDateTo] = React.useState<Date | undefined>(
+    initialDateTo || new Date(),
+  );
+  const [isOpen, setIsOpen] = React.useState(false);
 
   // Format the date as YYYY-MM-DD for the input
   const formatDate = (date: Date | undefined): string => {
-    return date ? date.toISOString().split('T')[0] : '';
+    return date ? date.toISOString().split("T")[0] : "";
   };
 
   const handleFromChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,7 +47,7 @@ export function DateRangePicker({
       setDateFrom(undefined);
       return;
     }
-    
+
     const newDate = new Date(value);
     if (!isNaN(newDate.getTime())) {
       setDateFrom(newDate);
@@ -59,7 +63,7 @@ export function DateRangePicker({
       setDateTo(undefined);
       return;
     }
-    
+
     const newDate = new Date(value);
     if (!isNaN(newDate.getTime())) {
       setDateTo(newDate);
@@ -84,7 +88,7 @@ export function DateRangePicker({
             variant={"outline"}
             className={cn(
               "w-full justify-start text-left font-normal",
-              !dateFrom && !dateTo && "text-muted-foreground"
+              !dateFrom && !dateTo && "text-muted-foreground",
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
@@ -126,15 +130,12 @@ export function DateRangePicker({
             />
           </div>
           <div className="flex justify-end">
-            <Button 
-              size="sm" 
-              onClick={() => setIsOpen(false)}
-            >
+            <Button size="sm" onClick={() => setIsOpen(false)}>
               Aplicar
             </Button>
           </div>
         </PopoverContent>
       </Popover>
     </div>
-  )
-} 
+  );
+}

@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Input } from "@/components/ui/input"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 export interface DatePickerProps {
-  date: Date | undefined
-  setDate: (date: Date | undefined) => void
-  className?: string
-  placeholder?: string
-  disabled?: boolean
+  date: Date | undefined;
+  setDate: (date: Date | undefined) => void;
+  className?: string;
+  placeholder?: string;
+  disabled?: boolean;
 }
 
 export function DatePicker({
@@ -20,7 +20,7 @@ export function DatePicker({
   disabled = false,
 }: DatePickerProps) {
   // Format the date as YYYY-MM-DD for the input
-  const formattedDate = date ? date.toISOString().split('T')[0] : '';
+  const formattedDate = date ? date.toISOString().split("T")[0] : "";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -28,7 +28,7 @@ export function DatePicker({
       setDate(undefined);
       return;
     }
-    
+
     const newDate = new Date(value);
     if (!isNaN(newDate.getTime())) {
       setDate(newDate);
@@ -45,4 +45,4 @@ export function DatePicker({
       disabled={disabled}
     />
   );
-} 
+}

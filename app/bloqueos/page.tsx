@@ -7,11 +7,27 @@ import { BlockageForm } from "@/components/blockages/blockage-form";
 import { PageLayout } from "@/components/ui/page-layout";
 import { DataTable } from "@/components/ui/data-table";
 import { SectionContainer } from "@/components/ui/section-container";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Divider } from "@/components/ui/divider";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { useBlockages } from "@/hooks/use-blockages";
-import { AlertTriangle, FileUp, Plus, List, Map, MapPin, Calendar, Clock, X } from "lucide-react";
+import {
+  AlertTriangle,
+  FileUp,
+  Plus,
+  List,
+  Map,
+  MapPin,
+  Calendar,
+  Clock,
+  X,
+} from "lucide-react";
 import { Blockage } from "@/lib/api-client";
 import { PaginationFooter } from "@/components/ui/pagination-footer";
 import { TableFilterTabs } from "@/components/ui/table-filter-tabs";
@@ -20,16 +36,17 @@ export default function BlockagesPage() {
   const [activeTab, setActiveTab] = useState("list");
   const [newOpen, setNewOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
-  
+
   // Add pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  
+
   // Use pagination parameters in the hook
-  const { blockages, loading, error, deleteBlockage, totalItems, totalPages } = useBlockages({
-    page: currentPage - 1, // API uses 0-based index
-    size: pageSize
-  });
+  const { blockages, loading, error, deleteBlockage, totalItems, totalPages } =
+    useBlockages({
+      page: currentPage - 1, // API uses 0-based index
+      size: pageSize,
+    });
 
   // Handle page change
   const handlePageChange = (page: number) => {
@@ -41,29 +58,29 @@ export default function BlockagesPage() {
     setPageSize(size);
     setCurrentPage(1); // Reset to first page when changing page size
   };
-  
+
   // Count blockages by status
-  const activeBlockages = blockages.filter(blockage => {
+  const activeBlockages = blockages.filter((blockage) => {
     const now = new Date();
     const start = blockage.startTime ? new Date(blockage.startTime) : null;
     const end = blockage.endTime ? new Date(blockage.endTime) : null;
     return start && end && start <= now && end >= now;
   }).length;
-  
-  const upcomingBlockages = blockages.filter(blockage => {
+
+  const upcomingBlockages = blockages.filter((blockage) => {
     const now = new Date();
     const start = blockage.startTime ? new Date(blockage.startTime) : null;
     return start && start > now;
   }).length;
-  
-  const expiredBlockages = blockages.filter(blockage => {
+
+  const expiredBlockages = blockages.filter((blockage) => {
     const now = new Date();
     const end = blockage.endTime ? new Date(blockage.endTime) : null;
     return end && end < now;
   }).length;
-  
+
   const totalBlockages = blockages.length;
-  
+
   // Format date and time
   const formatDate = (dateString?: string) => {
     if (!dateString) return "-";
@@ -72,37 +89,37 @@ export default function BlockagesPage() {
 
   const formatTime = (dateString?: string) => {
     if (!dateString) return "-";
-    return new Date(dateString).toLocaleTimeString("es-ES", { 
-      hour: '2-digit', 
-      minute: '2-digit' 
+    return new Date(dateString).toLocaleTimeString("es-ES", {
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
   const formatLinePoints = (linePoints?: string) => {
     if (!linePoints) return "-";
-    
+
     // Split by commas to get all coordinates
-    const coords = linePoints.split(',').map(Number);
-    
+    const coords = linePoints.split(",").map(Number);
+
     // Check if we have valid coordinates (must be even number)
     if (coords.length < 2 || coords.length % 2 !== 0) return linePoints;
-    
+
     // Create pairs of coordinates and format them
     const points = [];
     for (let i = 0; i < coords.length; i += 2) {
-      points.push(`(${coords[i]}, ${coords[i+1]})`);
+      points.push(`(${coords[i]}, ${coords[i + 1]})`);
     }
-    
+
     // Join with arrows
-    return points.join(' → ');
+    return points.join(" → ");
   };
-  
+
   // Define blockage status function
   const getBlockageStatus = (blockage: Blockage) => {
     const now = new Date();
     const start = blockage.startTime ? new Date(blockage.startTime) : null;
     const end = blockage.endTime ? new Date(blockage.endTime) : null;
-    
+
     if (start && end) {
       if (now < start) {
         return <StatusBadge status="pending" text="Programado" />;
@@ -112,7 +129,7 @@ export default function BlockagesPage() {
         return <StatusBadge status="success" text="Finalizado" />;
       }
     }
-    
+
     return <StatusBadge status="warning" text="Sin fecha" />;
   };
 
@@ -164,7 +181,10 @@ export default function BlockagesPage() {
       cell: (blockage: Blockage) => (
         <div className="flex items-center">
           <MapPin className="mr-2 h-4 w-4 text-primary-600" />
-          <div className="max-w-xs truncate" title={formatLinePoints(blockage.linePoints)}>
+          <div
+            className="max-w-xs truncate"
+            title={formatLinePoints(blockage.linePoints)}
+          >
             {formatLinePoints(blockage.linePoints)}
           </div>
         </div>
@@ -214,7 +234,7 @@ export default function BlockagesPage() {
       },
     },
   ];
-  
+
   // Define actions
   const actions = [
     {
@@ -234,26 +254,26 @@ export default function BlockagesPage() {
     if (activeTab === "list" || !activeTab) {
       return blockages;
     }
-    const tabFilter = filterTabs.find(tab => tab.id === activeTab);
+    const tabFilter = filterTabs.find((tab) => tab.id === activeTab);
     return tabFilter ? blockages.filter(tabFilter.filter) : blockages;
   }, [blockages, activeTab, filterTabs]);
 
   return (
     <PageLayout
-      title="Gestión de Bloqueos" 
+      title="Gestión de Bloqueos"
       description="Administre los bloqueos programados en las calles y configure restricciones de rutas"
       actions={[
-        { 
-          icon: <FileUp className="h-4 w-4" />, 
-          label: "Importar", 
+        {
+          icon: <FileUp className="h-4 w-4" />,
+          label: "Importar",
           variant: "outline",
-          onClick: () => setImportOpen(true)
+          onClick: () => setImportOpen(true),
         },
-        { 
-          icon: <Plus className="h-4 w-4" />, 
-          label: "Nuevo Bloqueo", 
-          onClick: () => setNewOpen(true)
-        }
+        {
+          icon: <Plus className="h-4 w-4" />,
+          label: "Nuevo Bloqueo",
+          onClick: () => setNewOpen(true),
+        },
       ]}
     >
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -268,7 +288,7 @@ export default function BlockagesPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-white border">
           <CardContent className="p-4 flex items-center">
             <div className="bg-red-50 p-3 rounded-md mr-3">
@@ -280,7 +300,7 @@ export default function BlockagesPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-white border">
           <CardContent className="p-4 flex items-center">
             <div className="bg-amber-50 p-3 rounded-md mr-3">
@@ -292,7 +312,7 @@ export default function BlockagesPage() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-white border">
           <CardContent className="p-4 flex items-center">
             <div className="bg-green-50 p-3 rounded-md mr-3">
@@ -305,7 +325,7 @@ export default function BlockagesPage() {
           </CardContent>
         </Card>
       </div>
-      
+
       <SectionContainer
         title="Bloqueos de Calles"
         description="Lista de bloqueos programados en las calles"
@@ -348,7 +368,9 @@ export default function BlockagesPage() {
               <Plus className="h-5 w-5 mr-2 text-primary" />
               <span>Registro de Bloqueo</span>
             </DialogTitle>
-            <DialogDescription>Añade un nuevo bloqueo programado</DialogDescription>
+            <DialogDescription>
+              Añade un nuevo bloqueo programado
+            </DialogDescription>
           </DialogHeader>
           <Divider className="my-2" />
           <BlockageForm />
@@ -363,12 +385,14 @@ export default function BlockagesPage() {
               <FileUp className="h-5 w-5 mr-2 text-primary" />
               <span>Carga Masiva de Bloqueos</span>
             </DialogTitle>
-            <DialogDescription>Sube un archivo de texto con bloqueos</DialogDescription>
+            <DialogDescription>
+              Sube un archivo de texto con bloqueos
+            </DialogDescription>
           </DialogHeader>
           <Divider className="my-2" />
           <BlockageUploadForm />
         </DialogContent>
       </Dialog>
     </PageLayout>
-  )
-} 
+  );
+}

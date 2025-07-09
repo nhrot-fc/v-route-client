@@ -57,34 +57,21 @@ export function SectionContainer({
   };
 
   return (
-    <div
-      className={cn(
-        sizes[size],
-        variants[variant],
-        className
-      )}
-      {...props}
-    >
+    <div className={cn(sizes[size], variants[variant], className)} {...props}>
       {(title || description) && (
         <div
           className={cn(
             "flex items-center justify-between",
             collapsible && "cursor-pointer",
-            headerClassName
+            headerClassName,
           )}
           onClick={handleToggle}
         >
           <div className="flex items-center gap-2">
-            {icon && (
-              <div className="text-primary shrink-0">
-                {icon}
-              </div>
-            )}
+            {icon && <div className="text-primary shrink-0">{icon}</div>}
             <div>
               {title && (
-                <h3 className="text-lg font-medium leading-6">
-                  {title}
-                </h3>
+                <h3 className="text-lg font-medium leading-6">{title}</h3>
               )}
               {description && (
                 <p className="text-sm text-muted-foreground mt-1">
@@ -106,7 +93,7 @@ export function SectionContainer({
                   xmlns="http://www.w3.org/2000/svg"
                   className={cn(
                     "h-5 w-5 transition-transform",
-                    isCollapsed ? "rotate-180" : "rotate-0"
+                    isCollapsed ? "rotate-180" : "rotate-0",
                   )}
                   fill="none"
                   viewBox="0 0 24 24"
@@ -128,10 +115,8 @@ export function SectionContainer({
       {divider && title && <Divider className="my-2" />}
 
       {(!collapsible || !isCollapsed) && (
-        <div className={cn(contentClassName)}>
-          {children}
-        </div>
+        <div className={cn(contentClassName)}>{children}</div>
       )}
     </div>
   );
-} 
+}

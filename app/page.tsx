@@ -52,15 +52,19 @@ export default function DashboardPage() {
 
   return (
     <PageLayout
-      title="Dashboard" 
+      title="Dashboard"
       description="Visualización de métricas operativas y gestión logística"
       actions={[
-        { 
-          icon: isRefreshing ? <Loader2 className="animate-spin" /> : <RefreshCw />, 
-          label: "Actualizar datos", 
-          variant: "outline", 
-          onClick: handleRefresh 
-        }
+        {
+          icon: isRefreshing ? (
+            <Loader2 className="animate-spin" />
+          ) : (
+            <RefreshCw />
+          ),
+          label: "Actualizar datos",
+          variant: "outline",
+          onClick: handleRefresh,
+        },
       ]}
     >
       <div className="mb-6">
@@ -73,7 +77,7 @@ export default function DashboardPage() {
             Última actualización: {currentTime}
           </Badge>
         </div>
-        
+
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <IconCard
             icon={<Clock className="h-5 w-5" />}
@@ -84,7 +88,10 @@ export default function DashboardPage() {
                 ? {
                     value: metrics.pendingOrders.changePercent,
                     isPositive: metrics.pendingOrders.changePercent < 0,
-                    label: metrics.pendingOrders.changePercent < 0 ? "menos que ayer" : "más que ayer"
+                    label:
+                      metrics.pendingOrders.changePercent < 0
+                        ? "menos que ayer"
+                        : "más que ayer",
                   }
                 : undefined
             }
@@ -100,7 +107,10 @@ export default function DashboardPage() {
                 ? {
                     value: metrics.completedOrders.changePercent,
                     isPositive: metrics.completedOrders.changePercent > 0,
-                    label: metrics.completedOrders.changePercent > 0 ? "más que ayer" : "menos que ayer"
+                    label:
+                      metrics.completedOrders.changePercent > 0
+                        ? "más que ayer"
+                        : "menos que ayer",
                   }
                 : undefined
             }
@@ -110,16 +120,29 @@ export default function DashboardPage() {
           <IconCard
             icon={<Truck className="h-5 w-5" />}
             title="Vehículos Activos"
-            value={loading ? "..." : `${metrics.activeVehicles.active}/${metrics.activeVehicles.total}`}
-            subtitle={metrics.activeVehicles.inMaintenance > 0 
-              ? `${metrics.activeVehicles.inMaintenance} en mantenimiento`
-              : "Todos operativos"
+            value={
+              loading
+                ? "..."
+                : `${metrics.activeVehicles.active}/${metrics.activeVehicles.total}`
+            }
+            subtitle={
+              metrics.activeVehicles.inMaintenance > 0
+                ? `${metrics.activeVehicles.inMaintenance} en mantenimiento`
+                : "Todos operativos"
             }
             footer={
               metrics.activeVehicles.inMaintenance > 0 ? (
-                <StatusBadge status="warning" text="Mantenimiento requerido" size="sm" />
+                <StatusBadge
+                  status="warning"
+                  text="Mantenimiento requerido"
+                  size="sm"
+                />
               ) : (
-                <StatusBadge status="success" text="Flota operativa" size="sm" />
+                <StatusBadge
+                  status="success"
+                  text="Flota operativa"
+                  size="sm"
+                />
               )
             }
             colorScheme="primary"
@@ -134,7 +157,10 @@ export default function DashboardPage() {
                 ? {
                     value: metrics.fuelConsumption.changePercent,
                     isPositive: metrics.fuelConsumption.changePercent < 0,
-                    label: metrics.fuelConsumption.changePercent < 0 ? "menos que ayer" : "más que ayer"
+                    label:
+                      metrics.fuelConsumption.changePercent < 0
+                        ? "menos que ayer"
+                        : "más que ayer",
                   }
                 : undefined
             }
@@ -145,15 +171,24 @@ export default function DashboardPage() {
 
       <Tabs defaultValue="overview" className="space-y-6">
         <TabsList className="w-full max-w-md mx-auto md:mx-0 grid grid-cols-3 bg-muted/60">
-          <TabsTrigger value="overview" className="data-[state=active]:bg-white dark:data-[state=active]:bg-card">
+          <TabsTrigger
+            value="overview"
+            className="data-[state=active]:bg-white dark:data-[state=active]:bg-card"
+          >
             <Package className="h-4 w-4 mr-2" />
             Vista General
           </TabsTrigger>
-          <TabsTrigger value="analytics" className="data-[state=active]:bg-white dark:data-[state=active]:bg-card">
+          <TabsTrigger
+            value="analytics"
+            className="data-[state=active]:bg-white dark:data-[state=active]:bg-card"
+          >
             <BarChart2 className="h-4 w-4 mr-2" />
             Analítica
           </TabsTrigger>
-          <TabsTrigger value="reports" className="data-[state=active]:bg-white dark:data-[state=active]:bg-card">
+          <TabsTrigger
+            value="reports"
+            className="data-[state=active]:bg-white dark:data-[state=active]:bg-card"
+          >
             <Activity className="h-4 w-4 mr-2" />
             Reportes
           </TabsTrigger>
@@ -168,7 +203,10 @@ export default function DashboardPage() {
                     <BarChart2 className="h-5 w-5 mr-2 text-primary" />
                     Estado de Entregas
                   </CardTitle>
-                  <Badge variant="outline" className="bg-primary-50 text-primary-700">
+                  <Badge
+                    variant="outline"
+                    className="bg-primary-50 text-primary-700"
+                  >
                     Últimas 24h
                   </Badge>
                 </div>
@@ -189,7 +227,10 @@ export default function DashboardPage() {
                     <Fuel className="h-5 w-5 mr-2 text-primary" />
                     Consumo de Combustible
                   </CardTitle>
-                  <Badge variant="outline" className="bg-primary-50 text-primary-700">
+                  <Badge
+                    variant="outline"
+                    className="bg-primary-50 text-primary-700"
+                  >
                     Semanal
                   </Badge>
                 </div>
@@ -284,15 +325,9 @@ export default function DashboardPage() {
                   Seleccione parámetros para generar reportes
                 </p>
                 <div className="flex gap-3 mt-4">
-                  <Button variant="outline">
-                    Diario
-                  </Button>
-                  <Button variant="outline">
-                    Semanal
-                  </Button>
-                  <Button variant="outline">
-                    Mensual
-                  </Button>
+                  <Button variant="outline">Diario</Button>
+                  <Button variant="outline">Semanal</Button>
+                  <Button variant="outline">Mensual</Button>
                 </div>
               </div>
             </CardContent>

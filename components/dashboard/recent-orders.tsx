@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Badge } from "@/components/ui/badge"
-import { OrderDTO } from '@/lib/api-client'
-import { useOrders } from "@/hooks/use-orders"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { formatDate } from "@/lib/utils"
+import { useState, useEffect } from "react";
+import { Badge } from "@/components/ui/badge";
+import { OrderDTO } from "@/lib/api-client";
+import { useOrders } from "@/hooks/use-orders";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { formatDate } from "@/lib/utils";
 
 export function RecentOrders() {
   const { orders, loading, error } = useOrders();
@@ -19,7 +19,10 @@ export function RecentOrders() {
         .sort((a, b) => {
           if (!a.deadlineTime) return 1;
           if (!b.deadlineTime) return -1;
-          return new Date(a.deadlineTime).getTime() - new Date(b.deadlineTime).getTime();
+          return (
+            new Date(a.deadlineTime).getTime() -
+            new Date(b.deadlineTime).getTime()
+          );
         });
       setUrgentOrders(pending.slice(0, 5));
     }
@@ -82,7 +85,10 @@ export function RecentOrders() {
                       {formatDate(new Date(order.deadlineTime))}
                     </p>
                   )}
-                  <Badge variant="outline" className="bg-amber-100 text-amber-800 border-amber-200 mt-1">
+                  <Badge
+                    variant="outline"
+                    className="bg-amber-100 text-amber-800 border-amber-200 mt-1"
+                  >
                     Pendiente
                   </Badge>
                 </div>

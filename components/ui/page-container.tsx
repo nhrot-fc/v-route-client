@@ -24,7 +24,7 @@ const pageContainerVariants = cva(
       spacing: "default",
       padding: "default",
     },
-  }
+  },
 );
 
 interface PageContainerProps
@@ -44,13 +44,11 @@ export function PageContainer({
   ...props
 }: PageContainerProps) {
   return (
-    <div 
+    <div
       className={cn(pageContainerVariants({ spacing, padding }), className)}
       {...props}
     >
-      <div className={cn("h-full", contentClassName)}>
-        {children}
-      </div>
+      <div className={cn("h-full", contentClassName)}>{children}</div>
     </div>
   );
-} 
+}

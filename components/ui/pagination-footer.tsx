@@ -31,11 +31,13 @@ export function PaginationFooter({
         Mostrando {Math.min(totalItems, 1 + (currentPage - 1) * pageSize)}-
         {Math.min(currentPage * pageSize, totalItems)} de {totalItems} registros
       </div>
-      
+
       <div className="flex items-center space-x-6">
         <div className="flex items-center space-x-2">
-          <span className="text-sm text-muted-foreground">Filas por página</span>
-          <select 
+          <span className="text-sm text-muted-foreground">
+            Filas por página
+          </span>
+          <select
             className="h-8 w-16 rounded-md border border-input bg-background px-2"
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
@@ -45,20 +47,24 @@ export function PaginationFooter({
             <option value="50">50</option>
           </select>
         </div>
-        
+
         <div>
           <Pagination>
             <PaginationContent>
               <PaginationItem>
-                <PaginationPrevious 
-                  onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
-                  className={currentPage <= 1 ? "pointer-events-none opacity-50" : ""}
+                <PaginationPrevious
+                  onClick={() =>
+                    currentPage > 1 && onPageChange(currentPage - 1)
+                  }
+                  className={
+                    currentPage <= 1 ? "pointer-events-none opacity-50" : ""
+                  }
                 />
               </PaginationItem>
-              
+
               {/* Show page numbers */}
               {Array.from({ length: totalPages }, (_, i) => i + 1)
-                .filter(page => {
+                .filter((page) => {
                   // Show first page, last page, and pages around current page
                   return (
                     page === 1 ||
@@ -72,7 +78,9 @@ export function PaginationFooter({
                     return (
                       <React.Fragment key={`ellipsis-${page}`}>
                         <PaginationItem>
-                          <span className="flex h-9 w-9 items-center justify-center">...</span>
+                          <span className="flex h-9 w-9 items-center justify-center">
+                            ...
+                          </span>
                         </PaginationItem>
                         <PaginationItem key={page}>
                           <PaginationLink
@@ -96,11 +104,17 @@ export function PaginationFooter({
                     </PaginationItem>
                   );
                 })}
-              
+
               <PaginationItem>
-                <PaginationNext 
-                  onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
-                  className={currentPage >= totalPages ? "pointer-events-none opacity-50" : ""}
+                <PaginationNext
+                  onClick={() =>
+                    currentPage < totalPages && onPageChange(currentPage + 1)
+                  }
+                  className={
+                    currentPage >= totalPages
+                      ? "pointer-events-none opacity-50"
+                      : ""
+                  }
                 />
               </PaginationItem>
             </PaginationContent>
@@ -109,4 +123,4 @@ export function PaginationFooter({
       </div>
     </div>
   );
-} 
+}

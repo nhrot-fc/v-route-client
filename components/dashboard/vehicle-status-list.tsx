@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -47,7 +47,7 @@ export function VehicleStatusList() {
           }
           return acc;
         },
-        { total: 0, available: 0, driving: 0, maintenance: 0, incident: 0 }
+        { total: 0, available: 0, driving: 0, maintenance: 0, incident: 0 },
       );
       setStatusCounts(counts);
 

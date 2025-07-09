@@ -55,20 +55,21 @@ export default function OrderForm({ onOrderAdded }: OrderFormProps) {
     if (!/^c-\d+$/.test(clienteId)) {
       toast({
         title: "Formato de ID de cliente inválido",
-        description: "El ID del cliente debe tener el formato c-XXX donde XXX son números.",
+        description:
+          "El ID del cliente debe tener el formato c-XXX donde XXX son números.",
         variant: "destructive",
       });
       return;
     }
 
     const now = new Date();
-    
+
     // Calcular la fecha límite basada en las horas de plazo
     const due = new Date(now);
     due.setHours(due.getHours() + plazoHoras);
 
     // Generar ID basado en el cliente y la fecha
-    const idFecha = now.toISOString().split('T')[0].replace(/-/g, '');
+    const idFecha = now.toISOString().split("T")[0].replace(/-/g, "");
     const orderId = `${clienteId}-${idFecha}`;
 
     const orderData: OrderDTO = {
@@ -78,7 +79,7 @@ export default function OrderForm({ onOrderAdded }: OrderFormProps) {
       deadlineTime: due.toISOString(),
       glpRequestM3: volumen,
       remainingGlpM3: volumen,
-      delivered: false
+      delivered: false,
     };
 
     try {

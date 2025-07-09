@@ -1,20 +1,20 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { cn } from "@/lib/utils"
-import { Input } from "@/components/ui/input"
+import * as React from "react";
+import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 export interface CalendarProps {
-  className?: string
-  classNames?: Record<string, string>
-  showOutsideDays?: boolean
-  mode?: "single" | "range" | "multiple"
-  selected?: Date | Date[] | { from: Date; to: Date } | undefined
-  onSelect?: (date: Date | { from: Date; to: Date } | undefined) => void
-  defaultMonth?: Date
-  numberOfMonths?: number
-  disabled?: boolean
-  initialFocus?: boolean
+  className?: string;
+  classNames?: Record<string, string>;
+  showOutsideDays?: boolean;
+  mode?: "single" | "range" | "multiple";
+  selected?: Date | Date[] | { from: Date; to: Date } | undefined;
+  onSelect?: (date: Date | { from: Date; to: Date } | undefined) => void;
+  defaultMonth?: Date;
+  numberOfMonths?: number;
+  disabled?: boolean;
+  initialFocus?: boolean;
 }
 
 function Calendar({
@@ -26,18 +26,23 @@ function Calendar({
 }: CalendarProps) {
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!onSelect) return;
-    
+
     const value = e.target.value;
     if (!value) {
       onSelect(undefined);
       return;
     }
-    
+
     const newDate = new Date(value);
     if (!isNaN(newDate.getTime())) {
       if (mode === "single") {
         onSelect(newDate);
-      } else if (mode === "range" && selected && typeof selected === "object" && "from" in selected) {
+      } else if (
+        mode === "range" &&
+        selected &&
+        typeof selected === "object" &&
+        "from" in selected
+      ) {
         // If we have a from date already, set the to date
         if (selected.from && !selected.to) {
           onSelect({ from: selected.from, to: newDate });
@@ -51,11 +56,11 @@ function Calendar({
 
   // Format the date as YYYY-MM-DD for the input
   const getFormattedDate = (date: Date | undefined): string => {
-    return date ? date.toISOString().split('T')[0] : '';
+    return date ? date.toISOString().split("T")[0] : "";
   };
 
-  let formattedDate = '';
-  
+  let formattedDate = "";
+
   if (selected) {
     if (mode === "single" && selected instanceof Date) {
       formattedDate = getFormattedDate(selected);
@@ -79,19 +84,30 @@ function Calendar({
             <span className="mr-2 text-sm">Desde:</span>
             <Input
               type="date"
-              value={selected && typeof selected === "object" && "from" in selected ? 
-                getFormattedDate(selected.from) : ''}
+              value={
+                selected && typeof selected === "object" && "from" in selected
+                  ? getFormattedDate(selected.from)
+                  : ""
+              }
               onChange={(e) => {
                 if (!onSelect) return;
                 const value = e.target.value;
                 if (!value) return;
-                
+
                 const newDate = new Date(value);
                 if (!isNaN(newDate.getTime())) {
-                  if (selected && typeof selected === "object" && "from" in selected && selected.to) {
+                  if (
+                    selected &&
+                    typeof selected === "object" &&
+                    "from" in selected &&
+                    selected.to
+                  ) {
                     onSelect({ from: newDate, to: selected.to });
                   } else {
-                    onSelect({ from: newDate, to: undefined as unknown as Date });
+                    onSelect({
+                      from: newDate,
+                      to: undefined as unknown as Date,
+                    });
                   }
                 }
               }}
@@ -103,17 +119,30 @@ function Calendar({
             <span className="mr-2 text-sm">Hasta:</span>
             <Input
               type="date"
-              value={selected && typeof selected === "object" && "from" in selected && selected.to ? 
-                getFormattedDate(selected.to) : ''}
+              value={
+                selected &&
+                typeof selected === "object" &&
+                "from" in selected &&
+                selected.to
+                  ? getFormattedDate(selected.to)
+                  : ""
+              }
               onChange={(e) => {
                 if (!onSelect) return;
                 const value = e.target.value;
                 if (!value) return;
-                
+
                 const newDate = new Date(value);
                 if (!isNaN(newDate.getTime())) {
-                  if (selected && typeof selected === "object" && "from" in selected) {
-                    onSelect({ from: selected.from || new Date(), to: newDate });
+                  if (
+                    selected &&
+                    typeof selected === "object" &&
+                    "from" in selected
+                  ) {
+                    onSelect({
+                      from: selected.from || new Date(),
+                      to: newDate,
+                    });
                   }
                 }
               }}
@@ -124,9 +153,9 @@ function Calendar({
         </div>
       )}
     </div>
-  )
+  );
 }
 
-Calendar.displayName = "Calendar"
+Calendar.displayName = "Calendar";
 
-export { Calendar }
+export { Calendar };

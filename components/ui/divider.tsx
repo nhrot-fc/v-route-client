@@ -62,25 +62,55 @@ export function Divider({
     };
 
     return (
-      <div 
-        className={cn("flex items-center w-full", 
-          orientation === "horizontal" && spacing !== "none" && dividerVariants({ spacing }), 
-          className
-        )} 
+      <div
+        className={cn(
+          "flex items-center w-full",
+          orientation === "horizontal" &&
+            spacing !== "none" &&
+            dividerVariants({ spacing }),
+          className,
+        )}
         {...props}
       >
-        <div className={cn("w-full flex items-center", labelPositionClasses[labelPosition])}>
-          {labelPosition !== "left" && (
-            <div className={cn(dividerVariants({ orientation, variant, thickness, spacing: "none" }), "flex-grow")}></div>
+        <div
+          className={cn(
+            "w-full flex items-center",
+            labelPositionClasses[labelPosition],
           )}
-          <span className={cn(
-            "text-xs text-muted-foreground px-2 flex-shrink-0",
-            labelClassName
-          )}>
+        >
+          {labelPosition !== "left" && (
+            <div
+              className={cn(
+                dividerVariants({
+                  orientation,
+                  variant,
+                  thickness,
+                  spacing: "none",
+                }),
+                "flex-grow",
+              )}
+            ></div>
+          )}
+          <span
+            className={cn(
+              "text-xs text-muted-foreground px-2 flex-shrink-0",
+              labelClassName,
+            )}
+          >
             {label}
           </span>
           {labelPosition !== "right" && (
-            <div className={cn(dividerVariants({ orientation, variant, thickness, spacing: "none" }), "flex-grow")}></div>
+            <div
+              className={cn(
+                dividerVariants({
+                  orientation,
+                  variant,
+                  thickness,
+                  spacing: "none",
+                }),
+                "flex-grow",
+              )}
+            ></div>
           )}
         </div>
       </div>
@@ -89,8 +119,11 @@ export function Divider({
 
   return (
     <div
-      className={cn(dividerVariants({ orientation, variant, thickness, spacing }), className)}
+      className={cn(
+        dividerVariants({ orientation, variant, thickness, spacing }),
+        className,
+      )}
       {...props}
     />
   );
-} 
+}

@@ -1,26 +1,26 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { useVehicles } from "@/hooks/use-vehicles"
-import { Vehicle, VehicleStatusEnum, VehicleTypeEnum } from "@/lib/api-client"
-import { Loader2 } from "lucide-react"
+} from "@/components/ui/select";
+import { useVehicles } from "@/hooks/use-vehicles";
+import { Vehicle, VehicleStatusEnum, VehicleTypeEnum } from "@/lib/api-client";
+import { Loader2 } from "lucide-react";
 
 interface VehicleFormProps {
-  onClose: () => void
-  initialData?: Partial<Vehicle>
+  onClose: () => void;
+  initialData?: Partial<Vehicle>;
 }
 
 export function VehicleForm({ onClose, initialData }: VehicleFormProps) {
-  const { createVehicle } = useVehicles()
+  const { createVehicle } = useVehicles();
   const [formData, setFormData] = useState<Partial<Vehicle>>({
     id: initialData?.id || "",
     type: initialData?.type || undefined,
@@ -29,49 +29,49 @@ export function VehicleForm({ onClose, initialData }: VehicleFormProps) {
       y: 0,
     },
     status: VehicleStatusEnum.Available,
-  })
+  });
 
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleChange = (
     field: keyof Vehicle,
-    value: string | number | { x: number; y: number } | undefined
+    value: string | number | { x: number; y: number } | undefined,
   ) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
-    }))
-  }
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
     if (!formData.id || !formData.type) {
-      setError("ID y tipo de vehículo son requeridos")
-      setLoading(false)
-      return
+      setError("ID y tipo de vehículo son requeridos");
+      setLoading(false);
+      return;
     }
 
     try {
       // Siempre establecemos el estado como AVAILABLE
       const vehicleData = {
         ...formData,
-        status: VehicleStatusEnum.Available
-      }
-      
-      await createVehicle(vehicleData)
-      onClose()
+        status: VehicleStatusEnum.Available,
+      };
+
+      await createVehicle(vehicleData);
+      onClose();
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "Error al crear vehículo"
-      setError(errorMessage)
+        err instanceof Error ? err.message : "Error al crear vehículo";
+      setError(errorMessage);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const resetForm = () => {
     setFormData({
@@ -82,9 +82,9 @@ export function VehicleForm({ onClose, initialData }: VehicleFormProps) {
         y: 0,
       },
       status: VehicleStatusEnum.Available,
-    })
-    setError(null)
-  }
+    });
+    setError(null);
+  };
 
   return (
     <div className="space-y-6">
@@ -196,10 +196,14 @@ export function VehicleForm({ onClose, initialData }: VehicleFormProps) {
             Cancelar
           </Button>
           <Button type="submit" disabled={loading}>
-            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Guardar Vehículo"}
+            {loading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              "Guardar Vehículo"
+            )}
           </Button>
         </div>
       </form>
     </div>
-  )
+  );
 }

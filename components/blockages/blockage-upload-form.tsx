@@ -48,7 +48,7 @@ export function BlockageUploadForm() {
   const parseDateString = (
     dateStr: string,
     refYear: number,
-    refMonth: number
+    refMonth: number,
   ): string => {
     const match = dateStr.match(/^(\d{2})d(\d{2})h(\d{2})m$/);
     if (!match) return new Date().toISOString();
@@ -62,7 +62,7 @@ export function BlockageUploadForm() {
       parseInt(days),
       parseInt(hours),
       parseInt(minutes),
-      0
+      0,
     );
     const utcDate = new Date(timestamp);
     return utcDate.toISOString();
@@ -72,7 +72,7 @@ export function BlockageUploadForm() {
   const parseBlockageLine = (
     line: string,
     refYear: number,
-    refMonth: number
+    refMonth: number,
   ): BlockageDTO => {
     // Format: ##d##h##m-##d##h##m:x1,y1,x2,y2,...,xn,yn
     const [timeRange, coordinates] = line.split(":");
@@ -165,13 +165,13 @@ export function BlockageUploadForm() {
 
       // Reset the file input element
       const fileInput = document.getElementById(
-        "blockage-file"
+        "blockage-file",
       ) as HTMLInputElement;
       if (fileInput) fileInput.value = "";
     } catch (error) {
       console.error("Error uploading blockages:", error);
       setErrorMessage(
-        error instanceof Error ? error.message : "Error al procesar el archivo"
+        error instanceof Error ? error.message : "Error al procesar el archivo",
       );
       setUploadStatus("error");
     } finally {

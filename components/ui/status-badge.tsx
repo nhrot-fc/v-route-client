@@ -2,7 +2,13 @@
 
 import * as React from "react";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, AlertCircle, Clock, Loader2 } from "lucide-react";
+import {
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Clock,
+  Loader2,
+} from "lucide-react";
 
 export interface StatusBadgeProps {
   status: "success" | "error" | "warning" | "pending" | "loading" | "info";
@@ -13,13 +19,13 @@ export interface StatusBadgeProps {
   animated?: boolean;
 }
 
-export function StatusBadge({ 
-  status, 
-  size = "default", 
-  text, 
-  showIcon = true, 
+export function StatusBadge({
+  status,
+  size = "default",
+  text,
+  showIcon = true,
   className,
-  animated = false
+  animated = false,
 }: StatusBadgeProps) {
   const getStatusConfig = () => {
     switch (status) {
@@ -27,38 +33,40 @@ export function StatusBadge({
         return {
           variant: "success" as const,
           icon: <CheckCircle className="h-3 w-3" />,
-          defaultText: "Completado"
+          defaultText: "Completado",
         };
       case "error":
         return {
           variant: "error" as const,
           icon: <XCircle className="h-3 w-3" />,
-          defaultText: "Error"
+          defaultText: "Error",
         };
       case "warning":
         return {
           variant: "warning" as const,
           icon: <AlertCircle className="h-3 w-3" />,
-          defaultText: "Advertencia"
+          defaultText: "Advertencia",
         };
       case "pending":
         return {
           variant: "info" as const,
           icon: <Clock className="h-3 w-3" />,
-          defaultText: "Pendiente"
+          defaultText: "Pendiente",
         };
       case "loading":
         return {
           variant: "info" as const,
-          icon: <Loader2 className={`h-3 w-3 ${animated ? "animate-spin" : ""}`} />,
-          defaultText: "Cargando"
+          icon: (
+            <Loader2 className={`h-3 w-3 ${animated ? "animate-spin" : ""}`} />
+          ),
+          defaultText: "Cargando",
         };
       case "info":
       default:
         return {
           variant: "info" as const,
           icon: <AlertCircle className="h-3 w-3" />,
-          defaultText: "Info"
+          defaultText: "Info",
         };
     }
   };
@@ -67,13 +75,13 @@ export function StatusBadge({
   const displayText = text || defaultText;
 
   return (
-    <Badge 
+    <Badge
       variant={variant}
-      size={size} 
+      size={size}
       icon={showIcon ? icon : undefined}
       className={className}
     >
       {displayText}
     </Badge>
   );
-} 
+}

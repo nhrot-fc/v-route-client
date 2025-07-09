@@ -73,7 +73,7 @@ const formSchema = z
       message:
         "La fecha y hora de fin debe ser posterior a la fecha y hora de inicio",
       path: ["endDate"],
-    }
+    },
   );
 
 type FormValues = z.infer<typeof formSchema>;
@@ -112,7 +112,7 @@ export function BlockageForm() {
         parseInt(data.startHour),
         parseInt(data.startMinute),
         0,
-        0
+        0,
       );
 
       const endTime = new Date(data.endDate);
@@ -165,10 +165,10 @@ export function BlockageForm() {
 
   // Helper functions to generate hour and minute options
   const hourOptions = Array.from({ length: 24 }, (_, i) =>
-    i.toString().padStart(2, "0")
+    i.toString().padStart(2, "0"),
   );
   const minuteOptions = Array.from({ length: 60 }, (_, i) =>
-    i.toString().padStart(2, "0")
+    i.toString().padStart(2, "0"),
   );
 
   return (

@@ -112,18 +112,19 @@ export function OrderUploadForm({ onOrdersUploaded }: OrderUploadFormProps) {
           days,
           hours,
           minutes,
-          0
+          0,
         );
         const arrivalDate = new Date(arrivalTimestamp);
 
         // Parse GLP request (remove m3 suffix)
         const glpRequestM3 = parseFloat(glpRequestStr.replace("m3", ""));
-        
+
         // Parse deadline hours (remove h suffix)
         const deadlineHours = parseInt(deadlineStr.replace("h", ""));
 
         // Calcular la fecha límite sumando las horas de plazo, también en UTC
-        const deadlineTimestamp = arrivalTimestamp + (deadlineHours * 60 * 60 * 1000);
+        const deadlineTimestamp =
+          arrivalTimestamp + deadlineHours * 60 * 60 * 1000;
         const deadlineDate = new Date(deadlineTimestamp);
 
         // Crear un ID que refleje correctamente el cliente y la fecha/hora de llegada

@@ -1,45 +1,51 @@
 "use client";
 
-import React, { useState, useMemo } from "react"
-import { 
-  AlertCircle, 
-  CalendarClock, 
+import React, { useState, useMemo } from "react";
+import {
+  AlertCircle,
+  CalendarClock,
   SlidersHorizontal,
   Car,
-  Plus
-} from "lucide-react"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
+  Plus,
+} from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
-import { PageContainer } from "@/components/ui/page-container"
-import { PageHeader } from "@/components/ui/page-header"
-import { SectionContainer } from "@/components/ui/section-container"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { StatusBadge } from "@/components/ui/status-badge"
-import { DataTable } from "@/components/ui/data-table"
-import { 
-  Sheet, 
-  SheetContent, 
-  SheetDescription, 
-  SheetHeader, 
-  SheetTitle 
-} from "@/components/ui/sheet"
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select"
-import { DateRangePicker } from "@/components/ui/date-range-picker"
-import { IncidentForm } from "@/components/incidents/incident-form"
-import { useIncidents } from "@/hooks/use-incidents"
-import { useVehicles } from "@/hooks/use-vehicles"
-import { IncidentDTO, IncidentTypeEnum } from "@/lib/api-client"
-import { PaginationFooter } from "@/components/ui/pagination-footer"
+import { PageContainer } from "@/components/ui/page-container";
+import { PageHeader } from "@/components/ui/page-header";
+import { SectionContainer } from "@/components/ui/section-container";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { DataTable } from "@/components/ui/data-table";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { IncidentForm } from "@/components/incidents/incident-form";
+import { useIncidents } from "@/hooks/use-incidents";
+import { useVehicles } from "@/hooks/use-vehicles";
+import { IncidentDTO, IncidentTypeEnum } from "@/lib/api-client";
+import { PaginationFooter } from "@/components/ui/pagination-footer";
 
 // Define an interface for the incident with any additional fields we need
 interface ExtendedIncident extends IncidentDTO {
@@ -49,93 +55,96 @@ interface ExtendedIncident extends IncidentDTO {
 
 export default function IncidentesPage() {
   // Filter state
-  const [activeTab, setActiveTab] = useState("todos")
+  const [activeTab, setActiveTab] = useState("todos");
   // Form sheet state
-  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [isFormOpen, setIsFormOpen] = useState(false);
   // Filter sheet state
-  const [isFilterOpen, setIsFilterOpen] = useState(false)
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   // Filter parameters
-  const [selectedVehicleId, setSelectedVehicleId] = useState<string | undefined>(undefined)
-  const [selectedType, setSelectedType] = useState<string | undefined>(undefined)
-  const [dateRange, setDateRange] = useState<{from: Date, to: Date}>({
+  const [selectedVehicleId, setSelectedVehicleId] = useState<
+    string | undefined
+  >(undefined);
+  const [selectedType, setSelectedType] = useState<string | undefined>(
+    undefined,
+  );
+  const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
     from: new Date(new Date().setMonth(new Date().getMonth() - 1)), // 1 month ago
-    to: new Date()
-  })
-  
+    to: new Date(),
+  });
+
   // Pagination state
-  const [currentPage, setCurrentPage] = useState(1)
-  const [pageSize, setPageSize] = useState(10)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Form dialog state
-  const [editingIncident, setEditingIncident] = useState<ExtendedIncident | null>(null)
-  
+  const [editingIncident, setEditingIncident] =
+    useState<ExtendedIncident | null>(null);
+
   // Get vehicles for filter dropdown
-  const { vehicles } = useVehicles()
-  
+  const { vehicles } = useVehicles();
+
   // Determine filter based on active tab and selected filters
-  const resolved = activeTab === "resueltos" ? true : 
-                   activeTab === "pendientes" ? false : undefined
-  
+  const resolved =
+    activeTab === "resueltos"
+      ? true
+      : activeTab === "pendientes"
+        ? false
+        : undefined;
+
   // Create filter object
   const filter = {
     vehicleId: selectedVehicleId,
     type: selectedType,
     resolved,
     startDate: dateRange?.from?.toISOString(),
-    endDate: dateRange?.to?.toISOString()
-  }
-  
+    endDate: dateRange?.to?.toISOString(),
+  };
+
   // Get incidents with pagination and filter
-  const { 
-    incidents, 
-    loading, 
-    error, 
-    refetch,
-    totalPages,
-    totalItems 
-  } = useIncidents(filter, {
-    page: currentPage - 1, // API uses 0-based index
-    size: pageSize
-  })
-  
+  const { incidents, loading, error, refetch, totalPages, totalItems } =
+    useIncidents(filter, {
+      page: currentPage - 1, // API uses 0-based index
+      size: pageSize,
+    });
+
   // Handle pagination changes
   const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
-  
+    setCurrentPage(page);
+  };
+
   // Handle page size change
   const handlePageSizeChange = (newSize: number | string) => {
-    setPageSize(typeof newSize === 'string' ? parseInt(newSize, 10) : newSize);
+    setPageSize(typeof newSize === "string" ? parseInt(newSize, 10) : newSize);
     setCurrentPage(1); // Reset to first page when changing page size
   };
-  
+
   // Handle form submission success
   const handleIncidentSaved = () => {
-    setIsFormOpen(false)
-    setEditingIncident(null)
-    refetch()
-  }
-  
+    setIsFormOpen(false);
+    setEditingIncident(null);
+    refetch();
+  };
+
   // Reset filters
   const resetFilters = () => {
-    setSelectedVehicleId(undefined)
-    setSelectedType(undefined)
+    setSelectedVehicleId(undefined);
+    setSelectedType(undefined);
     setDateRange({
       from: new Date(new Date().setMonth(new Date().getMonth() - 1)),
-      to: new Date()
-    })
-  }
-  
+      to: new Date(),
+    });
+  };
+
   // Map incidents to include date field for compatibility
-  const mappedIncidents: ExtendedIncident[] = incidents.map(incident => ({
+  const mappedIncidents: ExtendedIncident[] = incidents.map((incident) => ({
     ...incident,
-    date: incident.occurrenceTime // Map occurrenceTime to date for UI consistency
-  }))
-  
+    date: incident.occurrenceTime, // Map occurrenceTime to date for UI consistency
+  }));
+
   // Count incidents by status for tabs
-  const pendingCount = incidents.filter(i => !i.resolved).length
-  const resolvedCount = incidents.filter(i => i.resolved).length
-  const totalCount = incidents.length
+  const pendingCount = incidents.filter((i) => !i.resolved).length;
+  const resolvedCount = incidents.filter((i) => i.resolved).length;
+  const totalCount = incidents.length;
 
   // Define columns for the DataTable
   const columns = [
@@ -159,9 +168,15 @@ export default function IncidentesPage() {
       accessorKey: "type" as keyof ExtendedIncident,
       cell: (incident: ExtendedIncident) => {
         const type = incident.type;
-        let status: "warning" | "error" | "info" | "loading" | "success" | "pending" = "pending";
+        let status:
+          | "warning"
+          | "error"
+          | "info"
+          | "loading"
+          | "success"
+          | "pending" = "pending";
         let label = "Desconocido";
-        
+
         switch (type) {
           case IncidentTypeEnum.Ti1:
             status = "warning";
@@ -176,7 +191,7 @@ export default function IncidentesPage() {
             label = "Clima";
             break;
         }
-        
+
         return <StatusBadge status={status} text={label} />;
       },
     },
@@ -190,13 +205,13 @@ export default function IncidentesPage() {
       cell: (incident: ExtendedIncident) => (
         <div className="flex items-center">
           <CalendarClock className="h-4 w-4 mr-1.5 text-gray-500" />
-          {incident.date && 
+          {incident.date &&
             format(new Date(incident.date), "dd/MM/yyyy HH:mm", { locale: es })}
         </div>
       ),
     },
   ];
-  
+
   // Define actions for the DataTable
   const actions = [
     {
@@ -215,9 +230,9 @@ export default function IncidentesPage() {
     if (activeTab === "todos") {
       return mappedIncidents;
     } else if (activeTab === "pendientes") {
-      return mappedIncidents.filter(i => !i.resolved);
+      return mappedIncidents.filter((i) => !i.resolved);
     } else if (activeTab === "resueltos") {
-      return mappedIncidents.filter(i => i.resolved);
+      return mappedIncidents.filter((i) => i.resolved);
     }
     return mappedIncidents;
   }, [mappedIncidents, activeTab]);
@@ -232,22 +247,18 @@ export default function IncidentesPage() {
             icon: <SlidersHorizontal className="h-4 w-4" />,
             label: "Filtros",
             variant: "outline",
-            onClick: () => setIsFilterOpen(true)
+            onClick: () => setIsFilterOpen(true),
           },
           {
             icon: <Plus className="h-4 w-4" />,
             label: "Nuevo Incidente",
-            onClick: () => setIsFormOpen(true)
-          }
+            onClick: () => setIsFormOpen(true),
+          },
         ]}
       />
 
       <SectionContainer>
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="w-full"
-        >
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="flex justify-between items-center mb-6">
             <TabsList>
               <TabsTrigger value="todos" className="flex gap-2">
@@ -270,7 +281,8 @@ export default function IncidentesPage() {
               <CardHeader>
                 <CardTitle>Todos los incidentes</CardTitle>
                 <CardDescription>
-                  Lista completa de todos los incidentes registrados en el sistema.
+                  Lista completa de todos los incidentes registrados en el
+                  sistema.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -295,7 +307,7 @@ export default function IncidentesPage() {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="pendientes">
             <Card>
               <CardHeader>
@@ -306,7 +318,7 @@ export default function IncidentesPage() {
               </CardHeader>
               <CardContent>
                 <DataTable
-                  data={mappedIncidents.filter(i => !i.resolved)}
+                  data={mappedIncidents.filter((i) => !i.resolved)}
                   columns={columns}
                   actions={actions}
                   isLoading={loading}
@@ -316,7 +328,7 @@ export default function IncidentesPage() {
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="resueltos">
             <Card>
               <CardHeader>
@@ -327,7 +339,7 @@ export default function IncidentesPage() {
               </CardHeader>
               <CardContent>
                 <DataTable
-                  data={mappedIncidents.filter(i => i.resolved)}
+                  data={mappedIncidents.filter((i) => i.resolved)}
                   columns={columns}
                   actions={actions}
                   isLoading={loading}
@@ -339,26 +351,27 @@ export default function IncidentesPage() {
           </TabsContent>
         </Tabs>
       </SectionContainer>
-      
+
       {/* New Incident Form Sheet */}
       <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
         <SheetContent className="sm:max-w-md overflow-y-auto">
           <SheetHeader>
             <SheetTitle>Registrar nuevo incidente</SheetTitle>
             <SheetDescription>
-              Complete el formulario para registrar un nuevo incidente de vehículo.
+              Complete el formulario para registrar un nuevo incidente de
+              vehículo.
             </SheetDescription>
           </SheetHeader>
           <div className="py-6">
-            <IncidentForm 
-              incident={editingIncident} 
-              onSaved={handleIncidentSaved} 
-              onCancel={() => setIsFormOpen(false)} 
+            <IncidentForm
+              incident={editingIncident}
+              onSaved={handleIncidentSaved}
+              onCancel={() => setIsFormOpen(false)}
             />
           </div>
         </SheetContent>
       </Sheet>
-      
+
       {/* Filters Sheet */}
       <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
         <SheetContent className="sm:max-w-md">
@@ -373,7 +386,9 @@ export default function IncidentesPage() {
               <h3 className="text-sm font-medium">Vehículo</h3>
               <Select
                 value={selectedVehicleId || ""}
-                onValueChange={(value) => setSelectedVehicleId(value === "" ? undefined : value)}
+                onValueChange={(value) =>
+                  setSelectedVehicleId(value === "" ? undefined : value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Todos los vehículos" />
@@ -393,7 +408,9 @@ export default function IncidentesPage() {
               <h3 className="text-sm font-medium">Tipo de incidente</h3>
               <Select
                 value={selectedType || ""}
-                onValueChange={(value) => setSelectedType(value === "" ? undefined : value)}
+                onValueChange={(value) =>
+                  setSelectedType(value === "" ? undefined : value)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Todos los tipos" />
@@ -412,7 +429,9 @@ export default function IncidentesPage() {
               <DateRangePicker
                 initialDateFrom={dateRange.from}
                 initialDateTo={dateRange.to}
-                onUpdate={(range: { from: Date; to: Date }) => setDateRange(range)}
+                onUpdate={(range: { from: Date; to: Date }) =>
+                  setDateRange(range)
+                }
                 align="start"
               />
             </div>
@@ -421,11 +440,13 @@ export default function IncidentesPage() {
               <Button variant="outline" onClick={resetFilters}>
                 Restablecer
               </Button>
-              <Button onClick={() => {
-                setIsFilterOpen(false);
-                setCurrentPage(1); // Reset to first page when applying filters
-                refetch();
-              }}>
+              <Button
+                onClick={() => {
+                  setIsFilterOpen(false);
+                  setCurrentPage(1); // Reset to first page when applying filters
+                  refetch();
+                }}
+              >
                 Aplicar filtros
               </Button>
             </div>
@@ -433,5 +454,5 @@ export default function IncidentesPage() {
         </SheetContent>
       </Sheet>
     </PageContainer>
-  )
-} 
+  );
+}

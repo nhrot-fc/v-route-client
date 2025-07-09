@@ -25,8 +25,9 @@ const pageLayoutVariants = cva("", {
   },
 });
 
-interface PageLayoutProps extends React.HTMLAttributes<HTMLDivElement>, 
-  VariantProps<typeof pageLayoutVariants> {
+interface PageLayoutProps
+  extends React.HTMLAttributes<HTMLDivElement>,
+    VariantProps<typeof pageLayoutVariants> {
   title: string;
   description?: string;
   actions?: PageAction[];
@@ -49,8 +50,8 @@ export function PageLayout({
   ...props
 }: PageLayoutProps) {
   return (
-    <PageContainer 
-      spacing={containerProps?.spacing} 
+    <PageContainer
+      spacing={containerProps?.spacing}
       padding={containerProps?.padding}
       className={className}
       {...props}
@@ -66,4 +67,4 @@ export function PageLayout({
       </div>
     </PageContainer>
   );
-} 
+}
