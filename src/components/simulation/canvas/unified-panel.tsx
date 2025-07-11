@@ -462,8 +462,8 @@ export const UnifiedPanel: React.FC<UnifiedPanelProps> = ({
               <tbody>
                 {filteredDepots.map((depot) => {
                   // Mock capacity and stock values (these would come from the API in a real implementation)
-                  const capacity = depot.isMain ? 500 : 160;
-                  const currentStock = Math.floor(Math.random() * capacity);
+                  const capacity = depot.depot.glpCapacityM3 ?? 0;
+                  const currentStock = depot.depot.currentGlpM3 ?? 0;
                   const stockPercentage = (currentStock / capacity) * 100;
 
                   // Get color based on stock level

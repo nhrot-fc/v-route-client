@@ -1,5 +1,5 @@
 import React from "react";
-import type { DepotDTO } from "@/lib/api-client";
+import { DepotDTOTypeEnum, type DepotDTO } from "@/lib/api-client";
 
 interface DepotInfoPanelProps {
   depot: DepotDTO | null;
@@ -20,8 +20,8 @@ export const DepotInfoPanel: React.FC<DepotInfoPanelProps> = ({
   if (!depot) return null;
   
   // Mock capacity and stock values (these would come from the API in a real implementation)
-  const capacity = isMainDepot ? 500 : 160;
-  const currentStock = Math.floor(Math.random() * capacity);
+  const capacity = depot.glpCapacityM3 ?? 0;
+  const currentStock = (depot.type === DepotDTOTypeEnum.Main ? depot.glpCapacityM3 : depot.currentGlpM3) ?? 0;
   const stockPercentage = (currentStock / capacity) * 100;
   
   // Get color based on stock level
