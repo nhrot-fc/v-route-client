@@ -1646,7 +1646,8 @@
               "type": "string",
               "enum": [
                 "MAIN",
-                "AUXILIARY"
+                "AUXILIARY",
+                "TEMPORARY"
               ]
             }
           },
@@ -2377,7 +2378,8 @@
             "type": "string",
             "enum": [
               "MAIN",
-              "AUXILIARY"
+              "AUXILIARY",
+              "TEMPORARY"
             ]
           },
           "currentGlpM3": {
@@ -2495,6 +2497,62 @@
           }
         }
       },
+      "ActionDTO": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "DRIVE",
+              "REFUEL",
+              "RELOAD",
+              "SERVE",
+              "MAINTENANCE",
+              "WAIT"
+            ]
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "path": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Position"
+            }
+          },
+          "glpDelivered": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "glpLoaded": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "fuelConsumedGal": {
+            "type": "number",
+            "format": "double"
+          },
+          "fuelRefueledGal": {
+            "type": "number",
+            "format": "double"
+          },
+          "orderId": {
+            "type": "string"
+          },
+          "depotId": {
+            "type": "string"
+          },
+          "progress": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
       "DepotDTO": {
         "type": "object",
         "properties": {
@@ -2512,7 +2570,8 @@
             "type": "string",
             "enum": [
               "MAIN",
-              "AUXILIARY"
+              "AUXILIARY",
+              "TEMPORARY"
             ]
           },
           "currentGlpM3": {
@@ -2705,6 +2764,12 @@
               "$ref": "#/components/schemas/MaintenanceDTO"
             }
           },
+          "currentVehiclePlans": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VehiclePlanDTO"
+            }
+          },
           "pendingOrdersCount": {
             "type": "integer",
             "format": "int32"
@@ -2720,6 +2785,28 @@
           "availableVehiclesCount": {
             "type": "integer",
             "format": "int32"
+          }
+        }
+      },
+      "VehiclePlanDTO": {
+        "type": "object",
+        "properties": {
+          "vehicleId": {
+            "type": "string"
+          },
+          "actions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActionDTO"
+            }
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time"
           }
         }
       },

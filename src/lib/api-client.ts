@@ -133,6 +133,8 @@ export type {
   DeliveryRecordDTO,
   IncidentCreateDTO,
   MaintenanceCreateDTO,
+  ActionDTO,
+  VehiclePlanDTO,
 } from "@/generated";
 
 // Export enums
@@ -157,4 +159,6 @@ export {
   SimulationDTOTypeEnum,
   SimulationDTOStatusEnum,
   SimulationStateDTOStatusEnum,
+  ActionDTOTypeEnum,
+  SimulationCreateDTOTypeEnum,
 } from "@/generated";

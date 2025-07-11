@@ -26,6 +26,91 @@ import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerM
 /**
  * 
  * @export
+ * @interface ActionDTO
+ */
+export interface ActionDTO {
+    /**
+     * 
+     * @type {string}
+     * @memberof ActionDTO
+     */
+    'type'?: ActionDTOTypeEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof ActionDTO
+     */
+    'startTime'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ActionDTO
+     */
+    'endTime'?: string;
+    /**
+     * 
+     * @type {Array<Position>}
+     * @memberof ActionDTO
+     */
+    'path'?: Array<Position>;
+    /**
+     * 
+     * @type {number}
+     * @memberof ActionDTO
+     */
+    'glpDelivered'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ActionDTO
+     */
+    'glpLoaded'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ActionDTO
+     */
+    'fuelConsumedGal'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof ActionDTO
+     */
+    'fuelRefueledGal'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof ActionDTO
+     */
+    'orderId'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof ActionDTO
+     */
+    'depotId'?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof ActionDTO
+     */
+    'progress'?: number;
+}
+
+export const ActionDTOTypeEnum = {
+    Drive: 'DRIVE',
+    Refuel: 'REFUEL',
+    Reload: 'RELOAD',
+    Serve: 'SERVE',
+    Maintenance: 'MAINTENANCE',
+    Wait: 'WAIT'
+} as const;
+
+export type ActionDTOTypeEnum = typeof ActionDTOTypeEnum[keyof typeof ActionDTOTypeEnum];
+
+/**
+ * 
+ * @export
  * @interface Blockage
  */
 export interface Blockage {
@@ -162,7 +247,8 @@ export interface Depot {
 
 export const DepotTypeEnum = {
     Main: 'MAIN',
-    Auxiliary: 'AUXILIARY'
+    Auxiliary: 'AUXILIARY',
+    Temporary: 'TEMPORARY'
 } as const;
 
 export type DepotTypeEnum = typeof DepotTypeEnum[keyof typeof DepotTypeEnum];
@@ -207,7 +293,8 @@ export interface DepotDTO {
 
 export const DepotDTOTypeEnum = {
     Main: 'MAIN',
-    Auxiliary: 'AUXILIARY'
+    Auxiliary: 'AUXILIARY',
+    Temporary: 'TEMPORARY'
 } as const;
 
 export type DepotDTOTypeEnum = typeof DepotDTOTypeEnum[keyof typeof DepotDTOTypeEnum];
@@ -933,6 +1020,12 @@ export interface SimulationStateDTO {
     'scheduledMaintenances'?: Array<MaintenanceDTO>;
     /**
      * 
+     * @type {Array<VehiclePlanDTO>}
+     * @memberof SimulationStateDTO
+     */
+    'currentVehiclePlans'?: Array<VehiclePlanDTO>;
+    /**
+     * 
      * @type {number}
      * @memberof SimulationStateDTO
      */
@@ -1144,6 +1237,37 @@ export const VehicleDTOStatusEnum = {
 
 export type VehicleDTOStatusEnum = typeof VehicleDTOStatusEnum[keyof typeof VehicleDTOStatusEnum];
 
+/**
+ * 
+ * @export
+ * @interface VehiclePlanDTO
+ */
+export interface VehiclePlanDTO {
+    /**
+     * 
+     * @type {string}
+     * @memberof VehiclePlanDTO
+     */
+    'vehicleId'?: string;
+    /**
+     * 
+     * @type {Array<ActionDTO>}
+     * @memberof VehiclePlanDTO
+     */
+    'actions'?: Array<ActionDTO>;
+    /**
+     * 
+     * @type {string}
+     * @memberof VehiclePlanDTO
+     */
+    'startTime'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof VehiclePlanDTO
+     */
+    'endTime'?: string;
+}
 
 /**
  * BlockageControllerApi - axios parameter creator
@@ -2388,7 +2512,8 @@ export class DepotControllerApi extends BaseAPI {
  */
 export const List4TypeEnum = {
     Main: 'MAIN',
-    Auxiliary: 'AUXILIARY'
+    Auxiliary: 'AUXILIARY',
+    Temporary: 'TEMPORARY'
 } as const;
 export type List4TypeEnum = typeof List4TypeEnum[keyof typeof List4TypeEnum];
 

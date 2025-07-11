@@ -176,7 +176,7 @@ import {
 const configuration = new Configuration();
 const apiInstance = new DepotControllerApi(configuration);
 
-let type: 'MAIN' | 'AUXILIARY'; // (optional) (default to undefined)
+let type: 'MAIN' | 'AUXILIARY' | 'TEMPORARY'; // (optional) (default to undefined)
 let isMain: boolean; // (optional) (default to undefined)
 let minGlpCapacity: number; // (optional) (default to undefined)
 let minCurrentGlp: number; // (optional) (default to undefined)
@@ -203,7 +203,7 @@ const { status, data } = await apiInstance.list4(
 
 |Name | Type | Description  | Notes|
 |------------- | ------------- | ------------- | -------------|
-| **type** | [**&#39;MAIN&#39; | &#39;AUXILIARY&#39;**]**Array<&#39;MAIN&#39; &#124; &#39;AUXILIARY&#39;>** |  | (optional) defaults to undefined|
+| **type** | [**&#39;MAIN&#39; | &#39;AUXILIARY&#39; | &#39;TEMPORARY&#39;**]**Array<&#39;MAIN&#39; &#124; &#39;AUXILIARY&#39; &#124; &#39;TEMPORARY&#39;>** |  | (optional) defaults to undefined|
 | **isMain** | [**boolean**] |  | (optional) defaults to undefined|
 | **minGlpCapacity** | [**number**] |  | (optional) defaults to undefined|
 | **minCurrentGlp** | [**number**] |  | (optional) defaults to undefined|

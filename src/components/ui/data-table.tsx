@@ -100,7 +100,7 @@ export function DataTable<T>({
                         ? column.accessorKey(row)
                         : column.cell
                           ? column.cell(row)
-                          : String(row[column.accessorKey as keyof T] || "");
+                          : String(row[column.accessorKey] || "");
 
                     return (
                       <TableCell

@@ -15,6 +15,7 @@ Name | Type | Description | Notes
 **activeBlockages** | [**Array&lt;Blockage&gt;**](Blockage.md) |  | [optional] [default to undefined]
 **activeIncidents** | [**Array&lt;IncidentDTO&gt;**](IncidentDTO.md) |  | [optional] [default to undefined]
 **scheduledMaintenances** | [**Array&lt;MaintenanceDTO&gt;**](MaintenanceDTO.md) |  | [optional] [default to undefined]
+**currentVehiclePlans** | [**Array&lt;VehiclePlanDTO&gt;**](VehiclePlanDTO.md) |  | [optional] [default to undefined]
 **pendingOrdersCount** | **number** |  | [optional] [default to undefined]
 **deliveredOrdersCount** | **number** |  | [optional] [default to undefined]
 **overdueOrdersCount** | **number** |  | [optional] [default to undefined]
@@ -36,6 +37,7 @@ const instance: SimulationStateDTO = {
     activeBlockages,
     activeIncidents,
     scheduledMaintenances,
+    currentVehiclePlans,
     pendingOrdersCount,
     deliveredOrdersCount,
     overdueOrdersCount,

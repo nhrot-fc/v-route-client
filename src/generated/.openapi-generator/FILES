@@ -1,9 +1,11 @@
 .gitignore
 .npmignore
+.openapi-generator-ignore
 api.ts
 base.ts
 common.ts
 configuration.ts
+docs/ActionDTO.md
 docs/Blockage.md
 docs/BlockageControllerApi.md
 docs/BlockageDTO.md
@@ -34,5 +36,6 @@ docs/SimulationStateDTO.md
 docs/Vehicle.md
 docs/VehicleControllerApi.md
 docs/VehicleDTO.md
+docs/VehiclePlanDTO.md
 git_push.sh
 index.ts
