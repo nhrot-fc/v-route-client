@@ -122,8 +122,8 @@ export const handleElementHover = (
       details.push(
         { label: "Vehículo ID", value: vehicle.id || "N/A" },
         { label: "Tipo", value: vehicle.type || "N/A" },
-        { label: "GLP", value: glpFormatted.value, color: glpFormatted.color },
-        { label: "Combustible", value: fuelFormatted.value, color: fuelFormatted.color },
+        { label: "GLP", value: glpFormatted.value.toString(), color: glpFormatted.color },
+        { label: "Combustible", value: fuelFormatted.value.toString(), color: fuelFormatted.color },
         { label: "Estado", value: vehicle.status || "Desconocido" },
         { label: "Posición", value: `X:${element.x.toFixed(1)}, Y:${element.y.toFixed(1)}` }
       );

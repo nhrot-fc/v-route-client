@@ -1,4 +1,3 @@
-import React from "react";
 import { Line, Text } from "react-konva";
 import { MAP_X_MIN, MAP_X_MAX, MAP_Y_MIN, MAP_Y_MAX } from "./types";
 
