@@ -1,11 +1,21 @@
 import React from "react";
 import { Group, Line, Rect } from "react-konva";
-import type { SimulationStateDTO, DepotDTO, OrderDTO } from "@/lib/api-client";
-import type { TooltipInfo, EnhancedTooltipInfo, RoutePoint } from "./types";
+import type { SimulationStateDTO, DepotDTO } from "@/lib/api-client";
+import type { 
+  TooltipInfo, 
+  EnhancedTooltipInfo, 
+  RoutePoint, 
+  EnhancedOrderDTO
+} from "./types";
 import { MapIcon } from "./map-icon";
 import { ColoredText } from "./colored-text";
 import { ProgressBar } from "./progress-bar";
-import { getGlpColorLevel, getOrderSizeCategory } from "./utils";
+import { 
+  getGlpColorLevel, 
+  getOrderSizeCategory, 
+  enhanceVehicleWithPlan, 
+  enhanceOrderWithVehicles 
+} from "./utils";
 import { handleElementHover } from "./hover-handler";
 
 interface RenderElementsProps {
@@ -18,7 +28,7 @@ interface RenderElementsProps {
   selectedVehicleId?: string | null;
   onVehicleSelect?: (vehicleId: string | null) => void;
   onDepotSelect?: (depot: DepotDTO | null, isMainDepot: boolean, index?: number) => void;
-  onOrderSelect?: (order: (OrderDTO & { isOverdue?: boolean }) | null) => void;
+  onOrderSelect?: (order: EnhancedOrderDTO | null) => void;
 }
 
 /**
@@ -93,6 +103,24 @@ export const renderElements = ({
   
   const elements: React.ReactNode[] = [];
   
+  // Process vehicles first to get enhanced data with orientations and current orders
+  const enhancedVehicles = (simulationState.vehicles || []).map(vehicle => 
+    enhanceVehicleWithPlan(
+      vehicle, 
+      simulationState.currentVehiclePlans || [], 
+      simulationState.pendingOrders || []
+    )
+  );
+  
+  // Process orders with vehicle assignments
+  const enhancedOrders = (simulationState.pendingOrders || []).map(order => 
+    enhanceOrderWithVehicles(
+      order,
+      enhancedVehicles,
+      simulationState.currentTime || ""
+    )
+  );
+  
   // Draw blockages
   if (simulationState.activeBlockages) {
     simulationState.activeBlockages.forEach((blockage, blockIdx) => {
@@ -165,12 +193,9 @@ export const renderElements = ({
   }
   
   // Draw orders with colored indicators for volumes
-  if (simulationState.pendingOrders) {
-    simulationState.pendingOrders.forEach((order, idx) => {
-      const isOverdue = order.deadlineTime
-        ? new Date(order.deadlineTime) <
-          new Date(simulationState.currentTime || "")
-        : false;
+  if (enhancedOrders && enhancedOrders.length > 0) {
+    enhancedOrders.forEach((order, idx) => {
+      const isOverdue = order.isOverdue || false;
       const iconColor = order.delivered
         ? "green"
         : isOverdue
@@ -192,6 +217,9 @@ export const renderElements = ({
       else if (volume <= 10) volumeColor = "#eab308"; // yellow - medium
       else volumeColor = "#f97316"; // orange - large
       
+      // Highlight orders if they are being served by vehicles
+      const isBeingServed = order.servingVehicles && order.servingVehicles.length > 0;
+      
       elements.push(
         <Group 
           key={`order-${idx}`}
@@ -206,7 +234,7 @@ export const renderElements = ({
                 x,
                 y,
                 radius: iconSize + 5,
-                data: { ...order, isOverdue },
+                data: order,
               },
               pointerPosition || null,
               setTooltip,
@@ -217,16 +245,30 @@ export const renderElements = ({
           onClick={() => {
             // Select order on click
             if (onOrderSelect) {
-              onOrderSelect({ ...order, isOverdue });
+              onOrderSelect(order);
             }
           }}
           onTap={() => {
             // For touch devices
             if (onOrderSelect) {
-              onOrderSelect({ ...order, isOverdue });
+              onOrderSelect(order);
             }
           }}
         >
+          {/* Add highlight if being served */}
+          {isBeingServed && (
+            <Rect
+              x={-iconSize - 3}
+              y={-iconSize - 3}
+              width={iconSize * 2 + 6}
+              height={iconSize * 2 + 6}
+              fill="transparent"
+              stroke="#4ade80"
+              strokeWidth={2}
+              cornerRadius={4}
+            />
+          )}
+          
           <MapIcon 
             src={`/icons/colored/${iconColor}/customer.svg`}
             x={0}
@@ -280,6 +322,29 @@ export const renderElements = ({
                 color="#ffffff"
                 align="center"
               />
+              
+              {/* Show vehicle count if being served */}
+              {isBeingServed && (
+                <>
+                  <Rect
+                    x={-iconSize - 5}
+                    y={-iconSize - 3}
+                    width={20 * (zoom / 15)}
+                    height={16 * (zoom / 15)}
+                    fill="#4ade80"
+                    cornerRadius={2}
+                  />
+                  <ColoredText
+                    x={-iconSize - 5}
+                    y={-iconSize - 3}
+                    width={20 * (zoom / 15)}
+                    text={`${order.servingVehicles?.length || 0}`}
+                    fontSize={10 * (zoom / 15)}
+                    color="#ffffff"
+                    align="center"
+                  />
+                </>
+              )}
             </>
           )}
         </Group>
@@ -386,8 +451,7 @@ export const renderElements = ({
                 data: {
                   ...depot,
                   id: depot.id?.toString() || `aux-depot-${index + 1}`,
-                  indexNumber: index + 1,
-                  capacityM3: 160,
+                  glpCapacityM3: 160,
                 },
               },
               pointerPosition || null,
@@ -443,17 +507,29 @@ export const renderElements = ({
   }
   
   // Draw vehicle routes if a vehicle is selected
-  if (selectedVehicleId && simulationState.vehicles) {
-    const selectedVehicle = simulationState.vehicles.find(v => v.id === selectedVehicleId);
+  if (selectedVehicleId && enhancedVehicles) {
+    const selectedVehicle = enhancedVehicles.find(v => v.id === selectedVehicleId);
     
     if (selectedVehicle && selectedVehicle.currentPosition) {
-      // Generate mock route points for the selected vehicle
-      // In a real implementation, this would come from the API
-      const routePoints = generateMockRoutePoints(
-        selectedVehicleId,
-        selectedVehicle.currentPosition.x || 0,
-        selectedVehicle.currentPosition.y || 0
-      );
+      // Get current action with path information
+      const currentAction = selectedVehicle.currentPlan?.currentAction;
+      let routePoints: RoutePoint[] = [];
+      
+      if (currentAction && currentAction.path && currentAction.path.length > 0) {
+        // Convert path to route points
+        routePoints = currentAction.path.map((point, idx) => ({
+          x: point.x || 0,
+          y: point.y || 0,
+          actionType: idx === 0 ? 'start' : idx === currentAction.path!.length - 1 ? 'end' : 'path'
+        }));
+      } else {
+        // Fallback to mock route points if no real path available
+        routePoints = generateMockRoutePoints(
+          selectedVehicleId,
+          selectedVehicle.currentPosition.x || 0,
+          selectedVehicle.currentPosition.y || 0
+        );
+      }
       
       // Convert route points to screen coordinates
       const screenPoints: number[] = [];
@@ -481,11 +557,15 @@ export const renderElements = ({
           />
         );
         
-        // Draw route points
+        // Draw route points with different colors based on action type
         routePoints.forEach((point, idx) => {
           if (idx === 0) return; // Skip the first point (current position)
           
           const { x, y } = mapToScreenCoords(point.x, point.y);
+          const pointColor = point.actionType === 'end' ? '#f43f5e' : 
+                             point.actionType === 'start' ? '#10b981' : 
+                             '#4f46e5';
+          
           elements.push(
             <Group key={`route-point-${selectedVehicleId}-${idx}`} x={x} y={y}>
               <Rect
@@ -493,34 +573,52 @@ export const renderElements = ({
                 y={-3 * (zoom / 15)}
                 width={6 * (zoom / 15)}
                 height={6 * (zoom / 15)}
-                fill="#4f46e5"
+                fill={pointColor}
                 cornerRadius={1}
               />
             </Group>
           );
         });
+        
+        // If the selected vehicle is serving orders, highlight those orders
+        if (selectedVehicle.currentOrders && selectedVehicle.currentOrders.length > 0) {
+          // Find the orders in the enhanced orders list
+          selectedVehicle.currentOrders.forEach(order => {
+            if (order.position) {
+              const { x, y } = mapToScreenCoords(order.position.x || 0, order.position.y || 0);
+              // Add a highlight indicator
+              elements.push(
+                <Group key={`served-order-${order.id}`} x={x} y={y}>
+                  <Rect
+                    x={-25 * (zoom / 15)}
+                    y={-25 * (zoom / 15)}
+                    width={50 * (zoom / 15)}
+                    height={50 * (zoom / 15)}
+                    fill="transparent"
+                    stroke="#4f46e5"
+                    strokeWidth={2 * (zoom / 15)}
+                    dash={[4 * (zoom / 15), 2 * (zoom / 15)]}
+                    cornerRadius={5}
+                  />
+                </Group>
+              );
+            }
+          });
+        }
       }
     }
   }
   
   // Draw vehicles
-  if (simulationState.vehicles) {
-    simulationState.vehicles.forEach((vehicle, index) => {
+  if (enhancedVehicles) {
+    enhancedVehicles.forEach((vehicle, index) => {
       const x = vehicle.currentPosition?.x || 0;
       const y = vehicle.currentPosition?.y || 0;
       const { x: screenX, y: screenY } = mapToScreenCoords(x, y);
       const vehicleSize = 20 * (zoom / 15);
       
-      // Determine truck direction
-      let direction = "east"; // Default
-      const vehicleId = parseInt(
-        (vehicle.id || "").replace(/\D/g, "") || "0"
-      );
-      
-      if (vehicleId % 4 === 0) direction = "north";
-      else if (vehicleId % 4 === 1) direction = "east";
-      else if (vehicleId % 4 === 2) direction = "south";
-      else direction = "west";
+      // Get vehicle orientation from enhanced data
+      const direction = vehicle.currentOrientation || "east";
       
       // Use color based on GLP level
       const glpColor = getGlpColorLevel(
@@ -530,6 +628,9 @@ export const renderElements = ({
       
       // Check if this vehicle is selected
       const isSelected = selectedVehicleId === vehicle.id;
+      
+      // Check if this vehicle has active orders
+      const hasActiveOrders = vehicle.currentOrders && vehicle.currentOrders.length > 0;
       
       elements.push(
         <Group
@@ -569,17 +670,18 @@ export const renderElements = ({
           {/* Selection indicator */}
           {isSelected && (
             <Rect
-              x={-vehicleSize/1.5}
-              y={-vehicleSize/1.5}
-              width={vehicleSize * 1.3}
-              height={vehicleSize * 1.3}
-              fill="rgba(79, 70, 229, 0.2)"
-              stroke="#4f46e5"
+              x={-vehicleSize - 3}
+              y={-vehicleSize - 3}
+              width={vehicleSize * 2 + 6}
+              height={vehicleSize * 2 + 6}
+              fill="transparent"
+              stroke="#3b82f6"
               strokeWidth={2}
-              cornerRadius={vehicleSize / 4}
+              cornerRadius={4}
             />
           )}
           
+          {/* Vehicle icon with proper orientation */}
           <MapIcon
             src={`/icons/colored/${glpColor}/truck-${direction}.svg`}
             x={0}
@@ -594,118 +696,59 @@ export const renderElements = ({
               <Rect
                 x={vehicleSize}
                 y={-8 * (zoom / 15)}
-                width={70 * (zoom / 15)}
+                width={40 * (zoom / 15)}
                 height={16 * (zoom / 15)}
                 fill="rgba(255, 255, 255, 0.7)"
-                cornerRadius={3}
+                cornerRadius={2}
               />
               <ColoredText
-                x={vehicleSize + 4 * (zoom / 15)}
-                y={-6 * (zoom / 15)}
-                text={`${vehicle.id || "N/A"}`}
-                fontSize={9 * (zoom / 15)}
-                fontStyle="bold"
-                color="#000000"
+                x={vehicleSize + 2 * (zoom / 15)}
+                y={-8 * (zoom / 15)}
+                text={`${vehicle.id?.substring(0, 5) || "N/A"}`}
+                fontSize={10 * (zoom / 15)}
+                color={
+                  vehicle.status?.toLowerCase() === "active"
+                    ? "#16a34a"
+                    : vehicle.status?.toLowerCase() === "maintenance"
+                      ? "#f97316"
+                      : "#1d4ed8"
+                }
               />
               
-              {/* Vehicle type indicator with colored background */}
-              {(() => {
-                // Get color based on vehicle type
-                let typeColor = "#10b981"; // Default green
-                if (vehicle.type === "TA")
-                  typeColor = "#ef4444"; // Red
-                else if (vehicle.type === "TB")
-                  typeColor = "#3b82f6"; // Blue
-                else if (vehicle.type === "TC")
-                  typeColor = "#f59e0b"; // Amber
-                else if (vehicle.type === "TD") typeColor = "#8b5cf6"; // Purple
-                
-                const vehicleText = vehicle.id || "N/A";
-                const textWidth = vehicleText.length * 6 * (zoom / 15);
-                const typeX = vehicleSize + textWidth + 8 * (zoom / 15);
-                
-                return (
-                  <>
-                    <Rect
-                      x={typeX}
-                      y={-7 * (zoom / 15)}
-                      width={16 * (zoom / 15)}
-                      height={14 * (zoom / 15)}
-                      fill={typeColor}
-                      cornerRadius={3}
-                    />
-                    <ColoredText
-                      x={typeX}
-                      y={-6 * (zoom / 15)}
-                      width={16 * (zoom / 15)}
-                      text={vehicle.type || ""}
-                      fontSize={8 * (zoom / 15)}
-                      fontStyle="bold"
-                      color="#ffffff"
-                      align="center"
-                    />
-                  </>
-                );
-              })()}
+              {/* GLP indicator with background */}
+              <ProgressBar
+                x={-vehicleSize / 2}
+                y={vehicleSize + 3 * (zoom / 15)}
+                width={vehicleSize}
+                height={4 * (zoom / 15)}
+                value={(vehicle.currentGlpM3 || 0) / (vehicle.glpCapacityM3 || 1)}
+                color={glpColor === "red" ? "#dc2626" : "#10b981"}
+                background="rgba(0, 0, 0, 0.2)"
+                strokeWidth={0.5}
+              />
               
-              {/* GLP bar with color */}
-              {(() => {
-                const barWidth = 20 * (zoom / 15);
-                const barHeight = 3 * (zoom / 15);
-                const barSpacing = 5 * (zoom / 15);
-                const glpPercentage =
-                  (vehicle.currentGlpM3 || 0) / (vehicle.glpCapacityM3 || 1);
-                
-                const barColor = glpColor === "red"
-                  ? "#ef4444"
-                  : glpColor === "orange"
-                    ? "#f97316"
-                    : glpColor === "yellow"
-                      ? "#eab308"
-                      : glpColor === "green"
-                        ? "#10b981"
-                        : "#3b82f6";
-                
-                return (
-                  <ProgressBar
-                    x={-barWidth / 2}
-                    y={vehicleSize + barSpacing}
-                    width={barWidth}
-                    height={barHeight}
-                    percentage={glpPercentage}
-                    color={barColor}
+              {/* Order count indicator if carrying orders */}
+              {hasActiveOrders && (
+                <>
+                  <Rect
+                    x={-vehicleSize - 5}
+                    y={-vehicleSize - 3}
+                    width={20 * (zoom / 15)}
+                    height={16 * (zoom / 15)}
+                    fill="#3b82f6"
+                    cornerRadius={2}
                   />
-                );
-              })()}
-              
-              {/* Fuel bar with color */}
-              {(() => {
-                const barWidth = 20 * (zoom / 15);
-                const barHeight = 3 * (zoom / 15);
-                const barSpacing = 5 * (zoom / 15);
-                const fuelPercentage =
-                  (vehicle.currentFuelGal || 0) /
-                  (vehicle.fuelCapacityGal || 25);
-                
-                const barColor = fuelPercentage <= 0.2
-                  ? "#ef4444"
-                  : fuelPercentage <= 0.4
-                    ? "#f97316"
-                    : fuelPercentage <= 0.6
-                      ? "#eab308"
-                      : "#10b981";
-                
-                return (
-                  <ProgressBar
-                    x={-barWidth / 2}
-                    y={vehicleSize + barSpacing + barHeight + 1}
-                    width={barWidth}
-                    height={barHeight}
-                    percentage={fuelPercentage}
-                    color={barColor}
+                  <ColoredText
+                    x={-vehicleSize - 5}
+                    y={-vehicleSize - 3}
+                    width={20 * (zoom / 15)}
+                    text={`${vehicle.currentOrders?.length || 0}`}
+                    fontSize={10 * (zoom / 15)}
+                    color="#ffffff"
+                    align="center"
                   />
-                );
-              })()}
+                </>
+              )}
             </>
           )}
         </Group>

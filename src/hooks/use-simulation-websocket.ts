@@ -19,16 +19,27 @@ export function useSimulationWebSocket() {
 
   const stompClient = useRef<Client | null>(null);
   const subscriptions = useRef<Record<string, StompSubscription>>({});
-  const BASE_URL =
-    (import.meta.env.VITE_API_BASE_URL as string) ||
-    "http://localhost:8080/api";
+  
+  // Get environment variables
+  const WS_URL = import.meta.env.VITE_WS_URL as string || "ws://localhost:8080/ws";
 
   // Initialize WebSocket connection
   useEffect(() => {
     console.log("Initializing WebSocket connection");
 
+    // Determine WebSocket URL based on environment
+    let wsUrl = WS_URL;
+    
+    // If in production and the URL doesn't start with ws://, construct it
+    if (import.meta.env.PROD && !wsUrl.startsWith('ws://') && !wsUrl.startsWith('wss://')) {
+      const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+      wsUrl = `${protocol}${window.location.host}${wsUrl}`;
+    }
+    
+    console.log("WebSocket URL:", wsUrl);
+    
     const client = new Client({
-      brokerURL: `${BASE_URL.replace(/^http/, "ws")}/ws`,
+      brokerURL: wsUrl,
       debug: (str) => {
         console.debug(str);
       },

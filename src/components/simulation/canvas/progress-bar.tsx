@@ -5,8 +5,11 @@ interface ProgressBarProps {
   y: number;
   width: number;
   height: number;
-  percentage: number;
+  percentage?: number;
+  value?: number;
   color: string;
+  background?: string;
+  strokeWidth?: number;
 }
 
 /**
@@ -19,10 +22,19 @@ export const ProgressBar = ({
   width,
   height,
   percentage,
+  value,
   color,
+  background = "rgba(0, 0, 0, 0.3)",
+  strokeWidth = 0,
 }: ProgressBarProps) => {
+  // Calculate percentage from value or use provided percentage
+  let finalPercentage = percentage;
+  if (value !== undefined) {
+    finalPercentage = value; // assuming value is already between 0-1
+  }
+  
   // Ensure percentage is between 0 and 1
-  const clampedPercentage = Math.min(Math.max(percentage, 0), 1);
+  const clampedPercentage = Math.min(Math.max(finalPercentage || 0, 0), 1);
   
   return (
     <>
@@ -32,8 +44,10 @@ export const ProgressBar = ({
         y={y}
         width={width}
         height={height}
-        fill="rgba(0, 0, 0, 0.3)"
+        fill={background}
         cornerRadius={1}
+        stroke={strokeWidth > 0 ? "rgba(0, 0, 0, 0.15)" : ""}
+        strokeWidth={strokeWidth}
       />
       
       {/* Filled bar */}

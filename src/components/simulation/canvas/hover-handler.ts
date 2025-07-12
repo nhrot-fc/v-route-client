@@ -47,13 +47,13 @@ export const handleElementHover = (
     }
     case "auxDepot": {
       const depot = element.data;
-      title = `Depósito Auxiliar ${depot.indexNumber || ""}`;
-      content = `Depósito Aux. ${depot.indexNumber || ""}\nCapacidad: ${depot.capacityM3 || 160}m³`;
+      title = depot.id ?? "N/A";
+      content = `Depósito Aux. ${depot.id ?? "N/A"}\nCapacidad: ${depot.glpCapacityM3 || 160}m³`;
       color = "#3b82f6"; // blue
 
-      const capacityM3 = depot.capacityM3 || 160;
+      const capacityM3 = depot.glpCapacityM3 || 160;
       details.push(
-        { label: "Tipo", value: `Auxiliar ${depot.indexNumber || ""}`, color: "#3b82f6" },
+        { label: "Tipo", value: `Auxiliar ${depot.id ?? "N/A"}`, color: "#3b82f6" },
         { label: "Capacidad", value: `${capacityM3} m³`, color: "#10b981" },
         { label: "Posición", value: `X:${element.x.toFixed(1)}, Y:${element.y.toFixed(1)}` }
       );

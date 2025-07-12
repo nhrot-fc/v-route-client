@@ -13,7 +13,7 @@ import {
 import axios, { AxiosError } from "axios";
 
 // Configure axios with base URL and default settings
-const BASE_URL = import.meta.env.VITE_API_BASE_URL as string || "http://localhost:8080/api";
+const BASE_URL = import.meta.env.VITE_API_BASE_URL as string || "http://localhost:8080";
 
 // Create axios instance with common configuration
 const axiosInstance = axios.create({

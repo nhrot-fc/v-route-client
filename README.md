@@ -2,6 +2,15 @@
 
 Cliente web para la plataforma de gestión de distribución de GLP.
 
+## Configuración de Entorno
+
+El proyecto incluye configuración para múltiples entornos:
+
+- Desarrollo local: usando `.env` (API en `localhost:8080`)
+- Producción con nginx: usando `.env.production` (API redirigida a través de `/api`)
+
+Para más detalles, consulta [ENV-CONFIG.md](ENV-CONFIG.md).
+
 ## Iconografía
 
 El proyecto incluye un conjunto de iconos SVG personalizados ubicados en `public/icons/`:

@@ -3,6 +3,9 @@ import {
   type VehicleDTO,
   type OrderDTO,
   type DepotDTO,
+  type BlockageDTO,
+  type ActionDTO,
+  type VehiclePlanDTO,
 } from "@/lib/api-client";
 
 // Map constants
@@ -10,6 +13,29 @@ export const MAP_X_MIN = 0;
 export const MAP_X_MAX = 70;
 export const MAP_Y_MIN = 0;
 export const MAP_Y_MAX = 50;
+
+// Orientation types for vehicle display
+export type VehicleOrientation = 'north' | 'south' | 'east' | 'west';
+
+// Vehicle plan with associated orders
+export interface EnhancedVehiclePlanDTO extends VehiclePlanDTO {
+  associatedOrders?: OrderDTO[];
+  currentAction?: ActionDTO | undefined;
+  currentOrientation?: VehicleOrientation;
+}
+
+// Enhanced vehicle with current plan information
+export interface EnhancedVehicleDTO extends VehicleDTO {
+  currentPlan?: EnhancedVehiclePlanDTO;
+  currentOrientation?: VehicleOrientation;
+  currentOrders?: OrderDTO[];
+}
+
+// Enhanced order with vehicles serving it
+export interface EnhancedOrderDTO extends OrderDTO {
+  isOverdue?: boolean;
+  servingVehicles?: EnhancedVehicleDTO[];
+}
 
 export interface SimulationCanvasProps {
   simulationState: SimulationStateDTO | null;
@@ -53,26 +79,23 @@ export interface DepotMapElement extends BaseMapElement {
 
 export interface AuxDepotMapElement extends BaseMapElement {
   type: "auxDepot";
-  data: DepotDTO & { indexNumber?: number; capacityM3?: number };
+  data: DepotDTO;
 }
 
 export interface OrderMapElement extends BaseMapElement {
   type: "order";
-  data: OrderDTO & { isOverdue?: boolean };
+  data: EnhancedOrderDTO;
 }
 
 export interface VehicleMapElement extends BaseMapElement {
   type: "vehicle";
-  data: VehicleDTO;
+  data: EnhancedVehicleDTO;
+  orientation?: VehicleOrientation;
 }
 
 export interface BlockageMapElement extends BaseMapElement {
   type: "blockage";
-  data: {
-    startTime?: string;
-    endTime?: string;
-    lines?: Array<{ x?: number; y?: number }>;
-  };
+  data: BlockageDTO;
 }
 
 export type MapElement =
@@ -87,6 +110,7 @@ export interface RoutePoint {
   x: number;
   y: number;
   timestamp?: string;
+  actionType?: string;
 }
 
 // Vehicle route for visualization
@@ -94,4 +118,6 @@ export interface VehicleRoute {
   vehicleId: string;
   points: RoutePoint[];
   completed?: boolean;
+  ordersServed?: string[];
+  depotsVisited?: string[];
 } 

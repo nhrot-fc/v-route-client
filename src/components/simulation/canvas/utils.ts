@@ -1,3 +1,6 @@
+import type { VehicleDTO, OrderDTO, Position, VehiclePlanDTO, ActionDTO } from "@/lib/api-client";
+import type { EnhancedVehicleDTO, EnhancedOrderDTO, VehicleOrientation } from "./types";
+
 /**
  * Creates a function that converts map coordinates to screen coordinates
  * based on zoom level and pan position
@@ -77,4 +80,142 @@ export const getOrderSizeCategory = (volume: number): "small" | "medium" | "larg
   if (volume <= 5) return "small";
   if (volume <= 15) return "medium";
   return "large";
+};
+
+/**
+ * Calculate vehicle orientation based on current position and next point
+ * Returns one of: 'north', 'south', 'east', 'west'
+ */
+export const calculateVehicleOrientation = (
+  currentX: number,
+  currentY: number,
+  nextX: number,
+  nextY: number
+): VehicleOrientation => {
+  // If points are identical, maintain previous orientation
+  if (currentX === nextX && currentY === nextY) {
+    return 'east'; // Default orientation
+  }
+  
+  const deltaX = nextX - currentX;
+  const deltaY = nextY - currentY;
+  
+  // Determine primary direction (horizontal or vertical)
+  if (Math.abs(deltaX) > Math.abs(deltaY)) {
+    // Movement is primarily horizontal
+    return deltaX > 0 ? 'east' : 'west';
+  } else {
+    // Movement is primarily vertical
+    return deltaY > 0 ? 'south' : 'north';
+  }
+};
+
+/**
+ * Enhance vehicle data with orientation and current orders
+ */
+export const enhanceVehicleWithPlan = (
+  vehicle: VehicleDTO,
+  vehiclePlans: VehiclePlanDTO[],
+  pendingOrders: OrderDTO[]
+): EnhancedVehicleDTO => {
+  if (!vehicle || !vehiclePlans || !pendingOrders) {
+    return {
+      ...vehicle,
+      currentOrientation: 'east' as VehicleOrientation,
+      currentOrders: []
+    };
+  }
+  
+  // Find this vehicle's plan
+  const vehiclePlan = vehiclePlans.find(plan => plan.vehicleId === vehicle.id);
+  if (!vehiclePlan) {
+    return {
+      ...vehicle,
+      currentOrientation: 'east' as VehicleOrientation,
+      currentOrders: []
+    };
+  }
+  
+  // Enhance the plan with associated orders
+  const currentOrders: OrderDTO[] = [];
+  let currentAction: ActionDTO | undefined = undefined;
+  let nextPoint: Position | null = null;
+  
+  // Find the current action (assuming actions are sorted by time)
+  for (const action of vehiclePlan.actions || []) {
+    // Check if this is a move action with path and in progress
+    if (typeof action.type === 'string' && action.type.toUpperCase() === 'MOVE' && action.path && action.path.length > 0) {
+      if (action.progress !== undefined && action.progress < 100) {
+        currentAction = action;
+        
+        // Find the next point in the path based on progress
+        const pathIndex = Math.floor((action.path.length - 1) * (action.progress / 100));
+        const nextPathIndex = Math.min(pathIndex + 1, action.path.length - 1);
+        nextPoint = action.path[nextPathIndex];
+        
+        // If this action is serving an order, add it to currentOrders
+        if (action.orderId) {
+          const order = pendingOrders.find(o => o.id === action.orderId);
+          if (order) {
+            currentOrders.push(order);
+          }
+        }
+        
+        break;
+      }
+    }
+  }
+  
+  // Calculate orientation based on current position and next point
+  let orientation: VehicleOrientation = 'east'; // Default orientation
+  if (nextPoint && vehicle.currentPosition) {
+    orientation = calculateVehicleOrientation(
+      vehicle.currentPosition.x || 0,
+      vehicle.currentPosition.y || 0,
+      nextPoint.x || 0,
+      nextPoint.y || 0
+    );
+  }
+  
+  return {
+    ...vehicle,
+    currentPlan: {
+      ...vehiclePlan,
+      currentAction,
+      associatedOrders: currentOrders
+    },
+    currentOrientation: orientation,
+    currentOrders
+  };
+};
+
+/**
+ * Enhance orders with vehicles serving them
+ */
+export const enhanceOrderWithVehicles = (
+  order: OrderDTO,
+  enhancedVehicles: EnhancedVehicleDTO[],
+  currentTime: string
+): EnhancedOrderDTO => {
+  if (!order) {
+    return {
+      ...order as OrderDTO,
+      isOverdue: false,
+      servingVehicles: []
+    };
+  }
+  
+  // Find vehicles serving this order
+  const servingVehicles = enhancedVehicles.filter(vehicle => 
+    vehicle.currentOrders?.some(o => o.id === order.id)
+  );
+  
+  // Calculate if the order is overdue
+  const isOverdue = order.deadlineTime ? new Date(order.deadlineTime) < new Date(currentTime || "") : false;
+  
+  return {
+    ...order,
+    servingVehicles,
+    isOverdue
+  };
 }; 

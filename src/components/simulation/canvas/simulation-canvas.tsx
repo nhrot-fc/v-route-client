@@ -19,7 +19,7 @@ import {
   InfoBox,
   renderElements,
   createMapToScreenCoords,
-  UnifiedPanel
+  StatsPanel
 } from "./";
 import type {
   SimulationCanvasProps,
@@ -281,7 +281,7 @@ export function SimulationCanvas({ simulationState }: SimulationCanvasProps) {
       <TimeDisplay currentTime={simulationState?.currentTime} />
       
       {/* Unified information panel */}
-      <UnifiedPanel
+      <StatsPanel
         simulationState={simulationState}
         isCollapsed={isPanelCollapsed}
         onToggleCollapse={togglePanelCollapsed}
