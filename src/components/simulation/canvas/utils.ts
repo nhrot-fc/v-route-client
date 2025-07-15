@@ -24,19 +24,12 @@ export const createMapToScreenCoords = (
 export const formatPercentageValue = (current: number, max: number) => {
   const percentage = (current / max) * 100;
 
-  // Get color based on percentage level
   let color;
-  if (percentage <= 20) {
-    color = "#ef4444"; // red
-  } else if (percentage <= 40) {
-    color = "#f97316"; // orange
-  } else if (percentage <= 60) {
-    color = "#eab308"; // yellow
-  } else if (percentage <= 80) {
-    color = "#10b981"; // green
-  } else {
-    color = "#3b82f6"; // blue
-  }
+  if (percentage <= 20) color = "#ef4444";
+  else if (percentage <= 40) color = "#f97316";
+  else if (percentage <= 60) color = "#eab308";
+  else if (percentage <= 80) color = "#10b981";
+  else color = "#3b82f6";
 
   return {
     value: percentage,
@@ -92,22 +85,14 @@ export const calculateVehicleOrientation = (
   nextX: number,
   nextY: number
 ): VehicleOrientation => {
-  // If points are identical, maintain previous orientation
-  if (currentX === nextX && currentY === nextY) {
-    return 'east'; // Default orientation
-  }
-  
+  if (currentX === nextX && currentY === nextY) return 'east';
+
   const deltaX = nextX - currentX;
   const deltaY = nextY - currentY;
-  
-  // Determine primary direction (horizontal or vertical)
-  if (Math.abs(deltaX) > Math.abs(deltaY)) {
-    // Movement is primarily horizontal
-    return deltaX > 0 ? 'east' : 'west';
-  } else {
-    // Movement is primarily vertical
-    return deltaY > 0 ? 'south' : 'north';
-  }
+
+  return Math.abs(deltaX) > Math.abs(deltaY)
+    ? (deltaX > 0 ? 'east' : 'west')
+    : (deltaY > 0 ? 'south' : 'north');
 };
 
 /**
@@ -125,8 +110,7 @@ export const enhanceVehicleWithPlan = (
       currentOrders: []
     };
   }
-  
-  // Find this vehicle's plan
+
   const vehiclePlan = vehiclePlans.find(plan => plan.vehicleId === vehicle.id);
   if (!vehiclePlan) {
     return {
@@ -135,39 +119,33 @@ export const enhanceVehicleWithPlan = (
       currentOrders: []
     };
   }
-  
-  // Enhance the plan with associated orders
+
   const currentOrders: OrderDTO[] = [];
   let currentAction: ActionDTO | undefined = undefined;
   let nextPoint: Position | null = null;
-  
-  // Find the current action (assuming actions are sorted by time)
+
   for (const action of vehiclePlan.actions || []) {
-    // Check if this is a move action with path and in progress
-    if (typeof action.type === 'string' && action.type.toUpperCase() === 'MOVE' && action.path && action.path.length > 0) {
-      if (action.progress !== undefined && action.progress < 100) {
-        currentAction = action;
-        
-        // Find the next point in the path based on progress
-        const pathIndex = Math.floor((action.path.length - 1) * (action.progress / 100));
-        const nextPathIndex = Math.min(pathIndex + 1, action.path.length - 1);
-        nextPoint = action.path[nextPathIndex];
-        
-        // If this action is serving an order, add it to currentOrders
-        if (action.orderId) {
-          const order = pendingOrders.find(o => o.id === action.orderId);
-          if (order) {
-            currentOrders.push(order);
-          }
-        }
-        
-        break;
+    if (action.path && action.path.length > 0) {
+      currentAction = action;
+
+      const pathIndex =
+        action.progress !== undefined
+          ? Math.floor((action.path.length - 1) * (action.progress / 100))
+          : 0;
+
+      const nextPathIndex = Math.min(pathIndex + 1, action.path.length - 1);
+      nextPoint = action.path[nextPathIndex];
+
+      if (action.orderId) {
+        const order = pendingOrders.find(o => o.id === action.orderId);
+        if (order) currentOrders.push(order);
       }
+
+      break;
     }
   }
-  
-  // Calculate orientation based on current position and next point
-  let orientation: VehicleOrientation = 'east'; // Default orientation
+
+  let orientation: VehicleOrientation = 'east';
   if (nextPoint && vehicle.currentPosition) {
     orientation = calculateVehicleOrientation(
       vehicle.currentPosition.x || 0,
@@ -176,7 +154,7 @@ export const enhanceVehicleWithPlan = (
       nextPoint.y || 0
     );
   }
-  
+
   return {
     ...vehicle,
     currentPlan: {
@@ -204,18 +182,18 @@ export const enhanceOrderWithVehicles = (
       servingVehicles: []
     };
   }
-  
-  // Find vehicles serving this order
-  const servingVehicles = enhancedVehicles.filter(vehicle => 
+
+  const servingVehicles = enhancedVehicles.filter(vehicle =>
     vehicle.currentOrders?.some(o => o.id === order.id)
   );
-  
-  // Calculate if the order is overdue
-  const isOverdue = order.deadlineTime ? new Date(order.deadlineTime) < new Date(currentTime || "") : false;
-  
+
+  const isOverdue = order.deadlineTime
+    ? new Date(order.deadlineTime) < new Date(currentTime || "")
+    : false;
+
   return {
     ...order,
     servingVehicles,
     isOverdue
   };
-}; 
+};

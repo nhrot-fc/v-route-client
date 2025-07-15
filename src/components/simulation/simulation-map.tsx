@@ -30,6 +30,7 @@ export function SimulationMap() {
     startSimulation,
     pauseSimulation,
     stopSimulation,
+    deleteSimulation,
     isLoading,
     error: apiError,
   } = useSimulation();
@@ -39,7 +40,6 @@ export function SimulationMap() {
   >({});
   const [error, setError] = useState<string | null>(null);
 
-  // Simplified fetch logic that only runs when connection status changes
   const fetchSimulations = useCallback(async () => {
     if (!isConnected) return;
 
@@ -53,12 +53,10 @@ export function SimulationMap() {
     }
   }, [isConnected, listSimulations]);
 
-  // Initial fetch
   useEffect(() => {
     void fetchSimulations();
   }, [fetchSimulations]);
 
-  // Combine websocket simulations with fetched ones (avoiding duplicates)
   const combinedSimulations = useMemo(
     () => ({
       ...fetchedSimulations,
@@ -67,7 +65,6 @@ export function SimulationMap() {
     [fetchedSimulations, availableSimulations]
   );
 
-  // Clear selection if simulation no longer exists
   useEffect(() => {
     if (
       currentSimulationId &&
@@ -78,7 +75,6 @@ export function SimulationMap() {
     }
   }, [combinedSimulations, currentSimulationId, unsubscribeFromSimulation]);
 
-  // Update error state
   useEffect(() => {
     setError(wsError || apiError);
   }, [wsError, apiError]);
@@ -98,7 +94,6 @@ export function SimulationMap() {
     if (currentSimulationId) {
       try {
         await startSimulation(currentSimulationId);
-        // Refresh simulation data after action
         void fetchSimulations();
       } catch (error) {
         console.error("Failed to start simulation:", error);
@@ -110,7 +105,6 @@ export function SimulationMap() {
     if (currentSimulationId) {
       try {
         await pauseSimulation(currentSimulationId);
-        // Refresh simulation data after action
         void fetchSimulations();
       } catch (error) {
         console.error("Failed to pause simulation:", error);
@@ -122,7 +116,6 @@ export function SimulationMap() {
     if (currentSimulationId) {
       try {
         await stopSimulation(currentSimulationId);
-        // Refresh simulation data after action
         void fetchSimulations();
       } catch (error) {
         console.error("Failed to stop simulation:", error);
@@ -130,7 +123,21 @@ export function SimulationMap() {
     }
   }, [currentSimulationId, stopSimulation, fetchSimulations]);
 
-  // Get available simulations as array
+  const handleDeleteSimulation = useCallback(async () => {
+    if (currentSimulationId) {
+      const confirmDelete = window.confirm("¿Estás seguro de que deseas eliminar esta simulación?");
+      if (!confirmDelete) return;
+
+      try {
+        await deleteSimulation(currentSimulationId);
+        unsubscribeFromSimulation();
+        void fetchSimulations();
+      } catch (error) {
+        console.error("Error al eliminar la simulación:", error);
+      }
+    }
+  }, [currentSimulationId, deleteSimulation, fetchSimulations, unsubscribeFromSimulation]);
+
   const simulationsArray = useMemo(
     () =>
       Object.entries(combinedSimulations || {}).map(([id, data]) => ({
@@ -140,7 +147,6 @@ export function SimulationMap() {
     [combinedSimulations]
   );
 
-  // Handler for refresh button click - explicitly handles the promise
   const handleRefreshClick = useCallback(() => {
     void fetchSimulations();
   }, [fetchSimulations]);
@@ -291,6 +297,16 @@ export function SimulationMap() {
               >
                 Detener
               </Button>
+              {simulationInfo?.type !== "DAILY_OPERATIONS" && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => void handleDeleteSimulation()}
+                  disabled={!currentSimulationId || isLoading}
+                >
+                  Eliminar
+                </Button>
+              )}
             </div>
             {currentSimulationId &&
               simulationInfo?.type === "DAILY_OPERATIONS" && (
@@ -341,9 +357,9 @@ export function SimulationMap() {
         )}
       </div>
 
-      <div className="bg-slate-50 border rounded-md p-2 h-[700px] overflow-hidden">
-        <SimulationCanvas simulationState={simulationState} />
-      </div>
+        <div className="bg-slate-50 border rounded-md p-2 h-[700px] overflow-hidden">
+          <SimulationCanvas simulationState={simulationState} />
+        </div>
 
       {error && <div className="mt-2 text-red-600 text-sm">Error: {error}</div>}
     </Card>

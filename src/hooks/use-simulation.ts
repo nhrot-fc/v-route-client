@@ -1,4 +1,5 @@
 import { useState, useCallback } from "react";
+import { axiosInstance } from "@/lib/api-client";
 import {
   simulationApi,
   type SimulationCreateDTO,
@@ -166,6 +167,23 @@ export function useSimulation() {
     }
   }, []);
 
+  const deleteSimulation = useCallback(async (id: string) => {
+  setIsLoading(true);
+  setError(null);
+
+  try {
+    const response = await axiosInstance.delete(`/api/simulation/${id}`);
+    setIsLoading(false);
+    return response;
+  } catch (err) {
+    setIsLoading(false);
+    const axiosError = err as AxiosError;
+    setError(axiosError.message || "Error al eliminar la simulación");
+    return null;
+  }
+}, []);
+
+
   return {
     isLoading,
     error,
@@ -177,5 +195,6 @@ export function useSimulation() {
     loadOrders,
     loadBlockages,
     replanSimulation,
+    deleteSimulation,
   };
 }

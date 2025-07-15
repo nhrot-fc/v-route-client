@@ -106,6 +106,9 @@ export const serveRecordApi = new ServeRecordControllerApi(
   axiosInstance
 );
 
+export { axiosInstance };
+
+
 // Export types for use in components
 export type {
   Vehicle,
