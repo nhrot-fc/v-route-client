@@ -204,7 +204,10 @@ const ExecutionTimeDisplay = ({
  * SimulationCanvas component
  * Displays a Konva-based canvas for visualization of simulation data
  */
-export function SimulationCanvas({ simulationState, simulationInfo }: SimulationCanvasProps) {
+export function SimulationCanvas({
+  simulationId,
+  simulationState,
+}: SimulationCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 1920, height: 1080 });
   const [tooltip, setTooltip] = useState<TooltipInfo>({
@@ -456,6 +459,7 @@ export function SimulationCanvas({ simulationState, simulationInfo }: Simulation
       
       {/* Unified information panel */}
       <StatsPanel
+        simulationId={simulationId ?? ""}
         simulationState={simulationState}
         isCollapsed={isPanelCollapsed}
         onToggleCollapse={togglePanelCollapsed}
