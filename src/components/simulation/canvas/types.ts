@@ -1,5 +1,6 @@
 import {
   type SimulationStateDTO,
+  type SimulationDTO,
   type VehicleDTO,
   type OrderDTO,
   type DepotDTO,
@@ -39,6 +40,7 @@ export interface EnhancedOrderDTO extends OrderDTO {
 
 export interface SimulationCanvasProps {
   simulationState: SimulationStateDTO | null;
+  simulationInfo?: SimulationDTO | null;
 }
 
 export interface TooltipInfo {

@@ -9,6 +9,9 @@ import {
   RotateCw,
   Map,
   Clock,
+  Timer,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { DepotDTO, OrderDTO } from "@/lib/api-client";
@@ -28,7 +31,15 @@ import type {
 } from "./types";
 
 // Time display component to show current simulation time
-const TimeDisplay = ({ currentTime }: { currentTime: string | undefined }) => {
+const TimeDisplay = ({ 
+  currentTime, 
+  isMinimized, 
+  onToggleMinimize 
+}: { 
+  currentTime: string | undefined;
+  isMinimized: boolean;
+  onToggleMinimize: () => void;
+}) => {
   if (!currentTime) return null;
   
   const timeDate = new Date(currentTime);
@@ -36,17 +47,155 @@ const TimeDisplay = ({ currentTime }: { currentTime: string | undefined }) => {
   const formattedTime = timeDate.toLocaleTimeString();
   
   return (
-    <div className="absolute top-4 left-4 bg-white/90 p-3 rounded-lg shadow-md backdrop-blur-sm z-10 border border-gray-100">
-      <div className="flex items-center gap-2">
-        <Clock className="w-4 h-4 text-blue-600" />
-        <div className="flex flex-col">
-          <span className="text-sm font-medium">Tiempo de simulación</span>
-          <span className="text-xs">{formattedDate}</span>
-          <span className="text-lg font-bold text-blue-700">
-            {formattedTime}
-          </span>
+    <div className="absolute top-4 left-4 bg-white/90 rounded-lg shadow-md backdrop-blur-sm z-10 border border-gray-100 w-64">
+      {isMinimized ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onToggleMinimize}
+          className="p-2 h-auto"
+          title="Mostrar tiempo de simulación"
+        >
+          <Clock className="w-4 h-4 text-blue-600" />
+        </Button>
+      ) : (
+        <div className="p-3">
+          <div className="flex items-center gap-2">
+            <Clock className="w-4 h-4 text-blue-600" />
+            <div className="flex flex-col">
+              <span className="text-sm font-medium">Tiempo de simulación</span>
+              <span className="text-xs">{formattedDate}</span>
+              <span className="text-lg font-bold text-blue-700">
+                {formattedTime}
+              </span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onToggleMinimize}
+              className="ml-2 p-1 h-auto"
+              title="Minimizar"
+            >
+              <ChevronDown className="w-3 h-3" />
+            </Button>
+          </div>
         </div>
-      </div>
+      )}
+    </div>
+  );
+};
+
+// Execution time display component to show real-time execution duration
+const ExecutionTimeDisplay = ({ 
+  startTime, 
+  isRunning,
+  isMinimized,
+  onToggleMinimize,
+  isTimeDisplayMinimized
+}: { 
+  startTime: string | undefined;
+  isRunning: boolean;
+  isMinimized: boolean;
+  onToggleMinimize: () => void;
+  isTimeDisplayMinimized: boolean;
+}) => {
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  
+  useEffect(() => {
+    if (!startTime || !isRunning) {
+      setElapsedTime(0);
+      return;
+    }
+    
+    const startTimestamp = new Date(startTime).getTime();
+    
+    const interval = setInterval(() => {
+      const now = new Date();
+      const elapsed = now.getTime() - startTimestamp;
+      setElapsedTime(elapsed);
+      setCurrentTime(now);
+    }, 1000); // Update every second
+    
+    return () => clearInterval(interval);
+  }, [startTime, isRunning]);
+  
+  if (!startTime || !isRunning) return null;
+  
+  // Format elapsed time as dd:hh:mm:ss
+  const formatElapsedTime = (milliseconds: number) => {
+    const seconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    
+    const remainingHours = hours % 24;
+    const remainingMinutes = minutes % 60;
+    const remainingSeconds = seconds % 60;
+    
+    return `${days.toString().padStart(2, '0')}:${remainingHours.toString().padStart(2, '0')}:${remainingMinutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+  
+  // Format date and time
+  const formatDateTime = (date: Date) => {
+    return {
+      date: date.toLocaleDateString('es-ES'),
+      time: date.toLocaleTimeString('es-ES')
+    };
+  };
+  
+  const startDateTime = new Date(startTime);
+  const startFormatted = formatDateTime(startDateTime);
+  const currentFormatted = formatDateTime(currentTime);
+  
+  // Calculate position based on time display state
+  const leftPosition = isTimeDisplayMinimized ? "left-16" : "left-72";
+  
+  return (
+    <div className={`absolute top-4 ${leftPosition} bg-white/90 rounded-lg shadow-md backdrop-blur-sm z-10 border border-gray-100 w-80`}>
+      {isMinimized ? (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onToggleMinimize}
+          className="p-2 h-auto"
+          title="Mostrar tiempo de ejecución"
+        >
+          <Timer className="w-4 h-4 text-green-600" />
+        </Button>
+      ) : (
+        <div className="p-3">
+          <div className="flex items-start gap-2">
+            <Timer className="w-4 h-4 text-green-600 mt-1" />
+            <div className="flex flex-col flex-1 min-w-0">
+              <span className="text-sm font-medium">Tiempo de ejecución</span>
+              <span className="text-xs text-gray-600 mb-1">Tiempo real transcurrido</span>
+              <span className="text-lg font-bold text-green-700 mb-2">
+                {formatElapsedTime(elapsedTime)}
+              </span>
+              
+              {/* Start time information */}
+              <div className="text-xs text-gray-600 mb-1">
+                <span className="font-medium">Inicio:</span> {startFormatted.date} {startFormatted.time}
+              </div>
+              
+              {/* Current time information */}
+              <div className="text-xs text-gray-600">
+                <span className="font-medium">Actual:</span> {currentFormatted.date} {currentFormatted.time}
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onToggleMinimize}
+              className="ml-2 p-1 h-auto"
+              title="Minimizar"
+            >
+              <ChevronDown className="w-3 h-3" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -55,7 +204,7 @@ const TimeDisplay = ({ currentTime }: { currentTime: string | undefined }) => {
  * SimulationCanvas component
  * Displays a Konva-based canvas for visualization of simulation data
  */
-export function SimulationCanvas({ simulationState }: SimulationCanvasProps) {
+export function SimulationCanvas({ simulationState, simulationInfo }: SimulationCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 1920, height: 1080 });
   const [tooltip, setTooltip] = useState<TooltipInfo>({
@@ -99,6 +248,10 @@ export function SimulationCanvas({ simulationState }: SimulationCanvasProps) {
   
   // Panel collapsed state
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
+  
+  // Time displays minimized state
+  const [isTimeDisplayMinimized, setIsTimeDisplayMinimized] = useState(false);
+  const [isExecutionTimeMinimized, setIsExecutionTimeMinimized] = useState(false);
   
   // Get the selected vehicle details
   const selectedVehicle =
@@ -180,6 +333,15 @@ export function SimulationCanvas({ simulationState }: SimulationCanvasProps) {
   // Toggle panel collapsed state
   const togglePanelCollapsed = useCallback(() => {
     setIsPanelCollapsed((prev) => !prev);
+  }, []);
+  
+  // Toggle time displays minimized state
+  const toggleTimeDisplayMinimized = useCallback(() => {
+    setIsTimeDisplayMinimized((prev) => !prev);
+  }, []);
+  
+  const toggleExecutionTimeMinimized = useCallback(() => {
+    setIsExecutionTimeMinimized((prev) => !prev);
   }, []);
   
   // Clear all selections
@@ -278,7 +440,19 @@ export function SimulationCanvas({ simulationState }: SimulationCanvasProps) {
       </Stage>
 
       {/* Time display */}
-      <TimeDisplay currentTime={simulationState?.currentTime} />
+      <TimeDisplay 
+        currentTime={simulationState?.currentTime}
+        isMinimized={isTimeDisplayMinimized}
+        onToggleMinimize={toggleTimeDisplayMinimized}
+      />
+      {/* Execution time display */}
+      <ExecutionTimeDisplay 
+        startTime={simulationInfo?.realStartTime} 
+        isRunning={simulationInfo?.status === 'RUNNING'}
+        isMinimized={isExecutionTimeMinimized}
+        onToggleMinimize={toggleExecutionTimeMinimized}
+        isTimeDisplayMinimized={isTimeDisplayMinimized}
+      />
       
       {/* Unified information panel */}
       <StatsPanel

@@ -358,7 +358,7 @@ export function SimulationMap() {
       </div>
 
         <div className="bg-slate-50 border rounded-md p-2 h-[700px] overflow-hidden">
-          <SimulationCanvas simulationState={simulationState} />
+          <SimulationCanvas simulationState={simulationState} simulationInfo={simulationInfo} />
         </div>
 
       {error && <div className="mt-2 text-red-600 text-sm">Error: {error}</div>}
