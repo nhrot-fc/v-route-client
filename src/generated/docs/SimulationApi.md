@@ -5,6 +5,8 @@ All URIs are relative to *http://localhost:8080*
 |Method | HTTP request | Description|
 |------------- | ------------- | -------------|
 |[**createSimulation**](#createsimulation) | **POST** /api/simulation | Create a new simplified simulation|
+|[**createVehicleBreakdown**](#createvehiclebreakdown) | **POST** /api/simulation/{simulationId}/vehicle/{vehicleId}/breakdown | Crear avería de vehículo|
+|[**deleteSimulation**](#deletesimulation) | **DELETE** /api/simulation/{id} | Eliminar una simulación|
 |[**getSimulation**](#getsimulation) | **GET** /api/simulation/{id} | Get simulation by ID|
 |[**listSimulations**](#listsimulations) | **GET** /api/simulation | List all simulations|
 |[**loadBlockages**](#loadblockages) | **POST** /api/simulation/{id}/load-blockages | Cargar bloqueos para una simulación|
@@ -63,6 +65,115 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**201** | Simulation created successfully |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **createVehicleBreakdown**
+> object createVehicleBreakdown()
+
+Crea un evento de avería para un vehículo en la simulación
+
+### Example
+
+```typescript
+import {
+    SimulationApi,
+    Configuration,
+    IncidentCreateDTO
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new SimulationApi(configuration);
+
+let simulationId: string; // (default to undefined)
+let vehicleId: string; // (default to undefined)
+let incidentCreateDTO: IncidentCreateDTO; // (optional)
+
+const { status, data } = await apiInstance.createVehicleBreakdown(
+    simulationId,
+    vehicleId,
+    incidentCreateDTO
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **incidentCreateDTO** | **IncidentCreateDTO**|  | |
+| **simulationId** | [**string**] |  | defaults to undefined|
+| **vehicleId** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+**object**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: application/json
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **deleteSimulation**
+> deleteSimulation()
+
+Elimina una simulación por su ID
+
+### Example
+
+```typescript
+import {
+    SimulationApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new SimulationApi(configuration);
+
+let id: string; // (default to undefined)
+
+const { status, data } = await apiInstance.deleteSimulation(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

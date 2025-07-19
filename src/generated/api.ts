@@ -337,12 +337,6 @@ export interface Incident {
     'occurrenceTime'?: string;
     /**
      * 
-     * @type {Position}
-     * @memberof Incident
-     */
-    'location'?: Position;
-    /**
-     * 
      * @type {boolean}
      * @memberof Incident
      */
@@ -405,19 +399,7 @@ export interface IncidentCreateDTO {
      * @type {string}
      * @memberof IncidentCreateDTO
      */
-    'shift'?: IncidentCreateDTOShiftEnum;
-    /**
-     * 
-     * @type {string}
-     * @memberof IncidentCreateDTO
-     */
     'occurrenceTime'?: string;
-    /**
-     * 
-     * @type {Position}
-     * @memberof IncidentCreateDTO
-     */
-    'location'?: Position;
 }
 
 export const IncidentCreateDTOTypeEnum = {
@@ -427,13 +409,6 @@ export const IncidentCreateDTOTypeEnum = {
 } as const;
 
 export type IncidentCreateDTOTypeEnum = typeof IncidentCreateDTOTypeEnum[keyof typeof IncidentCreateDTOTypeEnum];
-export const IncidentCreateDTOShiftEnum = {
-    T1: 'T1',
-    T2: 'T2',
-    T3: 'T3'
-} as const;
-
-export type IncidentCreateDTOShiftEnum = typeof IncidentCreateDTOShiftEnum[keyof typeof IncidentCreateDTOShiftEnum];
 
 /**
  * 
@@ -471,12 +446,6 @@ export interface IncidentDTO {
      * @memberof IncidentDTO
      */
     'occurrenceTime'?: string;
-    /**
-     * 
-     * @type {Position}
-     * @memberof IncidentDTO
-     */
-    'location'?: Position;
     /**
      * 
      * @type {boolean}
@@ -874,7 +843,8 @@ export const SimulationCreateDTOTypeEnum = {
     DailyOperations: 'DAILY_OPERATIONS',
     Weekly: 'WEEKLY',
     Infinite: 'INFINITE',
-    Custom: 'CUSTOM'
+    Custom: 'CUSTOM',
+    Benchmark: 'BENCHMARK'
 } as const;
 
 export type SimulationCreateDTOTypeEnum = typeof SimulationCreateDTOTypeEnum[keyof typeof SimulationCreateDTOTypeEnum];
@@ -939,7 +909,8 @@ export const SimulationDTOTypeEnum = {
     DailyOperations: 'DAILY_OPERATIONS',
     Weekly: 'WEEKLY',
     Infinite: 'INFINITE',
-    Custom: 'CUSTOM'
+    Custom: 'CUSTOM',
+    Benchmark: 'BENCHMARK'
 } as const;
 
 export type SimulationDTOTypeEnum = typeof SimulationDTOTypeEnum[keyof typeof SimulationDTOTypeEnum];
@@ -1267,6 +1238,12 @@ export interface VehiclePlanDTO {
      * @memberof VehiclePlanDTO
      */
     'endTime'?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof VehiclePlanDTO
+     */
+    'currentActionIndex'?: number;
 }
 
 /**
@@ -4317,6 +4294,82 @@ export const SimulationApiAxiosParamCreator = function (configuration?: Configur
             };
         },
         /**
+         * Crea un evento de avería para un vehículo en la simulación
+         * @summary Crear avería de vehículo
+         * @param {string} simulationId 
+         * @param {string} vehicleId 
+         * @param {IncidentCreateDTO} [incidentCreateDTO] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createVehicleBreakdown: async (simulationId: string, vehicleId: string, incidentCreateDTO?: IncidentCreateDTO, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'simulationId' is not null or undefined
+            assertParamExists('createVehicleBreakdown', 'simulationId', simulationId)
+            // verify required parameter 'vehicleId' is not null or undefined
+            assertParamExists('createVehicleBreakdown', 'vehicleId', vehicleId)
+            const localVarPath = `/api/simulation/{simulationId}/vehicle/{vehicleId}/breakdown`
+                .replace(`{${"simulationId"}}`, encodeURIComponent(String(simulationId)))
+                .replace(`{${"vehicleId"}}`, encodeURIComponent(String(vehicleId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(incidentCreateDTO, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * Elimina una simulación por su ID
+         * @summary Eliminar una simulación
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteSimulation: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'id' is not null or undefined
+            assertParamExists('deleteSimulation', 'id', id)
+            const localVarPath = `/api/simulation/{id}`
+                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'DELETE', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Returns a specific simulation by its ID
          * @summary Get simulation by ID
          * @param {string} id 
@@ -4657,6 +4710,34 @@ export const SimulationApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * Crea un evento de avería para un vehículo en la simulación
+         * @summary Crear avería de vehículo
+         * @param {string} simulationId 
+         * @param {string} vehicleId 
+         * @param {IncidentCreateDTO} [incidentCreateDTO] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async createVehicleBreakdown(simulationId: string, vehicleId: string, incidentCreateDTO?: IncidentCreateDTO, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<object>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.createVehicleBreakdown(simulationId, vehicleId, incidentCreateDTO, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['SimulationApi.createVehicleBreakdown']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * Elimina una simulación por su ID
+         * @summary Eliminar una simulación
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async deleteSimulation(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.deleteSimulation(id, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['SimulationApi.deleteSimulation']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Returns a specific simulation by its ID
          * @summary Get simulation by ID
          * @param {string} id 
@@ -4785,6 +4866,28 @@ export const SimulationApiFactory = function (configuration?: Configuration, bas
             return localVarFp.createSimulation(simulationCreateDTO, options).then((request) => request(axios, basePath));
         },
         /**
+         * Crea un evento de avería para un vehículo en la simulación
+         * @summary Crear avería de vehículo
+         * @param {string} simulationId 
+         * @param {string} vehicleId 
+         * @param {IncidentCreateDTO} [incidentCreateDTO] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        createVehicleBreakdown(simulationId: string, vehicleId: string, incidentCreateDTO?: IncidentCreateDTO, options?: RawAxiosRequestConfig): AxiosPromise<object> {
+            return localVarFp.createVehicleBreakdown(simulationId, vehicleId, incidentCreateDTO, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Elimina una simulación por su ID
+         * @summary Eliminar una simulación
+         * @param {string} id 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        deleteSimulation(id: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.deleteSimulation(id, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Returns a specific simulation by its ID
          * @summary Get simulation by ID
          * @param {string} id 
@@ -4888,6 +4991,32 @@ export class SimulationApi extends BaseAPI {
      */
     public createSimulation(simulationCreateDTO: SimulationCreateDTO, options?: RawAxiosRequestConfig) {
         return SimulationApiFp(this.configuration).createSimulation(simulationCreateDTO, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Crea un evento de avería para un vehículo en la simulación
+     * @summary Crear avería de vehículo
+     * @param {string} simulationId 
+     * @param {string} vehicleId 
+     * @param {IncidentCreateDTO} [incidentCreateDTO] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SimulationApi
+     */
+    public createVehicleBreakdown(simulationId: string, vehicleId: string, incidentCreateDTO?: IncidentCreateDTO, options?: RawAxiosRequestConfig) {
+        return SimulationApiFp(this.configuration).createVehicleBreakdown(simulationId, vehicleId, incidentCreateDTO, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Elimina una simulación por su ID
+     * @summary Eliminar una simulación
+     * @param {string} id 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SimulationApi
+     */
+    public deleteSimulation(id: string, options?: RawAxiosRequestConfig) {
+        return SimulationApiFp(this.configuration).deleteSimulation(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

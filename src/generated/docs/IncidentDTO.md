@@ -10,7 +10,6 @@ Name | Type | Description | Notes
 **type** | **string** |  | [optional] [default to undefined]
 **shift** | **string** |  | [optional] [default to undefined]
 **occurrenceTime** | **string** |  | [optional] [default to undefined]
-**location** | [**Position**](Position.md) |  | [optional] [default to undefined]
 **resolved** | **boolean** |  | [optional] [default to undefined]
 **immobilizationEndTime** | **string** |  | [optional] [default to undefined]
 **availabilityTime** | **string** |  | [optional] [default to undefined]
@@ -27,7 +26,6 @@ const instance: IncidentDTO = {
     type,
     shift,
     occurrenceTime,
-    location,
     resolved,
     immobilizationEndTime,
     availabilityTime,

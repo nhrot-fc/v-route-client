@@ -748,6 +748,56 @@
         }
       }
     },
+    "/api/simulation/{simulationId}/vehicle/{vehicleId}/breakdown": {
+      "post": {
+        "tags": [
+          "Simulation"
+        ],
+        "summary": "Crear avería de vehículo",
+        "description": "Crea un evento de avería para un vehículo en la simulación",
+        "operationId": "createVehicleBreakdown",
+        "parameters": [
+          {
+            "name": "simulationId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "vehicleId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/IncidentCreateDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/simulation/{id}/stop": {
       "post": {
         "tags": [
@@ -1987,6 +2037,30 @@
             }
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "Simulation"
+        ],
+        "summary": "Eliminar una simulación",
+        "description": "Elimina una simulación por su ID",
+        "operationId": "deleteSimulation",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
       }
     },
     "/api/serve-records/{id}": {
@@ -2273,12 +2347,12 @@
         "type": "object",
         "properties": {
           "x": {
-            "type": "integer",
-            "format": "int32"
+            "type": "number",
+            "format": "double"
           },
           "y": {
-            "type": "integer",
-            "format": "int32"
+            "type": "number",
+            "format": "double"
           }
         }
       },
@@ -2476,7 +2550,8 @@
               "DAILY_OPERATIONS",
               "WEEKLY",
               "INFINITE",
-              "CUSTOM"
+              "CUSTOM",
+              "BENCHMARK"
             ]
           },
           "taVehicles": {
@@ -2610,9 +2685,6 @@
             "type": "string",
             "format": "date-time"
           },
-          "location": {
-            "$ref": "#/components/schemas/Position"
-          },
           "resolved": {
             "type": "boolean"
           },
@@ -2689,7 +2761,8 @@
               "DAILY_OPERATIONS",
               "WEEKLY",
               "INFINITE",
-              "CUSTOM"
+              "CUSTOM",
+              "BENCHMARK"
             ]
           },
           "status": {
@@ -2807,18 +2880,10 @@
           "endTime": {
             "type": "string",
             "format": "date-time"
-          }
-        }
-      },
-      "MaintenanceCreateDTO": {
-        "type": "object",
-        "properties": {
-          "vehicleId": {
-            "type": "string"
           },
-          "assignedDate": {
-            "type": "string",
-            "format": "date"
+          "currentActionIndex": {
+            "type": "integer",
+            "format": "int32"
           }
         }
       },
@@ -2836,20 +2901,21 @@
               "TI3"
             ]
           },
-          "shift": {
-            "type": "string",
-            "enum": [
-              "T1",
-              "T2",
-              "T3"
-            ]
-          },
           "occurrenceTime": {
             "type": "string",
             "format": "date-time"
+          }
+        }
+      },
+      "MaintenanceCreateDTO": {
+        "type": "object",
+        "properties": {
+          "vehicleId": {
+            "type": "string"
           },
-          "location": {
-            "$ref": "#/components/schemas/Position"
+          "assignedDate": {
+            "type": "string",
+            "format": "date"
           }
         }
       },
@@ -2901,9 +2967,6 @@
           "occurrenceTime": {
             "type": "string",
             "format": "date-time"
-          },
-          "location": {
-            "$ref": "#/components/schemas/Position"
           },
           "resolved": {
             "type": "boolean"

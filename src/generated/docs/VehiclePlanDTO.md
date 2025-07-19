@@ -9,6 +9,7 @@ Name | Type | Description | Notes
 **actions** | [**Array&lt;ActionDTO&gt;**](ActionDTO.md) |  | [optional] [default to undefined]
 **startTime** | **string** |  | [optional] [default to undefined]
 **endTime** | **string** |  | [optional] [default to undefined]
+**currentActionIndex** | **number** |  | [optional] [default to undefined]
 
 ## Example
 
@@ -20,6 +21,7 @@ const instance: VehiclePlanDTO = {
     actions,
     startTime,
     endTime,
+    currentActionIndex,
 };
 ```
 

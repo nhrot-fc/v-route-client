@@ -32,58 +32,6 @@
   }
 
   /**
-   * Generate mock route points for a vehicle
-   * This is a placeholder until actual route data is available from the API
-   */
-  const generateMockRoutePoints = (
-    vehicleId: string,
-    currentX: number,
-    currentY: number
-  ): RoutePoint[] => {
-    // Simple algorithm to generate some points based on vehicle ID
-    const vehicleNum = parseInt(vehicleId.replace(/\D/g, "") || "1");
-    const points: RoutePoint[] = [];
-    
-    // Add current position
-    points.push({ x: currentX, y: currentY });
-    
-    // Generate some points in a pattern based on vehicle ID
-    const direction = vehicleNum % 4;
-    const steps = 3 + (vehicleNum % 3);
-    
-    let lastX = currentX;
-    let lastY = currentY;
-    
-    for (let i = 0; i < steps; i++) {
-      // Calculate next point based on direction
-      switch (direction) {
-        case 0: // North
-          lastY += 2 + (i * 0.5);
-          break;
-        case 1: // East
-          lastX += 2 + (i * 0.5);
-          break;
-        case 2: // South
-          lastY -= 2 + (i * 0.5);
-          break;
-        case 3: // West
-          lastX -= 2 + (i * 0.5);
-          break;
-      }
-      
-      // Add point if within map bounds
-      if (
-        lastX >= 0 && lastX <= 70 &&
-        lastY >= 0 && lastY <= 50
-      ) {
-        points.push({ x: lastX, y: lastY });
-      }
-    }
-    
-    return points;
-  };
-
-  /**
    * Render all elements on the simulation map
    * Handles drawing blockages, orders, depots, and vehicles
    */
@@ -507,53 +455,61 @@
     }
     
     // Draw vehicle routes if a vehicle is selected
-    // Draw vehicle routes for all vehicles
-// Dibujar rutas de todos los vehículos
+    // Draw vehicle routes
 if (enhancedVehicles) {
   enhancedVehicles.forEach((vehicle) => {
     if (!vehicle.currentPosition) return;
-
-    const currentAction = vehicle.currentPlan?.currentAction;
+    
+    // Get the vehicle plan for this vehicle
+    const vehiclePlan = simulationState.currentVehiclePlans?.find(plan => 
+      plan.vehicleId === vehicle.id
+    );
+    
+    if (!vehiclePlan || !vehiclePlan.actions || vehiclePlan.actions.length === 0) return;
+    
+    // Find the first action with a path
+    const currentAction = vehiclePlan.actions.find(action => 
+      action.path && action.path.length > 0
+    );
+    
     let routePoints: RoutePoint[] = [];
 
-    console.log("vehicle", vehicle.id, "currentAction", currentAction);
-
-    
-
     if (currentAction && currentAction.path && currentAction.path.length > 0) {
-      console.log(`Vehículo ${vehicle.id} path:`, currentAction.path);
-
+      // Helper to check if two positions are approximately the same
       const isSamePosition = (a: {x: number, y: number}, b: {x: number, y: number}) =>
         Math.abs(a.x - b.x) < 0.01 && Math.abs(a.y - b.y) < 0.01;
 
+      // Find where in the path the vehicle currently is
       const indexFrom = currentAction.path.findIndex((p) =>
         isSamePosition(
           { x: p.x ?? 0, y: p.y ?? 0 },
-          {
-            x: vehicle.currentPosition?.x ?? 0,
-            y: vehicle.currentPosition?.y ?? 0,
-          }
+          { x: vehicle.currentPosition?.x ?? 0, y: vehicle.currentPosition?.y ?? 0 }
         )
       );
 
+      // Get remaining path from current position
       const remainingPath = currentAction.path.slice(indexFrom >= 0 ? indexFrom : 0);
 
+      // Convert path points to route points with type information
       routePoints = remainingPath.map((point, idx, arr) => ({
         x: point.x || 0,
         y: point.y || 0,
-        actionType: idx === 0 ? 'start' :
-                    idx === arr.length - 1 ? 'end' :
-                    'path'
+        actionType: idx === 0 ? 'start' : 
+                   idx === arr.length - 1 ? 'end' : 
+                   'path'
       }));
     }
 
+    // Only draw routes with at least 2 points
     if (routePoints.length >= 2) {
+      // Convert route points to screen coordinates for drawing the line
       const screenPoints: number[] = [];
       routePoints.forEach(point => {
         const { x, y } = mapToScreenCoords(point.x, point.y);
         screenPoints.push(x, y);
       });
 
+      // Draw the route line
       elements.push(
         <Line
           key={`route-${vehicle.id}`}
@@ -571,10 +527,12 @@ if (enhancedVehicles) {
         />
       );
 
+      // Add points along the route
       routePoints.forEach((point, idx) => {
-        if (idx === 0) return;
+        if (idx === 0) return; // Skip the first point which is the vehicle position
 
         const { x, y } = mapToScreenCoords(point.x, point.y);
+        // Color points based on their role in the route
         const pointColor = point.actionType === 'end' ? '#f43f5e' :
                            point.actionType === 'start' ? '#10b981' :
                            '#4f46e5';

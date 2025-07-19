@@ -106,15 +106,6 @@ export function SimulationCanvas({ simulationState }: SimulationCanvasProps) {
       ? simulationState.vehicles.find((v) => v.id === selectedVehicleId) || null
       : null;
 
-const selectedPlan = simulationState?.currentVehiclePlans?.find(
-  (plan) => plan.vehicleId === selectedVehicleId
-);
-
-const selectedRoute =
-  selectedPlan && selectedPlan.actions
-    ? selectedPlan.actions.flatMap((action) => action.path ?? [])
-    : [];
-
   // Handle container resize
   useEffect(() => {
     const updateDimensions = () => {

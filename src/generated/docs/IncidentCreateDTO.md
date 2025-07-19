@@ -7,9 +7,7 @@ Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
 **vehicleId** | **string** |  | [optional] [default to undefined]
 **type** | **string** |  | [optional] [default to undefined]
-**shift** | **string** |  | [optional] [default to undefined]
 **occurrenceTime** | **string** |  | [optional] [default to undefined]
-**location** | [**Position**](Position.md) |  | [optional] [default to undefined]
 
 ## Example
 
@@ -19,9 +17,7 @@ import { IncidentCreateDTO } from './api';
 const instance: IncidentCreateDTO = {
     vehicleId,
     type,
-    shift,
     occurrenceTime,
-    location,
 };
 ```
 
