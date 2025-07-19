@@ -39,6 +39,7 @@ export interface EnhancedOrderDTO extends OrderDTO {
 }
 
 export interface SimulationCanvasProps {
+  simulationId: string | null;
   simulationState: SimulationStateDTO | null;
   simulationInfo?: SimulationDTO | null;
 }
