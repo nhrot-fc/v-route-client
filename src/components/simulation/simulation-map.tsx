@@ -12,6 +12,7 @@ import { useWebSocket } from "@/lib/websocket-context";
 import { useSimulation } from "@/hooks/use-simulation";
 import { Card } from "@/components/ui/card";
 import { SimulationCanvas } from "./canvas/simulation-canvas";
+import { Prueba } from "./prueba";
 
 export function SimulationMap() {
   const {
@@ -357,16 +358,9 @@ export function SimulationMap() {
         )}
 
         <div className="bg-slate-50 border rounded-md p-2 h-[700px] overflow-hidden mt-4">
-          {currentSimulationId && simulationState ? (
-            <SimulationCanvas
-              simulationId={currentSimulationId}
-              simulationState={simulationState}
-            />
-          ) : (
-            <div className="h-full flex items-center justify-center">
-              <span className="text-gray-500">No hay simulación en curso</span>
-            </div>
-          )}
+          <Prueba
+           simulationId={currentSimulationId || ""} 
+          />
         </div>
       </div>
 
