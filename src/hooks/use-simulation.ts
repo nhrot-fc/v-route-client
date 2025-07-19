@@ -4,6 +4,7 @@ import {
   simulationApi,
   type SimulationCreateDTO,
   SimulationDTOTypeEnum,
+  type IncidentCreateDTO,
 } from "@/lib/api-client";
 import { AxiosError } from "axios";
 
@@ -167,6 +168,35 @@ export function useSimulation() {
     }
   }, []);
 
+  const createVehicleBreakdown = useCallback(
+    async (
+      simulationId: string,
+      vehicleId: string,
+      data: IncidentCreateDTO
+    ) => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await simulationApi.createVehicleBreakdown(
+          simulationId,
+          vehicleId,
+          data
+        );
+        setIsLoading(false);
+        return response;
+      } catch (err) {
+        setIsLoading(false);
+        const axiosError = err as AxiosError;
+        setError(
+          axiosError.message || "Error al reportar avería del vehículo"
+        );
+        return null;
+      }
+    },
+    []
+  );
+
   const deleteSimulation = useCallback(async (id: string) => {
   setIsLoading(true);
   setError(null);
@@ -195,6 +225,7 @@ export function useSimulation() {
     loadOrders,
     loadBlockages,
     replanSimulation,
+    createVehicleBreakdown,
     deleteSimulation,
   };
 }

@@ -55,7 +55,10 @@ const TimeDisplay = ({ currentTime }: { currentTime: string | undefined }) => {
  * SimulationCanvas component
  * Displays a Konva-based canvas for visualization of simulation data
  */
-export function SimulationCanvas({ simulationState }: SimulationCanvasProps) {
+export function SimulationCanvas({
+  simulationId,
+  simulationState,
+}: SimulationCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 1920, height: 1080 });
   const [tooltip, setTooltip] = useState<TooltipInfo>({
@@ -279,9 +282,10 @@ export function SimulationCanvas({ simulationState }: SimulationCanvasProps) {
 
       {/* Time display */}
       <TimeDisplay currentTime={simulationState?.currentTime} />
-      
+
       {/* Unified information panel */}
       <StatsPanel
+        simulationId={simulationId ?? ""}
         simulationState={simulationState}
         isCollapsed={isPanelCollapsed}
         onToggleCollapse={togglePanelCollapsed}
