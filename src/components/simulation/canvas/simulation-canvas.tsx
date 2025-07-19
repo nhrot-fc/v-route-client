@@ -10,7 +10,6 @@ import {
   Map,
   Clock,
   Timer,
-  ChevronUp,
   ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -206,6 +205,7 @@ const ExecutionTimeDisplay = ({
  */
 export function SimulationCanvas({
   simulationId,
+  simulationInfo,
   simulationState,
 }: SimulationCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);

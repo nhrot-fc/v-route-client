@@ -39,6 +39,7 @@ export interface EnhancedOrderDTO extends OrderDTO {
 }
 
 export interface SimulationCanvasProps {
+  simulationId?: string;
   simulationState: SimulationStateDTO | null;
   simulationInfo?: SimulationDTO | null;
 }
@@ -122,4 +123,147 @@ export interface VehicleRoute {
   completed?: boolean;
   ordersServed?: string[];
   depotsVisited?: string[];
-} 
+}
+
+
+
+
+// SimulationStateDTO -> extract vehicles, orders, ... -> transform to EnhancedVehicleDTO, EnhancedOrderDTO, etc.
+// To enhance the simulation state with additional information from the current VehiclePlanDTO and other DTOs
+
+export interface EnhancedSimulationStateDTO {
+  vehicles: EnhancedVehicleDTO[];
+  orders: EnhancedOrderDTO[];
+  depots: DepotDTO[];
+  blockages: BlockageDTO[];
+}
+
+/**
+ * Determines the vehicle orientation based on path segments in the current action
+ * @param action Current action with path information
+ * @returns The calculated orientation or 'west' as default
+ */
+export const determineVehicleOrientation = (action?: ActionDTO): VehicleOrientation => {
+  if (!action?.path || action.path.length < 2) {
+    return 'west'; // Default orientation
+  }
+
+  // Get the last two positions to determine direction of movement
+  const lastPosition = action.path[action.path.length - 1];
+  const previousPosition = action.path[action.path.length - 2];
+
+  // Calculate the difference in x and y coordinates
+  // Check if coordinates are defined, default to 0 if not
+  const dx = (lastPosition?.x ?? 0) - (previousPosition?.x ?? 0);
+  const dy = (lastPosition?.y ?? 0) - (previousPosition?.y ?? 0);
+
+  // Determine orientation based on the largest directional change
+  if (Math.abs(dx) > Math.abs(dy)) {
+    // Movement is primarily horizontal
+    return dx > 0 ? 'east' : 'west';
+  } else {
+    // Movement is primarily vertical
+    return dy > 0 ? 'south' : 'north';
+  }
+};
+
+/**
+ * Transforms SimulationStateDTO into EnhancedSimulationStateDTO with additional derived information
+ * @param state The original simulation state from the websocket
+ * @returns Enhanced simulation state with additional information
+ */
+export const simulationStateToEnhanced = (
+  state: SimulationStateDTO
+): EnhancedSimulationStateDTO => {
+  if (!state) {
+    return {
+      vehicles: [],
+      orders: [],
+      depots: [],
+      blockages: [],
+    };
+  }
+
+  // Process vehicle plans and enhance with additional information
+  const currentPlans: VehiclePlanDTO[] = state.currentVehiclePlans || [];
+  const enhancedPlans = currentPlans.map(plan => {
+    // Find the current action based on the currentActionIndex
+    const currentActionIndex = plan.currentActionIndex || 0;
+    const currentAction = plan.actions && plan.actions.length > currentActionIndex 
+      ? plan.actions[currentActionIndex]
+      : undefined;
+    
+    // Find orders associated with this plan
+    const associatedOrderIds = plan.actions?.filter(a => a.orderId)
+      .map(a => a.orderId) || [];
+    const associatedOrders = state.pendingOrders?.filter(
+      order => associatedOrderIds.includes(order.id || '')
+    );
+    
+    return {
+      ...plan,
+      currentAction,
+      currentOrientation: determineVehicleOrientation(currentAction),
+      associatedOrders,
+    } as EnhancedVehiclePlanDTO;
+  });
+
+  // Process vehicles and enhance with plan information
+  const enhancedVehicles: EnhancedVehicleDTO[] = [];
+  
+  // First handle vehicles with plans
+  state.vehicles?.forEach(vehicle => {
+    const currentPlan = enhancedPlans.find(plan => plan.vehicleId === vehicle.id);
+    if (currentPlan) {
+      enhancedVehicles.push({
+        ...vehicle,
+        currentPlan,
+        currentOrientation: currentPlan.currentOrientation || 'west',
+        currentOrders: currentPlan.associatedOrders || [],
+      });
+    } else {
+      // Include vehicles without plans
+      enhancedVehicles.push({
+        ...vehicle,
+        currentOrientation: 'west', // Default orientation
+      });
+    }
+  });
+
+  // Process orders and enhance with serving vehicles information
+  const enhancedOrders: EnhancedOrderDTO[] = [];
+  
+  state.pendingOrders?.forEach(order => {
+    // Find vehicles serving this order
+    const servingVehicles = enhancedVehicles.filter(
+      vehicle => vehicle.currentOrders?.some(o => o.id === order.id)
+    );
+    
+    // Check if the order is overdue
+    const currentTimeMs = state.currentTime ? new Date(state.currentTime).getTime() : Date.now();
+    const deadlineTimeMs = order.deadlineTime ? new Date(order.deadlineTime).getTime() : Infinity;
+    const isOverdue = currentTimeMs > deadlineTimeMs;
+
+    enhancedOrders.push({
+      ...order,
+      servingVehicles,
+      isOverdue,
+    });
+  });
+
+  // Process depots (main depot and auxiliary depots)
+  const depots: DepotDTO[] = [];
+  if (state.mainDepot) {
+    depots.push(state.mainDepot);
+  }
+  if (state.auxDepots) {
+    depots.push(...state.auxDepots);
+  }
+
+  return {
+    vehicles: enhancedVehicles,
+    orders: enhancedOrders,
+    depots,
+    blockages: state.activeBlockages || [],
+  };
+}
