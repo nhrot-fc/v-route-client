@@ -4,7 +4,6 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -27,7 +26,6 @@ import {
   type IncidentCreateDTO,
   type IncidentDTO,
   IncidentTypeEnum,
-  IncidentCreateDTOShiftEnum,
   IncidentCreateDTOTypeEnum,
 } from "@/lib/api-client";
 
@@ -54,8 +52,6 @@ export function IncidentForm({
   const [occurrenceTime, setOccurrenceTime] = useState<Date>(
     incident?.occurrenceTime ? new Date(incident.occurrenceTime) : new Date()
   );
-  const [locationX, setLocationX] = useState<number>(incident?.location?.x || 0);
-  const [locationY, setLocationY] = useState<number>(incident?.location?.y || 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,36 +84,13 @@ export function IncidentForm({
       return;
     }
 
-    if (locationX < -100 || locationX > 100) {
-      toast({
-        title: "Error de validación",
-        description: "La coordenada X debe estar entre -100 y 100",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (locationY < -100 || locationY > 100) {
-      toast({
-        title: "Error de validación",
-        description: "La coordenada Y debe estar entre -100 y 100",
-        variant: "destructive",
-      });
-      return;
-    }
-
     try {
       setIsSubmitting(true);
 
       const incidentData: IncidentCreateDTO = {
         vehicleId,
         type: type as IncidentCreateDTOTypeEnum,
-        shift: shift as IncidentCreateDTOShiftEnum,
         occurrenceTime: occurrenceTime.toISOString(),
-        location: {
-          x: locationX,
-          y: locationY,
-        },
       };
 
       await createIncident(incidentData);
@@ -127,8 +100,6 @@ export function IncidentForm({
       setType("");
       setShift("");
       setOccurrenceTime(new Date());
-      setLocationX(0);
-      setLocationY(0);
 
       if (onSaved) {
         onSaved();
@@ -253,36 +224,6 @@ export function IncidentForm({
               />
             </PopoverContent>
           </Popover>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <Label htmlFor="locationX">Ubicación X</Label>
-            <Input
-              id="locationX"
-              type="number"
-              value={locationX}
-              onChange={(e) => setLocationX(Number(e.target.value))}
-              disabled={isSubmitting}
-              placeholder="Coordenada X"
-              min={-100}
-              max={100}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="locationY">Ubicación Y</Label>
-            <Input
-              id="locationY"
-              type="number"
-              value={locationY}
-              onChange={(e) => setLocationY(Number(e.target.value))}
-              disabled={isSubmitting}
-              placeholder="Coordenada Y"
-              min={-100}
-              max={100}
-            />
-          </div>
         </div>
       </div>
 

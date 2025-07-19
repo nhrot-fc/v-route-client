@@ -158,7 +158,6 @@ export {
   IncidentDTOTypeEnum,
   IncidentDTOShiftEnum,
   IncidentCreateDTOTypeEnum,
-  IncidentCreateDTOShiftEnum,
   SimulationDTOTypeEnum,
   SimulationDTOStatusEnum,
   SimulationStateDTOStatusEnum,
