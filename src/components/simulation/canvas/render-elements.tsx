@@ -5,7 +5,7 @@ import type {
   TooltipInfo,
   EnhancedTooltipInfo,
   RoutePoint,
-  EnhancedOrderDTO
+  EnhancedOrderDTO,
 } from "./types";
 import { MapIcon } from "./map-icon";
 import { ColoredText } from "./colored-text";
@@ -14,7 +14,7 @@ import {
   getGlpColorLevel,
   getOrderSizeCategory,
   enhanceVehicleWithPlan,
-  enhanceOrderWithVehicles
+  enhanceOrderWithVehicles,
 } from "./utils";
 import { handleElementHover } from "./hover-handler";
 
@@ -27,7 +27,11 @@ interface RenderElementsProps {
   setEnhancedTooltip: React.Dispatch<React.SetStateAction<EnhancedTooltipInfo>>;
   selectedVehicleId?: string | null;
   onVehicleSelect?: (vehicleId: string | null) => void;
-  onDepotSelect?: (depot: DepotDTO | null, isMainDepot: boolean, index?: number) => void;
+  onDepotSelect?: (
+    depot: DepotDTO | null,
+    isMainDepot: boolean,
+    index?: number
+  ) => void;
   onOrderSelect?: (order: EnhancedOrderDTO | null) => void;
 }
 
@@ -52,7 +56,7 @@ export const renderElements = ({
   const elements: React.ReactNode[] = [];
 
   // Process vehicles first to get enhanced data with orientations and current orders
-  const enhancedVehicles = (simulationState.vehicles || []).map(vehicle =>
+  const enhancedVehicles = (simulationState.vehicles || []).map((vehicle) =>
     enhanceVehicleWithPlan(
       vehicle,
       simulationState.currentVehiclePlans || [],
@@ -61,7 +65,7 @@ export const renderElements = ({
   );
 
   // Process orders with vehicle assignments
-  const enhancedOrders = (simulationState.pendingOrders || []).map(order =>
+  const enhancedOrders = (simulationState.pendingOrders || []).map((order) =>
     enhanceOrderWithVehicles(
       order,
       enhancedVehicles,
@@ -125,7 +129,9 @@ export const renderElements = ({
                   setEnhancedTooltip
                 );
               }}
-              onMouseLeave={() => handleElementHover(null, null, setTooltip, setEnhancedTooltip)}
+              onMouseLeave={() =>
+                handleElementHover(null, null, setTooltip, setEnhancedTooltip)
+              }
             >
               <MapIcon
                 src="/icons/blocked-road.svg"
@@ -144,11 +150,7 @@ export const renderElements = ({
   if (enhancedOrders && enhancedOrders.length > 0) {
     enhancedOrders.forEach((order, idx) => {
       const isOverdue = order.isOverdue || false;
-      const iconColor = order.delivered
-        ? "green"
-        : isOverdue
-          ? "red"
-          : "blue";
+      const iconColor = order.delivered ? "green" : isOverdue ? "red" : "blue";
       const x = order.position?.x || 0;
       const y = order.position?.y || 0;
       const { x: screenX, y: screenY } = mapToScreenCoords(x, y);
@@ -161,12 +163,15 @@ export const renderElements = ({
       // Get volume text color
       const volume = order.glpRequestM3 || 0;
       let volumeColor = "#3b82f6"; // Default blue
-      if (volume <= 3) volumeColor = "#10b981"; // green - small
-      else if (volume <= 10) volumeColor = "#eab308"; // yellow - medium
+      if (volume <= 3)
+        volumeColor = "#10b981"; // green - small
+      else if (volume <= 10)
+        volumeColor = "#eab308"; // yellow - medium
       else volumeColor = "#f97316"; // orange - large
 
       // Highlight orders if they are being served by vehicles
-      const isBeingServed = order.servingVehicles && order.servingVehicles.length > 0;
+      const isBeingServed =
+        order.servingVehicles && order.servingVehicles.length > 0;
 
       elements.push(
         <Group
@@ -189,7 +194,9 @@ export const renderElements = ({
               setEnhancedTooltip
             );
           }}
-          onMouseLeave={() => handleElementHover(null, null, setTooltip, setEnhancedTooltip)}
+          onMouseLeave={() =>
+            handleElementHover(null, null, setTooltip, setEnhancedTooltip)
+          }
           onClick={() => {
             // Select order on click
             if (onOrderSelect) {
@@ -252,7 +259,7 @@ export const renderElements = ({
                       : "#1d4ed8"
                 }
               />
-                
+
               {/* GLP indicator with volume-based color */}
               <Rect
                 x={-15 * (zoom / 15)}
@@ -331,7 +338,9 @@ export const renderElements = ({
             setEnhancedTooltip
           );
         }}
-        onMouseLeave={() => handleElementHover(null, null, setTooltip, setEnhancedTooltip)}
+        onMouseLeave={() =>
+          handleElementHover(null, null, setTooltip, setEnhancedTooltip)
+        }
         onClick={() => {
           // Select depot on click
           if (onDepotSelect) {
@@ -410,7 +419,9 @@ export const renderElements = ({
               setEnhancedTooltip
             );
           }}
-          onMouseLeave={() => handleElementHover(null, null, setTooltip, setEnhancedTooltip)}
+          onMouseLeave={() =>
+            handleElementHover(null, null, setTooltip, setEnhancedTooltip)
+          }
           onClick={() => {
             // Select depot on click
             if (onDepotSelect) {
@@ -465,7 +476,7 @@ export const renderElements = ({
       if (!plan || !plan.actions || plan.actions.length === 0) return;
 
       // 1. Agrupa las acciones en bloques (cada bloque termina en SERVE)
-      const actionBlocks: typeof plan.actions[] = [];
+      const actionBlocks: (typeof plan.actions)[] = [];
       let tempBlock: typeof plan.actions = [];
       plan.actions.forEach((action) => {
         // Inicia un nuevo bloque en DRIVE si el anterior terminó en SERVE o está vacío
@@ -491,9 +502,10 @@ export const renderElements = ({
           const action = block[i];
           if (!action.path || action.path.length < 2) continue;
           // ¿La posición actual del camión está en este path?
-          const idx = action.path.findIndex(p =>
-            Math.abs((p.x ?? 0) - (vehicle.currentPosition?.x ?? 0)) < 0.01 &&
-            Math.abs((p.y ?? 0) - (vehicle.currentPosition?.y ?? 0)) < 0.01
+          const idx = action.path.findIndex(
+            (p) =>
+              Math.abs((p.x ?? 0) - (vehicle.currentPosition?.x ?? 0)) < 0.01 &&
+              Math.abs((p.y ?? 0) - (vehicle.currentPosition?.y ?? 0)) < 0.01
           );
           if (idx !== -1) {
             blockToDraw = block;
@@ -525,7 +537,7 @@ export const renderElements = ({
 
         if (pathToDraw.length >= 2) {
           const screenPoints: number[] = [];
-          pathToDraw.forEach(point => {
+          pathToDraw.forEach((point) => {
             const { x, y } = mapToScreenCoords(point.x || 0, point.y || 0);
             screenPoints.push(x, y);
           });
@@ -539,7 +551,9 @@ export const renderElements = ({
             MAINTENANCE: "#64748b",
             WAIT: "#a3a3a3",
           };
-          const lineColor = action.type ? actionColorMap[action.type] || "#4f46e5" : "#4f46e5";
+          const lineColor = action.type
+            ? actionColorMap[action.type] || "#4f46e5"
+            : "#4f46e5";
 
           elements.push(
             <Line
@@ -570,13 +584,40 @@ export const renderElements = ({
       const { x: screenX, y: screenY } = mapToScreenCoords(x, y);
       const vehicleSize = 20 * (zoom / 15);
 
-      const direction = vehicle.currentOrientation || "east";
+      let direction = vehicle.currentOrientation || "east";
+
+      const action = blockToDraw?.[currentActionIdx];
+      const path = action?.path;
+
+      if (
+        Array.isArray(path) &&
+        path.length > indexFrom + 1 &&
+        path[indexFrom] &&
+        path[indexFrom + 1]
+      ) {
+        const current = path[indexFrom];
+        const next = path[indexFrom + 1];
+
+        if (
+          typeof current.x === "number" &&
+          typeof current.y === "number" &&
+          typeof next.x === "number" &&
+          typeof next.y === "number"
+        ) {
+          direction = getAutoDirection(
+            { x: current.x, y: current.y },
+            { x: next.x, y: next.y }
+          );
+        }
+      }
+
       const glpColor = getGlpColorLevel(
         vehicle.currentGlpM3 || 0,
         vehicle.glpCapacityM3 || 1
       );
       const isSelected = selectedVehicleId === vehicle.id;
-      const hasActiveOrders = vehicle.currentOrders && vehicle.currentOrders.length > 0;
+      const hasActiveOrders =
+        vehicle.currentOrders && vehicle.currentOrders.length > 0;
 
       elements.push(
         <Group
@@ -599,7 +640,9 @@ export const renderElements = ({
               setEnhancedTooltip
             );
           }}
-          onMouseLeave={() => handleElementHover(null, null, setTooltip, setEnhancedTooltip)}
+          onMouseLeave={() =>
+            handleElementHover(null, null, setTooltip, setEnhancedTooltip)
+          }
           onClick={() => {
             if (onVehicleSelect) {
               onVehicleSelect(isSelected ? null : vehicle.id || null);
@@ -660,7 +703,9 @@ export const renderElements = ({
                 y={vehicleSize + 3 * (zoom / 15)}
                 width={vehicleSize}
                 height={4 * (zoom / 15)}
-                value={(vehicle.currentGlpM3 || 0) / (vehicle.glpCapacityM3 || 1)}
+                value={
+                  (vehicle.currentGlpM3 || 0) / (vehicle.glpCapacityM3 || 1)
+                }
                 color={glpColor === "red" ? "#dc2626" : "#10b981"}
                 background="rgba(0, 0, 0, 0.2)"
                 strokeWidth={0.5}
@@ -696,3 +741,17 @@ export const renderElements = ({
 
   return elements;
 };
+
+// Función para calcular la orientación
+function getAutoDirection(
+  current: { x: number; y: number },
+  next: { x: number; y: number }
+): "north" | "south" | "east" | "west" {
+  const dx = (next.x ?? 0) - (current.x ?? 0);
+  const dy = (next.y ?? 0) - (current.y ?? 0);
+  if (Math.abs(dx) > Math.abs(dy)) {
+    return dx > 0 ? "east" : "west";
+  } else {
+    return dy > 0 ? "south" : "north";
+  }
+}
