@@ -358,9 +358,16 @@ export function SimulationMap() {
         )}
 
         <div className="bg-slate-50 border rounded-md p-2 h-[700px] overflow-hidden mt-4">
-          <Prueba
-           simulationId={currentSimulationId || ""} 
-          />
+          {currentSimulationId && simulationState ? (
+            <SimulationCanvas
+              simulationId={currentSimulationId}
+              simulationState={simulationState}
+            />
+          ) : (
+            <div className="h-full flex items-center justify-center">
+              <span className="text-gray-500">No hay simulación en curso</span>
+            </div>
+          )}
         </div>
       </div>
 

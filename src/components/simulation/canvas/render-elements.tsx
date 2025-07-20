@@ -228,6 +228,7 @@ export const renderElements = ({
           {!tooltip.show && (
             <>
               {/* Order ID with background */}
+              {/* 
               <Rect
                 x={iconSize}
                 y={-8 * (zoom / 15)}
@@ -235,7 +236,9 @@ export const renderElements = ({
                 height={16 * (zoom / 15)}
                 fill="rgba(255, 255, 255, 0.7)"
                 cornerRadius={2}
-              />
+              />¨
+
+              */}
               <ColoredText
                 x={iconSize + 2 * (zoom / 15)}
                 y={-8 * (zoom / 15)}
@@ -249,7 +252,7 @@ export const renderElements = ({
                       : "#1d4ed8"
                 }
               />
-
+                
               {/* GLP indicator with volume-based color */}
               <Rect
                 x={-15 * (zoom / 15)}
@@ -454,129 +457,125 @@ export const renderElements = ({
     });
   }
 
-  // Draw vehicle routes if a vehicle is selected
-  // Draw vehicle routes
-  if (enhancedVehicles) {
-    enhancedVehicles.forEach((vehicle) => {
-      if (!vehicle.currentPosition) return;
-
-      // Get the vehicle plan for this vehicle
-      const vehiclePlan = simulationState.currentVehiclePlans?.find(plan =>
-        plan.vehicleId === vehicle.id
-      );
-
-      if (!vehiclePlan || !vehiclePlan.actions || vehiclePlan.actions.length === 0) return;
-
-      // Find the first action with a path
-      const currentAction = vehiclePlan.actions.find(action =>
-        action.path && action.path.length > 0
-      );
-
-      let routePoints: RoutePoint[] = [];
-
-      if (currentAction && currentAction.path && currentAction.path.length > 0) {
-        // Helper to check if two positions are approximately the same
-        const isSamePosition = (a: { x: number, y: number }, b: { x: number, y: number }) =>
-          Math.abs(a.x - b.x) < 0.01 && Math.abs(a.y - b.y) < 0.01;
-
-        // Find where in the path the vehicle currently is
-        const indexFrom = currentAction.path.findIndex((p) =>
-          isSamePosition(
-            { x: p.x ?? 0, y: p.y ?? 0 },
-            { x: vehicle.currentPosition?.x ?? 0, y: vehicle.currentPosition?.y ?? 0 }
-          )
-        );
-
-        // Get remaining path from current position
-        const remainingPath = currentAction.path.slice(indexFrom >= 0 ? indexFrom : 0);
-
-        // Convert path points to route points with type information
-        routePoints = remainingPath.map((point, idx, arr) => ({
-          x: point.x || 0,
-          y: point.y || 0,
-          actionType: idx === 0 ? 'start' :
-            idx === arr.length - 1 ? 'end' :
-              'path'
-        }));
-      }
-
-      // Only draw routes with at least 2 points
-      if (routePoints.length >= 2) {
-        // Convert route points to screen coordinates for drawing the line
-        const screenPoints: number[] = [];
-        routePoints.forEach(point => {
-          const { x, y } = mapToScreenCoords(point.x, point.y);
-          screenPoints.push(x, y);
-        });
-
-        // Draw the route line
-        elements.push(
-          <Line
-            key={`route-${vehicle.id}`}
-            points={screenPoints}
-            stroke="#4f46e5"
-            strokeWidth={2 * (zoom / 15)}
-            dash={[4 * (zoom / 15), 2 * (zoom / 15)]}
-            lineCap="round"
-            lineJoin="round"
-            opacity={0.7}
-            shadowColor="rgba(0,0,0,0.2)"
-            shadowBlur={3}
-            shadowOffset={{ x: 1, y: 1 }}
-            shadowOpacity={0.3}
-          />
-        );
-
-        // Add points along the route
-        routePoints.forEach((point, idx) => {
-          if (idx === 0) return; // Skip the first point which is the vehicle position
-
-          const { x, y } = mapToScreenCoords(point.x, point.y);
-          // Color points based on their role in the route
-          const pointColor = point.actionType === 'end' ? '#f43f5e' :
-            point.actionType === 'start' ? '#10b981' :
-              '#4f46e5';
-
-          elements.push(
-            <Group key={`route-point-${vehicle.id}-${idx}`} x={x} y={y}>
-              <Rect
-                x={-3 * (zoom / 15)}
-                y={-3 * (zoom / 15)}
-                width={6 * (zoom / 15)}
-                height={6 * (zoom / 15)}
-                fill={pointColor}
-                cornerRadius={1}
-              />
-            </Group>
-          );
-        });
-      }
-    });
-  }
-
-
-
-  // Draw vehicles
+  // Draw vehicle routes and vehicles using enhanced logic from types.ts
   if (enhancedVehicles) {
     enhancedVehicles.forEach((vehicle, index) => {
+      if (!vehicle.currentPosition) return;
+      const plan = vehicle.currentPlan;
+      if (!plan || !plan.actions || plan.actions.length === 0) return;
+
+      // 1. Agrupa las acciones en bloques (cada bloque termina en SERVE)
+      const actionBlocks: typeof plan.actions[] = [];
+      let tempBlock: typeof plan.actions = [];
+      plan.actions.forEach((action) => {
+        // Inicia un nuevo bloque en DRIVE si el anterior terminó en SERVE o está vacío
+        if (action.type === "DRIVE" && tempBlock.length > 0) {
+          actionBlocks.push([...tempBlock]);
+          tempBlock = [];
+        }
+        tempBlock.push(action);
+        if (action.type === "SERVE") {
+          actionBlocks.push([...tempBlock]);
+          tempBlock = [];
+        }
+      });
+      if (tempBlock.length > 0) actionBlocks.push([...tempBlock]);
+
+      // 2. Busca el bloque cuyo path contiene la posición actual del camión
+      let blockToDraw: typeof plan.actions | null = null;
+      let currentActionIdx = -1;
+      let indexFrom = 0;
+
+      for (const block of actionBlocks) {
+        for (let i = 0; i < block.length; i++) {
+          const action = block[i];
+          if (!action.path || action.path.length < 2) continue;
+          // ¿La posición actual del camión está en este path?
+          const idx = action.path.findIndex(p =>
+            Math.abs((p.x ?? 0) - (vehicle.currentPosition?.x ?? 0)) < 0.01 &&
+            Math.abs((p.y ?? 0) - (vehicle.currentPosition?.y ?? 0)) < 0.01
+          );
+          if (idx !== -1) {
+            blockToDraw = block;
+            currentActionIdx = i;
+            indexFrom = idx;
+            break;
+          }
+        }
+        if (blockToDraw) break;
+      }
+
+      if (!blockToDraw) return; // No hay bloque que contenga la posición actual
+
+      // 3. Imprime solo ese bloque, desde la posición actual
+      blockToDraw.forEach((action, actionIdx) => {
+        if (!action.path || action.path.length < 2) return;
+
+        let pathToDraw: typeof action.path = [];
+        if (actionIdx < currentActionIdx) {
+          // Ya recorrida, no se pinta
+          return;
+        } else if (actionIdx === currentActionIdx) {
+          // Solo pinta desde la posición actual
+          pathToDraw = action.path.slice(indexFrom);
+        } else {
+          // Futuras: pinta toda la ruta
+          pathToDraw = action.path;
+        }
+
+        if (pathToDraw.length >= 2) {
+          const screenPoints: number[] = [];
+          pathToDraw.forEach(point => {
+            const { x, y } = mapToScreenCoords(point.x || 0, point.y || 0);
+            screenPoints.push(x, y);
+          });
+
+          // Color según tipo de acción
+          const actionColorMap: Record<string, string> = {
+            DRIVE: "#4f46e5",
+            SERVE: "#16a34a",
+            RELOAD: "#eab308",
+            REFUEL: "#f97316",
+            MAINTENANCE: "#64748b",
+            WAIT: "#a3a3a3",
+          };
+          const lineColor = action.type ? actionColorMap[action.type] || "#4f46e5" : "#4f46e5";
+
+          elements.push(
+            <Line
+              key={`route-${vehicle.id}-action-${actionIdx}`}
+              points={screenPoints}
+              stroke={lineColor}
+              strokeWidth={2 * (zoom / 15)}
+              dash={[4 * (zoom / 15), 2 * (zoom / 15)]}
+              lineCap="round"
+              lineJoin="round"
+              opacity={0.7}
+              shadowColor="rgba(0,0,0,0.2)"
+              shadowBlur={3}
+              shadowOffset={{ x: 1, y: 1 }}
+              shadowOpacity={0.3}
+              onClick={() => {
+                alert(`Ruta del camión: ${vehicle.id}`);
+              }}
+              cursor="pointer"
+            />
+          );
+        }
+      });
+
+      // Imprime SIEMPRE el camión en su posición actual
       const x = vehicle.currentPosition?.x || 0;
       const y = vehicle.currentPosition?.y || 0;
       const { x: screenX, y: screenY } = mapToScreenCoords(x, y);
       const vehicleSize = 20 * (zoom / 15);
 
-      // Get vehicle orientation from enhanced data
       const direction = vehicle.currentOrientation || "east";
-
-      // Use color based on GLP level
       const glpColor = getGlpColorLevel(
         vehicle.currentGlpM3 || 0,
         vehicle.glpCapacityM3 || 1
       );
-
-      // Check if this vehicle is selected
       const isSelected = selectedVehicleId === vehicle.id;
-
-      // Check if this vehicle has active orders
       const hasActiveOrders = vehicle.currentOrders && vehicle.currentOrders.length > 0;
 
       elements.push(
@@ -602,19 +601,16 @@ export const renderElements = ({
           }}
           onMouseLeave={() => handleElementHover(null, null, setTooltip, setEnhancedTooltip)}
           onClick={() => {
-            // Toggle selection
             if (onVehicleSelect) {
               onVehicleSelect(isSelected ? null : vehicle.id || null);
             }
           }}
           onTap={() => {
-            // For touch devices
             if (onVehicleSelect) {
               onVehicleSelect(isSelected ? null : vehicle.id || null);
             }
           }}
         >
-          {/* Selection indicator */}
           {isSelected && (
             <Rect
               x={-vehicleSize - 3}
@@ -628,7 +624,6 @@ export const renderElements = ({
             />
           )}
 
-          {/* Vehicle icon with proper orientation */}
           <MapIcon
             src={`/icons/colored/${glpColor}/truck-${direction}.svg`}
             x={0}
@@ -636,10 +631,8 @@ export const renderElements = ({
             size={vehicleSize}
           />
 
-          {/* Only show if not being hovered */}
           {!tooltip.show && (
             <>
-              {/* Vehicle ID with background */}
               <Rect
                 x={vehicleSize}
                 y={-8 * (zoom / 15)}
@@ -662,7 +655,6 @@ export const renderElements = ({
                 }
               />
 
-              {/* GLP indicator with background */}
               <ProgressBar
                 x={-vehicleSize / 2}
                 y={vehicleSize + 3 * (zoom / 15)}
@@ -674,7 +666,6 @@ export const renderElements = ({
                 strokeWidth={0.5}
               />
 
-              {/* Order count indicator if carrying orders */}
               {hasActiveOrders && (
                 <>
                   <Rect
@@ -704,4 +695,4 @@ export const renderElements = ({
   }
 
   return elements;
-}; 
+};
