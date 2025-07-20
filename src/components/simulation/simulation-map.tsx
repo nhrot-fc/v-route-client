@@ -362,6 +362,8 @@ export function SimulationMap() {
             <SimulationCanvas
               simulationId={currentSimulationId}
               simulationState={simulationState}
+              simulationInfo={simulationInfo}
+
             />
           ) : (
             <div className="h-full flex items-center justify-center">

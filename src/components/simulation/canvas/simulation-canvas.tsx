@@ -46,7 +46,7 @@ const TimeDisplay = ({
   const formattedTime = timeDate.toLocaleTimeString();
   
   return (
-    <div className="absolute top-4 left-4 bg-white/90 rounded-lg shadow-md backdrop-blur-sm z-10 border border-gray-100 w-64">
+    <div className={`absolute top-4 left-4 bg-white/90 rounded-lg shadow-md backdrop-blur-sm z-10 border border-gray-100 ${isMinimized ? 'w-auto' : 'w-64'}`}>
       {isMinimized ? (
         <Button
           variant="ghost"
@@ -148,10 +148,10 @@ const ExecutionTimeDisplay = ({
   const currentFormatted = formatDateTime(currentTime);
   
   // Calculate position based on time display state
-  const leftPosition = isTimeDisplayMinimized ? "left-16" : "left-72";
+  const leftPosition = isTimeDisplayMinimized ? "left-12" : "left-72";
   
   return (
-    <div className={`absolute top-4 ${leftPosition} bg-white/90 rounded-lg shadow-md backdrop-blur-sm z-10 border border-gray-100 w-80`}>
+    <div className={`absolute top-4 ${leftPosition} bg-white/90 rounded-lg shadow-md backdrop-blur-sm z-10 border border-gray-100 ${isMinimized ? 'w-auto' : 'w-80'}`}>
       {isMinimized ? (
         <Button
           variant="ghost"
@@ -459,7 +459,7 @@ export function SimulationCanvas({
       
       {/* Unified information panel */}
       <StatsPanel
-        simulationId={simulationId ?? ""}
+        simulationId={simulationInfo?.id ?? ""}
         simulationState={simulationState}
         isCollapsed={isPanelCollapsed}
         onToggleCollapse={togglePanelCollapsed}
