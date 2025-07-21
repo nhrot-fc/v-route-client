@@ -92,13 +92,39 @@ export const renderElements = ({
   }
 
   // Procesa los pedidos con asignación de vehículos
-  const enhancedOrders = filteredOrders.map((order) =>
+  let enhancedOrders = filteredOrders.map((order) =>
     enhanceOrderWithVehicles(
       order,
       enhancedVehicles,
       simulationState.currentTime || ""
     )
   );
+
+  // --- FILTRADO ESPECIAL AL SELECCIONAR UN PEDIDO ---
+  if (selectedOrder) {
+    // 1. Solo mostrar el pedido seleccionado
+    enhancedOrders = enhancedOrders.filter(order => order.id === selectedOrder.id);
+
+    // 2. Obtener los vehículos que atienden este pedido
+    let servingVehicleIds: string[] = [];
+    if (enhancedOrders[0]?.servingVehicles && enhancedOrders[0].servingVehicles.length > 0) {
+      servingVehicleIds = enhancedOrders[0].servingVehicles.map(v => v.id).filter(Boolean) as string[];
+    } else if (simulationState.currentVehiclePlans) {
+      // Buscar manualmente en los planes de vehículos
+      servingVehicleIds = simulationState.currentVehiclePlans
+        .filter(plan => plan.actions && plan.actions.some(action => action.orderId === selectedOrder.id))
+        .map(plan => plan.vehicleId)
+        .filter((id): id is string => typeof id === 'string');
+    }
+
+    // 3. Filtrar vehículos: solo los que atienden el pedido, pero solo si hay alguno
+    if (servingVehicleIds.length > 0) {
+      filteredVehicles = enhancedVehicles.filter(v => v.id && servingVehicleIds.includes(v.id));
+    } else {
+      // Si no hay vehículos asignados, no mostrar ningún vehículo
+      filteredVehicles = [];
+    }
+  }
 
   // Draw blockages
   if (simulationState.activeBlockages) {
@@ -672,19 +698,33 @@ export const renderElements = ({
         }
       } else if (isHighlightedVehicle) {
         // Modo resaltado normal (sin selección): mostrar ruta futura del vehículo resaltado
+        // --- NUEVA LÓGICA: mostrar solo desde la posición actual hasta el final ---
         let fullPath: { x: number; y: number }[] = [];
-        let foundCurrent = false;
-        plan.actions.forEach((action, idx) => {
-          if (!action.path || action.path.length < 2) return;
-          if (!foundCurrent && idx === currentActionIdx) {
-            const pathSlice = action.path.slice(indexFrom).map(p => ({ x: p.x ?? 0, y: p.y ?? 0 }));
-            fullPath = fullPath.concat(pathSlice);
-            foundCurrent = true;
-          } else if (foundCurrent) {
+        let found = false;
+        for (let actionIdx = 0; actionIdx < plan.actions.length; actionIdx++) {
+          const action = plan.actions[actionIdx];
+          if (!action.path || action.path.length < 2) continue;
+          if (!found) {
+            // Buscar si la posición actual está en este path
+            const idx = action.path.findIndex(
+              (p) =>
+                Math.abs((p.x ?? 0) - (vehicle.currentPosition?.x ?? 0)) < 1 &&
+                Math.abs((p.y ?? 0) - (vehicle.currentPosition?.y ?? 0)) < 1
+            );
+            if (idx !== -1) {
+              // Desde aquí empieza la ruta futura
+              const pathSlice = action.path.slice(idx).map(p => ({ x: p.x ?? 0, y: p.y ?? 0 }));
+              fullPath = fullPath.concat(pathSlice);
+              found = true;
+              continue;
+            }
+          }
+          if (found) {
+            // Acciones siguientes: todo el path
             const pathMapped = action.path.map(p => ({ x: p.x ?? 0, y: p.y ?? 0 }));
             fullPath = fullPath.concat(pathMapped);
           }
-        });
+        }
         if (fullPath.length >= 2) {
           const screenPoints: number[] = [];
           fullPath.forEach((point) => {
