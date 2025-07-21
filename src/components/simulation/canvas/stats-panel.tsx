@@ -444,8 +444,26 @@ const OrderStatePanel: React.FC<{
       )
     : orders;
 
+  // Get vehicles serving the selected order
+  const getVehiclesServingOrder = (orderId: string) => {
+    const vehicles = simulationState.vehicles || [];
+    const vehiclePlans = simulationState.currentVehiclePlans || [];
+    
+    return vehicles.filter(vehicle => {
+      const vehiclePlan = vehiclePlans.find(plan => plan.vehicleId === vehicle.id);
+      if (!vehiclePlan?.actions) return false;
+      
+      return vehiclePlan.actions.some(action => action.orderId === orderId);
+    });
+  };
+
+  const vehiclesServingSelectedOrder = selectedOrder 
+    ? getVehiclesServingOrder(selectedOrder.id || '')
+    : [];
+
   return (
     <div>
+      {/* Orders table */}
       <table className="w-full text-sm">
         <thead className="bg-gray-50">
           <tr>
@@ -529,6 +547,144 @@ const OrderStatePanel: React.FC<{
           })}
         </tbody>
       </table>
+
+      {/* Vehicles serving selected order */}
+      {selectedOrder && vehiclesServingSelectedOrder.length > 0 && (
+        <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex items-center gap-2 mb-3">
+            <TruckIcon className="w-4 h-4 text-blue-600" />
+            <span className="text-sm font-medium text-blue-800">
+              Vehículos atendiendo este pedido ({vehiclesServingSelectedOrder.length})
+            </span>
+          </div>
+          
+          <div className="space-y-2">
+            {vehiclesServingSelectedOrder.map((vehicle) => {
+              const glpPercentage = ((vehicle.currentGlpM3 || 0) / (vehicle.glpCapacityM3 || 1)) * 100;
+              const fuelPercentage = ((vehicle.currentFuelGal || 0) / (vehicle.fuelCapacityGal || 25)) * 100;
+              
+              // Get vehicle plan for this order
+              const vehiclePlan = simulationState.currentVehiclePlans?.find(
+                plan => plan.vehicleId === vehicle.id
+              );
+              
+              // Find the action for this specific order
+              const orderAction = vehiclePlan?.actions?.find(
+                action => action.orderId === selectedOrder.id
+              );
+              
+              // Calculate progress for this order
+              const orderProgress = orderAction?.progress || 0;
+              
+              return (
+                <div key={vehicle.id} className="bg-white p-3 rounded border border-blue-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{vehicle.id}</span>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs text-white ${
+                          vehicle.type === "TA"
+                            ? "bg-red-500"
+                            : vehicle.type === "TB"
+                            ? "bg-blue-500"
+                            : vehicle.type === "TC"
+                            ? "bg-amber-500"
+                            : "bg-purple-500"
+                        }`}
+                      >
+                        {vehicle.type}
+                      </span>
+                    </div>
+                    <span
+                      className={`text-xs px-2 py-1 rounded ${
+                        vehicle.status?.toLowerCase() === "active"
+                          ? "bg-green-100 text-green-700"
+                          : vehicle.status?.toLowerCase() === "maintenance"
+                          ? "bg-amber-100 text-amber-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
+                    >
+                      {vehicle.status || "Desconocido"}
+                    </span>
+                  </div>
+                  
+                  {/* Progress for this specific order */}
+                  <div className="mb-2">
+                    <div className="flex justify-between text-xs mb-1">
+                      <span>Progreso del pedido</span>
+                      <span className="font-medium">{orderProgress.toFixed(1)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="h-2 rounded-full bg-blue-500"
+                        style={{ width: `${orderProgress}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  
+                  {/* Vehicle status indicators */}
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span>GLP</span>
+                        <span className="font-medium">
+                          {formatPercentageValue(vehicle.currentGlpM3 || 0, vehicle.glpCapacityM3 || 1).formattedPercentage}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div
+                          className="h-1.5 rounded-full"
+                          style={{
+                            width: `${glpPercentage}%`,
+                            backgroundColor: glpPercentage <= 20 ? "#ef4444" : glpPercentage <= 40 ? "#f97316" : "#10b981"
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span>Combustible</span>
+                        <span className="font-medium">
+                          {formatPercentageValue(vehicle.currentFuelGal || 0, vehicle.fuelCapacityGal || 25).formattedPercentage}
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-1.5">
+                        <div
+                          className="h-1.5 rounded-full"
+                          style={{
+                            width: `${fuelPercentage}%`,
+                            backgroundColor: fuelPercentage <= 20 ? "#ef4444" : fuelPercentage <= 40 ? "#f97316" : "#10b981"
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Current position */}
+                  <div className="mt-2 text-xs text-gray-600">
+                    <span className="font-medium">Posición actual:</span> (
+                    {vehicle.currentPosition?.x?.toFixed(1) || 0},{" "}
+                    {vehicle.currentPosition?.y?.toFixed(1) || 0})
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+      
+      {/* No vehicles serving message */}
+      {selectedOrder && vehiclesServingSelectedOrder.length === 0 && (
+        <div className="mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-gray-500" />
+            <span className="text-sm text-gray-600">
+              No hay vehículos asignados a este pedido actualmente
+            </span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -550,6 +706,50 @@ const VehicleStatePanel: React.FC<{
   const vehicles = simulationState.vehicles || [];
   const { createVehicleBreakdown, isLoading: isBreakdownLoading } =
     useSimulation();
+
+  // Get future actions for selected vehicle
+  const getFutureActions = (vehicleId: string) => {
+    const vehiclePlan = simulationState.currentVehiclePlans?.find(
+      plan => plan.vehicleId === vehicleId
+    );
+    
+    if (!vehiclePlan?.actions) return [];
+    
+    const futureActions = [];
+    let foundCurrentPosition = false;
+    
+    for (const action of vehiclePlan.actions) {
+      // Check if this action contains the current vehicle position
+      if (!foundCurrentPosition && action.path && action.path.length > 0) {
+        const currentVehicle = vehicles.find(v => v.id === vehicleId);
+        if (currentVehicle?.currentPosition) {
+          const currentX = currentVehicle.currentPosition.x || 0;
+          const currentY = currentVehicle.currentPosition.y || 0;
+          
+          // Check if current position is in this action's path
+          const isInCurrentAction = action.path.some(point => 
+            Math.abs((point.x || 0) - currentX) < 0.1 && 
+            Math.abs((point.y || 0) - currentY) < 0.1
+          );
+          
+          if (isInCurrentAction) {
+            foundCurrentPosition = true;
+            // Include this action but mark it as current
+            futureActions.push({ ...action, isCurrent: true });
+          }
+        }
+      } else if (foundCurrentPosition) {
+        // All subsequent actions are future
+        futureActions.push({ ...action, isCurrent: false });
+      }
+    }
+    
+    return futureActions;
+  };
+
+  const selectedVehicleFutureActions = selectedVehicleId 
+    ? getFutureActions(selectedVehicleId)
+    : [];
 
   // State for breakdown dialog
   const [isBreakdownDialogOpen, setIsBreakdownDialogOpen] = useState(false);
@@ -815,6 +1015,90 @@ const VehicleStatePanel: React.FC<{
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Future actions for selected vehicle */}
+      {selectedVehicleId && selectedVehicleFutureActions.length > 0 && (
+        <div className="mt-4 p-3 bg-purple-50 rounded-lg border border-purple-200">
+          <div className="flex items-center gap-2 mb-3">
+            <TruckIcon className="w-4 h-4 text-purple-600" />
+            <span className="text-sm font-medium text-purple-800">
+              Plan de ruta del vehículo ({selectedVehicleFutureActions.length} acciones)
+            </span>
+          </div>
+          
+          <div className="space-y-2">
+            {selectedVehicleFutureActions.map((action: any, index: number) => {
+              const actionTypeColors = {
+                DRIVE: "bg-blue-100 text-blue-700",
+                SERVE: "bg-green-100 text-green-700",
+                RELOAD: "bg-amber-100 text-amber-700",
+                REFUEL: "bg-orange-100 text-orange-700",
+                MAINTENANCE: "bg-gray-100 text-gray-700",
+                WAIT: "bg-slate-100 text-slate-700",
+              };
+              
+              const actionTypeColor = actionTypeColors[action.type as keyof typeof actionTypeColors] || "bg-gray-100 text-gray-700";
+              
+              return (
+                <div key={index} className={`bg-white p-3 rounded border ${action.isCurrent ? 'border-purple-300 bg-purple-50' : 'border-gray-200'}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`px-2 py-1 rounded-full text-xs text-white ${actionTypeColor.replace('100', '500').replace('700', 'white')}`}>
+                        {action.type}
+                      </span>
+                      {action.isCurrent && (
+                        <span className="px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700">
+                          Actual
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs text-gray-500">
+                      Acción {index + 1}
+                    </span>
+                  </div>
+                  
+                  {/* Order information if applicable */}
+                  {action.orderId && (
+                    <div className="mb-2 p-2 bg-blue-50 rounded border border-blue-200">
+                      <div className="text-xs text-blue-700">
+                        <span className="font-medium">Pedido:</span> {action.orderId}
+                      </div>
+                      {action.progress !== undefined && (
+                        <div className="mt-1">
+                          <div className="flex justify-between text-xs mb-1">
+                            <span>Progreso</span>
+                            <span className="font-medium">{action.progress.toFixed(1)}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                            <div
+                              className="h-1.5 rounded-full bg-blue-500"
+                              style={{ width: `${action.progress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Path information */}
+                  {action.path && action.path.length > 0 && (
+                    <div className="text-xs text-gray-600">
+                      <span className="font-medium">Ruta:</span> {action.path.length} puntos
+                      {action.path.length > 0 && (
+                        <div className="mt-1">
+                          <span className="font-medium">Desde:</span> ({action.path[0]?.x?.toFixed(1) || 0}, {action.path[0]?.y?.toFixed(1) || 0})
+                          <br />
+                          <span className="font-medium">Hasta:</span> ({action.path[action.path.length - 1]?.x?.toFixed(1) || 0}, {action.path[action.path.length - 1]?.y?.toFixed(1) || 0})
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

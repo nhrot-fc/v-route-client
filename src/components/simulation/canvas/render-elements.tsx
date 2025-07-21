@@ -1,6 +1,6 @@
 import React from "react";
 import { Group, Line, Rect } from "react-konva";
-import type { SimulationStateDTO, DepotDTO } from "@/lib/api-client";
+import type { SimulationStateDTO, DepotDTO, OrderDTO } from "@/lib/api-client";
 import type {
   TooltipInfo,
   EnhancedTooltipInfo,
@@ -26,6 +26,12 @@ interface RenderElementsProps {
   setTooltip: React.Dispatch<React.SetStateAction<TooltipInfo>>;
   setEnhancedTooltip: React.Dispatch<React.SetStateAction<EnhancedTooltipInfo>>;
   selectedVehicleId?: string | null;
+  selectedOrder?: (OrderDTO & { isOverdue?: boolean }) | null;
+  selectedDepot?: {
+    depot: DepotDTO;
+    isMainDepot: boolean;
+    index?: number;
+  } | null;
   onVehicleSelect?: (vehicleId: string | null) => void;
   onDepotSelect?: (
     depot: DepotDTO | null,
@@ -33,6 +39,8 @@ interface RenderElementsProps {
     index?: number
   ) => void;
   onOrderSelect?: (order: EnhancedOrderDTO | null) => void;
+  highlightedVehicleIds?: string[];
+  highlightedOrderIds?: string[];
 }
 
 /**
@@ -47,9 +55,13 @@ export const renderElements = ({
   setTooltip,
   setEnhancedTooltip,
   selectedVehicleId,
+  selectedOrder,
+  selectedDepot,
   onVehicleSelect,
   onDepotSelect,
   onOrderSelect,
+  highlightedVehicleIds = [],
+  highlightedOrderIds = [],
 }: RenderElementsProps) => {
   if (!simulationState) return null;
 
@@ -169,9 +181,11 @@ export const renderElements = ({
         volumeColor = "#eab308"; // yellow - medium
       else volumeColor = "#f97316"; // orange - large
 
-      // Highlight orders if they are being served by vehicles
+      // Highlight orders if they are being served by vehicles, if this is the selected order, or if this order is in a selected vehicle's plan
       const isBeingServed =
         order.servingVehicles && order.servingVehicles.length > 0;
+      const isSelectedOrder = selectedOrder?.id === order.id;
+      const isHighlightedOrder = highlightedOrderIds.includes(order.id || '');
 
       elements.push(
         <Group
@@ -210,18 +224,31 @@ export const renderElements = ({
             }
           }}
         >
-          {/* Add highlight if being served */}
-          {isBeingServed && (
-            <Rect
-              x={-iconSize - 3}
-              y={-iconSize - 3}
-              width={iconSize * 2 + 6}
-              height={iconSize * 2 + 6}
-              fill="transparent"
-              stroke="#4ade80"
-              strokeWidth={2}
-              cornerRadius={4}
-            />
+          {/* Add highlight if being served, if this is the selected order, or if this order is highlighted */}
+          {(isBeingServed || isSelectedOrder || isHighlightedOrder) && (
+            <>
+              {/* Contorno interno semitransparente */}
+              <Rect
+                x={-iconSize - 2}
+                y={-iconSize - 2}
+                width={iconSize * 2 + 4}
+                height={iconSize * 2 + 4}
+                fill="rgba(147, 51, 234, 0.2)"
+                stroke="transparent"
+                cornerRadius={3}
+              />
+              {/* Contorno externo morado */}
+              <Rect
+                x={-iconSize - 3}
+                y={-iconSize - 3}
+                width={iconSize * 2 + 6}
+                height={iconSize * 2 + 6}
+                fill="transparent"
+                stroke="#9333ea"
+                strokeWidth={2}
+                cornerRadius={4}
+              />
+            </>
           )}
 
           <MapIcon
@@ -234,31 +261,32 @@ export const renderElements = ({
           {/* Only show if not being hovered */}
           {!tooltip.show && (
             <>
-              {/* Order ID with background */}
-              {/* 
-              <Rect
-                x={iconSize}
-                y={-8 * (zoom / 15)}
-                width={40 * (zoom / 15)}
-                height={16 * (zoom / 15)}
-                fill="rgba(255, 255, 255, 0.7)"
-                cornerRadius={2}
-              />¨
-
-              */}
-              <ColoredText
-                x={iconSize + 2 * (zoom / 15)}
-                y={-8 * (zoom / 15)}
-                text={`${order.id || "N/A"}`}
-                fontSize={10 * (zoom / 15)}
-                color={
-                  order.delivered
-                    ? "#16a34a"
-                    : isOverdue
-                      ? "#dc2626"
-                      : "#1d4ed8"
-                }
-              />
+              {/* Order ID with background - only show if selected */}
+              {isSelectedOrder && (
+                <>
+                  <Rect
+                    x={iconSize + 2 * (zoom / 15)}
+                    y={-8 * (zoom / 15)}
+                    width={40 * (zoom / 15)}
+                    height={16 * (zoom / 15)}
+                    fill="rgba(255, 255, 255, 0.7)"
+                    cornerRadius={2}
+                  />
+                  <ColoredText
+                    x={iconSize + 2 * (zoom / 15)}
+                    y={-8 * (zoom / 15)}
+                    text={`${order.id || "N/A"}`}
+                    fontSize={10 * (zoom / 15)}
+                    color={
+                      order.delivered
+                        ? "#16a34a"
+                        : isOverdue
+                          ? "#dc2626"
+                          : "#1d4ed8"
+                    }
+                  />
+                </>
+              )}
 
               {/* GLP indicator with volume-based color */}
               <Rect
@@ -364,22 +392,27 @@ export const renderElements = ({
         {/* Only show if not being hovered */}
         {!tooltip.show && (
           <>
-            <Rect
-              x={depotSize}
-              y={-8 * (zoom / 15)}
-              width={120 * (zoom / 15)}
-              height={16 * (zoom / 15)}
-              fill="rgba(255, 255, 255, 0.8)"
-              cornerRadius={3}
-            />
-            <ColoredText
-              x={depotSize + 4 * (zoom / 15)}
-              y={-8 * (zoom / 15)}
-              text="Depósito Principal"
-              fontSize={12 * (zoom / 15)}
-              fontStyle="bold"
-              color="#1e40af"
-            />
+            {/* Depot info - only show if selected */}
+            {selectedDepot?.depot.id === simulationState.mainDepot?.id && (
+              <>
+                <Rect
+                  x={depotSize}
+                  y={-8 * (zoom / 15)}
+                  width={120 * (zoom / 15)}
+                  height={16 * (zoom / 15)}
+                  fill="rgba(255, 255, 255, 0.8)"
+                  cornerRadius={3}
+                />
+                <ColoredText
+                  x={depotSize + 4 * (zoom / 15)}
+                  y={-8 * (zoom / 15)}
+                  text="Depósito Principal"
+                  fontSize={12 * (zoom / 15)}
+                  fontStyle="bold"
+                  color="#1e40af"
+                />
+              </>
+            )}
           </>
         )}
       </Group>
@@ -445,22 +478,27 @@ export const renderElements = ({
           {/* Only show if not being hovered */}
           {!tooltip.show && (
             <>
-              <Rect
-                x={depotSize}
-                y={-8 * (zoom / 15)}
-                width={100 * (zoom / 15)}
-                height={16 * (zoom / 15)}
-                fill="rgba(255, 255, 255, 0.8)"
-                cornerRadius={3}
-              />
-              <ColoredText
-                x={depotSize + 4 * (zoom / 15)}
-                y={-8 * (zoom / 15)}
-                text={`Depósito Aux. ${index + 1}`}
-                fontSize={10 * (zoom / 15)}
-                fontStyle="bold"
-                color="#3b82f6"
-              />
+              {/* Depot info - only show if selected */}
+              {selectedDepot?.depot.id === depot.id && !selectedDepot?.isMainDepot && selectedDepot?.index === index + 1 && (
+                <>
+                  <Rect
+                    x={depotSize}
+                    y={-8 * (zoom / 15)}
+                    width={100 * (zoom / 15)}
+                    height={16 * (zoom / 15)}
+                    fill="rgba(255, 255, 255, 0.8)"
+                    cornerRadius={3}
+                  />
+                  <ColoredText
+                    x={depotSize + 4 * (zoom / 15)}
+                    y={-8 * (zoom / 15)}
+                    text={`Depósito Aux. ${index + 1}`}
+                    fontSize={10 * (zoom / 15)}
+                    fontStyle="bold"
+                    color="#3b82f6"
+                  />
+                </>
+              )}
             </>
           )}
         </Group>
@@ -519,20 +557,39 @@ export const renderElements = ({
 
       if (!blockToDraw) return; // No hay bloque que contenga la posición actual
 
-      // 3. Imprime solo ese bloque, desde la posición actual
+      // Definir si el vehículo está resaltado
+      const isHighlightedVehicle = highlightedVehicleIds.includes(vehicle.id || '');
+
+      // 3. Imprime las rutas según si el vehículo está resaltado o no
       blockToDraw.forEach((action, actionIdx) => {
         if (!action.path || action.path.length < 2) return;
 
         let pathToDraw: typeof action.path = [];
-        if (actionIdx < currentActionIdx) {
-          // Ya recorrida, no se pinta
-          return;
-        } else if (actionIdx === currentActionIdx) {
-          // Solo pinta desde la posición actual
-          pathToDraw = action.path.slice(indexFrom);
+        
+        if (isHighlightedVehicle) {
+          // Para vehículos resaltados, mostrar todas las rutas futuras
+          if (actionIdx < currentActionIdx) {
+            // Ya recorrida, no se pinta
+            return;
+          } else if (actionIdx === currentActionIdx) {
+            // Solo pinta desde la posición actual
+            pathToDraw = action.path.slice(indexFrom);
+          } else {
+            // Futuras: pinta toda la ruta
+            pathToDraw = action.path;
+          }
         } else {
-          // Futuras: pinta toda la ruta
-          pathToDraw = action.path;
+          // Para vehículos normales, mostrar solo la ruta actual
+          if (actionIdx < currentActionIdx) {
+            // Ya recorrida, no se pinta
+            return;
+          } else if (actionIdx === currentActionIdx) {
+            // Solo pinta desde la posición actual
+            pathToDraw = action.path.slice(indexFrom);
+          } else {
+            // Futuras: pinta toda la ruta
+            pathToDraw = action.path;
+          }
         }
 
         if (pathToDraw.length >= 2) {
@@ -542,33 +599,41 @@ export const renderElements = ({
             screenPoints.push(x, y);
           });
 
-          // Color según tipo de acción
-          const actionColorMap: Record<string, string> = {
-            DRIVE: "#4f46e5",
-            SERVE: "#16a34a",
-            RELOAD: "#eab308",
-            REFUEL: "#f97316",
-            MAINTENANCE: "#64748b",
-            WAIT: "#a3a3a3",
-          };
-          const lineColor = action.type
-            ? actionColorMap[action.type] || "#4f46e5"
-            : "#4f46e5";
+          // Color según tipo de acción y si el vehículo está resaltado
+          let lineColor: string;
+          
+          // Para vehículos resaltados, mostrar todas las rutas futuras en morado
+          if (isHighlightedVehicle) {
+            lineColor = "#9333ea"; // Morado para todas las rutas del vehículo seleccionado
+          } else {
+            // Color normal según tipo de acción
+            const actionColorMap: Record<string, string> = {
+              DRIVE: "#4f46e5",
+              SERVE: "#16a34a",
+              RELOAD: "#eab308",
+              REFUEL: "#f97316",
+              MAINTENANCE: "#64748b",
+              WAIT: "#a3a3a3",
+            };
+            lineColor = action.type
+              ? actionColorMap[action.type] || "#4f46e5"
+              : "#4f46e5";
+          }
 
           elements.push(
             <Line
               key={`route-${vehicle.id}-action-${actionIdx}`}
               points={screenPoints}
               stroke={lineColor}
-              strokeWidth={2 * (zoom / 15)}
+              strokeWidth={isHighlightedVehicle ? 3 * (zoom / 15) : 2 * (zoom / 15)}
               dash={[4 * (zoom / 15), 2 * (zoom / 15)]}
               lineCap="round"
               lineJoin="round"
-              opacity={0.7}
+              opacity={isHighlightedVehicle ? 0.9 : 0.7}
               shadowColor="rgba(0,0,0,0.2)"
-              shadowBlur={3}
+              shadowBlur={isHighlightedVehicle ? 5 : 3}
               shadowOffset={{ x: 1, y: 1 }}
-              shadowOpacity={0.3}
+              shadowOpacity={isHighlightedVehicle ? 0.5 : 0.3}
               onClick={() => {
                 alert(`Ruta del camión: ${vehicle.id}`);
               }}
@@ -616,6 +681,7 @@ export const renderElements = ({
         vehicle.glpCapacityM3 || 1
       );
       const isSelected = selectedVehicleId === vehicle.id;
+      const isHighlighted = highlightedVehicleIds.includes(vehicle.id || '');
       const hasActiveOrders =
         vehicle.currentOrders && vehicle.currentOrders.length > 0;
 
@@ -666,6 +732,33 @@ export const renderElements = ({
               cornerRadius={4}
             />
           )}
+          
+          {isHighlighted && !isSelected && (
+            <>
+              {/* Contorno interno semitransparente */}
+              <Rect
+                x={-vehicleSize - 2}
+                y={-vehicleSize - 2}
+                width={vehicleSize * 2 + 4}
+                height={vehicleSize * 2 + 4}
+                fill="rgba(147, 51, 234, 0.2)"
+                stroke="transparent"
+                cornerRadius={3}
+              />
+              {/* Contorno externo morado */}
+              <Rect
+                x={-vehicleSize - 3}
+                y={-vehicleSize - 3}
+                width={vehicleSize * 2 + 6}
+                height={vehicleSize * 2 + 6}
+                fill="transparent"
+                stroke="#9333ea"
+                strokeWidth={3}
+                cornerRadius={4}
+                dash={[5, 5]}
+              />
+            </>
+          )}
 
           <MapIcon
             src={`/icons/colored/${glpColor}/truck-${direction}.svg`}
@@ -676,27 +769,32 @@ export const renderElements = ({
 
           {!tooltip.show && (
             <>
-              <Rect
-                x={vehicleSize}
-                y={-8 * (zoom / 15)}
-                width={40 * (zoom / 15)}
-                height={16 * (zoom / 15)}
-                fill="rgba(255, 255, 255, 0.7)"
-                cornerRadius={2}
-              />
-              <ColoredText
-                x={vehicleSize + 2 * (zoom / 15)}
-                y={-8 * (zoom / 15)}
-                text={`${vehicle.id?.substring(0, 5) || "N/A"}`}
-                fontSize={10 * (zoom / 15)}
-                color={
-                  vehicle.status?.toLowerCase() === "active"
-                    ? "#16a34a"
-                    : vehicle.status?.toLowerCase() === "maintenance"
-                      ? "#f97316"
-                      : "#1d4ed8"
-                }
-              />
+              {/* Vehicle ID - only show if selected */}
+              {isSelected && (
+                <>
+                  <Rect
+                    x={vehicleSize}
+                    y={-8 * (zoom / 15)}
+                    width={40 * (zoom / 15)}
+                    height={16 * (zoom / 15)}
+                    fill="rgba(255, 255, 255, 0.7)"
+                    cornerRadius={2}
+                  />
+                  <ColoredText
+                    x={vehicleSize + 2 * (zoom / 15)}
+                    y={-8 * (zoom / 15)}
+                    text={`${vehicle.id?.substring(0, 5) || "N/A"}`}
+                    fontSize={10 * (zoom / 15)}
+                    color={
+                      vehicle.status?.toLowerCase() === "active"
+                        ? "#16a34a"
+                        : vehicle.status?.toLowerCase() === "maintenance"
+                          ? "#f97316"
+                          : "#1d4ed8"
+                    }
+                  />
+                </>
+              )}
 
               <ProgressBar
                 x={-vehicleSize / 2}
