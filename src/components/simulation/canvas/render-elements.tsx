@@ -126,6 +126,48 @@ export const renderElements = ({
     }
   }
 
+  // --- FILTRADO ESPECIAL AL SELECCIONAR UN ALMACÉN ---
+  if (selectedDepot && selectedDepot.depot && selectedDepot.depot.position) {
+    const depotPos = selectedDepot.depot.position;
+    // Buscar vehículos cuya ACCIÓN ACTUAL termina en el almacén seleccionado
+    const vehiclesToDepot = enhancedVehicles.filter(vehicle => {
+      const plan = vehicle.currentPlan;
+      if (!plan || !plan.actions || plan.actions.length === 0) return false;
+      // Buscar la acción actual (la que contiene la posición actual)
+      let currentActionIdx = -1;
+      let indexFrom = 0;
+      for (let i = 0; i < plan.actions.length; i++) {
+        const action = plan.actions[i];
+        if (!action.path || action.path.length < 2) continue;
+        const idx = action.path.findIndex(
+          (p) =>
+            Math.abs((p.x ?? 0) - (vehicle.currentPosition?.x ?? 0)) < 1 &&
+            Math.abs((p.y ?? 0) - (vehicle.currentPosition?.y ?? 0)) < 1
+        );
+        if (idx !== -1) {
+          currentActionIdx = i;
+          indexFrom = idx;
+          break;
+        }
+      }
+      if (currentActionIdx === -1) return false;
+      const action = plan.actions[currentActionIdx];
+      if (action.path && action.path.length > 0) {
+        const lastPoint = action.path[action.path.length - 1];
+        if (
+          Math.abs((lastPoint.x ?? 0) - (depotPos.x ?? 0)) < 1 &&
+          Math.abs((lastPoint.y ?? 0) - (depotPos.y ?? 0)) < 1
+        ) {
+          return true;
+        }
+      }
+      return false;
+    });
+    filteredVehicles = vehiclesToDepot;
+    // Ocultar todos los pedidos
+    enhancedOrders = [];
+  }
+
   // Draw blockages
   if (simulationState.activeBlockages) {
     simulationState.activeBlockages.forEach((blockage, blockIdx) => {
@@ -813,11 +855,14 @@ export const renderElements = ({
       const { x: screenX, y: screenY } = mapToScreenCoords(x, y);
       const vehicleSize = 20 * (zoom / 15);
 
-      let direction = vehicle.currentOrientation || "east";
-
-      const action = blockToDraw?.[currentActionIdx];
-      const path = action?.path;
-
+      // Obtener el path de la acción actual si existe
+      let path: { x?: number; y?: number }[] | undefined = undefined;
+      if (blockToDraw && currentActionIdx !== -1) {
+        path = blockToDraw[currentActionIdx]?.path;
+      }
+      let direction: "north" | "south" | "east" | "west" = "west";
+      // Intentar calcular la dirección siempre
+      let foundDirection = false;
       if (
         Array.isArray(path) &&
         path.length > indexFrom + 1 &&
@@ -826,7 +871,6 @@ export const renderElements = ({
       ) {
         const current = path[indexFrom];
         const next = path[indexFrom + 1];
-
         if (
           typeof current.x === "number" &&
           typeof current.y === "number" &&
@@ -837,8 +881,34 @@ export const renderElements = ({
             { x: current.x, y: current.y },
             { x: next.x, y: next.y }
           );
+          foundDirection = true;
         }
       }
+      // Si no se pudo calcular con el path actual, intentar con la última acción del plan
+      if (!foundDirection && plan && plan.actions && plan.actions.length > 0) {
+        // Buscar la última acción con path válido
+        for (let i = plan.actions.length - 1; i >= 0; i--) {
+          const action = plan.actions[i];
+          if (action.path && action.path.length >= 2) {
+            const prev = action.path[action.path.length - 2];
+            const curr = action.path[action.path.length - 1];
+            if (
+              typeof prev.x === "number" &&
+              typeof prev.y === "number" &&
+              typeof curr.x === "number" &&
+              typeof curr.y === "number"
+            ) {
+              direction = getAutoDirection(
+                { x: prev.x, y: prev.y },
+                { x: curr.x, y: curr.y }
+              );
+              foundDirection = true;
+              break;
+            }
+          }
+        }
+      }
+      // Si no se pudo calcular, dejar 'east' por defecto
 
       const glpColor = getGlpColorLevel(
         vehicle.currentGlpM3 || 0,
