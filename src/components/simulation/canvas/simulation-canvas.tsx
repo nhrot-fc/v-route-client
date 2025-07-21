@@ -262,9 +262,6 @@ export function SimulationCanvas({
   const [isTimeDisplayMinimized, setIsTimeDisplayMinimized] = useState(false);
   const [isExecutionTimeMinimized, setIsExecutionTimeMinimized] = useState(false);
   
-  // Legend minimized state
-  const [isLegendMinimized, setIsLegendMinimized] = useState(false);
-  
   // Get the selected vehicle details
   const selectedVehicle =
     selectedVehicleId && simulationState?.vehicles
@@ -354,11 +351,6 @@ export function SimulationCanvas({
   
   const toggleExecutionTimeMinimized = useCallback(() => {
     setIsExecutionTimeMinimized((prev) => !prev);
-  }, []);
-  
-  // Toggle legend minimized state
-  const toggleLegendMinimized = useCallback(() => {
-    setIsLegendMinimized((prev) => !prev);
   }, []);
   
   // Clear all selections
@@ -601,95 +593,68 @@ export function SimulationCanvas({
       </Button>
 
       {/* Map legend */}
-      <div className={`absolute bottom-4 left-4 bg-white/90 rounded-lg shadow-md backdrop-blur-sm z-10 border border-gray-100 ${isLegendMinimized ? 'w-auto' : 'w-64'}`}>
-        {isLegendMinimized ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleLegendMinimized}
-            className="p-2 h-auto"
-            title="Mostrar leyenda"
-          >
-            <Map className="w-4 h-4 text-blue-600" />
-          </Button>
-        ) : (
-          <>
-            <div className="flex items-center justify-between p-3 pb-2">
-              <div className="flex items-center gap-1 text-sm font-medium">
-                <Map className="w-4 h-4" />
-                <span>Leyenda</span>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={toggleLegendMinimized}
-                className="p-1 h-auto"
-                title="Minimizar leyenda"
-              >
-                <ChevronDown className="w-3 h-3" />
-              </Button>
+      <div className="absolute bottom-4 left-4 bg-white/90 p-3 rounded-lg shadow-md backdrop-blur-sm z-10 border border-gray-100">
+        <div className="flex items-center mb-2 gap-1 text-sm font-medium">
+          <Map className="w-4 h-4" />
+          <span>Leyenda</span>
+        </div>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-[#1e40af] rounded-sm"></div>
+            <span className="text-xs">Almacén Principal</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-[#3b82f6] rounded-sm"></div>
+            <span className="text-xs">Almacén Secundario</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-[#10b981] rounded-full"></div>
+            <span className="text-xs">Vehículo</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-[#f59e0b] rounded-sm"></div>
+            <span className="text-xs">Cliente/Pedido</span>
+          </div>
+          <div className="flex items-center gap-2 col-span-2">
+            <div className="w-4 h-4 border-2 border-[#9333ea] rounded-sm bg-[#9333ea]/20"></div>
+            <span className="text-xs">Pedido siendo atendido</span>
+          </div>
+          <div className="flex items-center gap-2 col-span-2">
+            <div className="w-4 h-1 bg-[#ef4444]"></div>
+            <span className="text-xs">Carretera Bloqueada</span>
+          </div>
+          {selectedVehicleId && (
+            <div className="flex items-center gap-2 col-span-2">
+              <div className="w-4 h-1 bg-[#4f46e5]"></div>
+              <span className="text-xs">Ruta de vehículo</span>
             </div>
-            <div className="px-3 pb-3">
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-[#1e40af] rounded-sm"></div>
-                  <span className="text-xs">Almacén Principal</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-[#3b82f6] rounded-sm"></div>
-                  <span className="text-xs">Almacén Secundario</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-[#10b981] rounded-full"></div>
-                  <span className="text-xs">Vehículo</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-[#f59e0b] rounded-sm"></div>
-                  <span className="text-xs">Cliente/Pedido</span>
-                </div>
-                <div className="flex items-center gap-2 col-span-2">
-                  <div className="w-4 h-4 border-2 border-[#9333ea] rounded-sm bg-[#9333ea]/20"></div>
-                  <span className="text-xs">Pedido siendo atendido</span>
-                </div>
-                <div className="flex items-center gap-2 col-span-2">
-                  <div className="w-4 h-1 bg-[#ef4444]"></div>
-                  <span className="text-xs">Carretera Bloqueada</span>
-                </div>
-                {selectedVehicleId && (
-                  <div className="flex items-center gap-2 col-span-2">
-                    <div className="w-4 h-1 bg-[#4f46e5]"></div>
-                    <span className="text-xs">Ruta de vehículo</span>
-                  </div>
-                )}
-                {highlightedVehicleIds.length > 0 && (
-                  <>
-                    <div className="flex items-center gap-2 col-span-2">
-                      <div className="w-4 h-4 border-2 border-[#9333ea] border-dashed rounded-sm bg-[#9333ea]/20"></div>
-                      <span className="text-xs">Vehículos del pedido</span>
-                    </div>
-                    <div className="flex items-center gap-2 col-span-2">
-                      <div className="w-4 h-1 bg-[#9333ea]"></div>
-                      <span className="text-xs">Rutas del pedido</span>
-                    </div>
-                  </>
-                )}
-                
-                {highlightedOrderIds.length > 0 && (
-                  <>
-                    <div className="flex items-center gap-2 col-span-2">
-                      <div className="w-4 h-4 border-2 border-[#9333ea] border-dashed rounded-sm bg-[#9333ea]/20"></div>
-                      <span className="text-xs">Pedidos del vehículo</span>
-                    </div>
-                    <div className="flex items-center gap-2 col-span-2">
-                      <div className="w-4 h-1 bg-[#9333ea]"></div>
-                      <span className="text-xs">Rutas del vehículo</span>
-                    </div>
-                  </>
-                )}
+          )}
+          {highlightedVehicleIds.length > 0 && (
+            <>
+              <div className="flex items-center gap-2 col-span-2">
+                <div className="w-4 h-4 border-2 border-[#9333ea] border-dashed rounded-sm bg-[#9333ea]/20"></div>
+                <span className="text-xs">Vehículos del pedido</span>
               </div>
-            </div>
-          </>
-        )}
+              <div className="flex items-center gap-2 col-span-2">
+                <div className="w-4 h-1 bg-[#9333ea]"></div>
+                <span className="text-xs">Rutas del pedido</span>
+              </div>
+            </>
+          )}
+          
+          {highlightedOrderIds.length > 0 && (
+            <>
+              <div className="flex items-center gap-2 col-span-2">
+                <div className="w-4 h-4 border-2 border-[#9333ea] border-dashed rounded-sm bg-[#9333ea]/20"></div>
+                <span className="text-xs">Pedidos del vehículo</span>
+              </div>
+              <div className="flex items-center gap-2 col-span-2">
+                <div className="w-4 h-1 bg-[#9333ea]"></div>
+                <span className="text-xs">Rutas del vehículo</span>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Legacy tooltip for backward compatibility */}

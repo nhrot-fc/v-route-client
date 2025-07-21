@@ -573,8 +573,8 @@ const OrderStatePanel: React.FC<{
                 action => action.orderId === selectedOrder.id
               );
               
-              // Calculate progress for this order (convert from decimal 0-1 to percentage 0-100)
-              const orderProgress = (orderAction?.progress || 0) * 100;
+              // Calculate progress for this order
+              const orderProgress = orderAction?.progress || 0;
               
               return (
                 <div key={vehicle.id} className="bg-white p-3 rounded border border-blue-100">

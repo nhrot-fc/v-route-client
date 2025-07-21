@@ -161,11 +161,6 @@ export const renderElements = ({
   // Draw orders with colored indicators for volumes
   if (enhancedOrders && enhancedOrders.length > 0) {
     enhancedOrders.forEach((order, idx) => {
-      // If an order is selected, only show that specific order
-      if (selectedOrder && order.id !== selectedOrder.id) {
-        return; // Skip this order if it's not the selected one
-      }
-      
       const isOverdue = order.isOverdue || false;
       const iconColor = order.delivered ? "green" : isOverdue ? "red" : "blue";
       const x = order.position?.x || 0;
@@ -191,12 +186,6 @@ export const renderElements = ({
         order.servingVehicles && order.servingVehicles.length > 0;
       const isSelectedOrder = selectedOrder?.id === order.id;
       const isHighlightedOrder = highlightedOrderIds.includes(order.id || '');
-      
-      // Check if this order is in the selected vehicle's plan
-      const isInSelectedVehiclePlan = selectedVehicleId && 
-        enhancedVehicles.find(v => v.id === selectedVehicleId)?.currentPlan?.actions?.some(action => 
-          action.type === 'SERVE' && action.orderId === order.id
-        );
 
       elements.push(
         <Group
@@ -235,8 +224,8 @@ export const renderElements = ({
             }
           }}
         >
-          {/* Add highlight if being served, if this is the selected order, if this order is highlighted, or if this order is in the selected vehicle's plan */}
-          {(isBeingServed || isSelectedOrder || isHighlightedOrder || isInSelectedVehiclePlan) && (
+          {/* Add highlight if being served, if this is the selected order, or if this order is highlighted */}
+          {(isBeingServed || isSelectedOrder || isHighlightedOrder) && (
             <>
               {/* Contorno interno semitransparente */}
               <Rect
@@ -249,16 +238,16 @@ export const renderElements = ({
                 cornerRadius={3}
               />
               {/* Contorno externo morado */}
-            <Rect
-              x={-iconSize - 3}
-              y={-iconSize - 3}
-              width={iconSize * 2 + 6}
-              height={iconSize * 2 + 6}
-              fill="transparent"
+              <Rect
+                x={-iconSize - 3}
+                y={-iconSize - 3}
+                width={iconSize * 2 + 6}
+                height={iconSize * 2 + 6}
+                fill="transparent"
                 stroke="#9333ea"
-              strokeWidth={2}
-              cornerRadius={4}
-            />
+                strokeWidth={2}
+                cornerRadius={4}
+              />
             </>
           )}
 
@@ -272,30 +261,30 @@ export const renderElements = ({
           {/* Only show if not being hovered */}
           {!tooltip.show && (
             <>
-              {/* Order ID with background - only show if selected or in selected vehicle's plan */}
-              {(isSelectedOrder || isInSelectedVehiclePlan) && (
+              {/* Order ID with background - only show if selected */}
+              {isSelectedOrder && (
                 <>
-              <Rect
+                  <Rect
                     x={iconSize + 2 * (zoom / 15)}
-                y={-8 * (zoom / 15)}
-                width={40 * (zoom / 15)}
-                height={16 * (zoom / 15)}
-                fill="rgba(255, 255, 255, 0.7)"
-                cornerRadius={2}
+                    y={-8 * (zoom / 15)}
+                    width={40 * (zoom / 15)}
+                    height={16 * (zoom / 15)}
+                    fill="rgba(255, 255, 255, 0.7)"
+                    cornerRadius={2}
                   />
-              <ColoredText
-                x={iconSize + 2 * (zoom / 15)}
-                y={-8 * (zoom / 15)}
-                text={`${order.id || "N/A"}`}
-                fontSize={10 * (zoom / 15)}
-                color={
-                  order.delivered
-                    ? "#16a34a"
-                    : isOverdue
-                      ? "#dc2626"
-                      : "#1d4ed8"
-                }
-              />
+                  <ColoredText
+                    x={iconSize + 2 * (zoom / 15)}
+                    y={-8 * (zoom / 15)}
+                    text={`${order.id || "N/A"}`}
+                    fontSize={10 * (zoom / 15)}
+                    color={
+                      order.delivered
+                        ? "#16a34a"
+                        : isOverdue
+                          ? "#dc2626"
+                          : "#1d4ed8"
+                    }
+                  />
                 </>
               )}
 
@@ -349,8 +338,8 @@ export const renderElements = ({
     });
   }
 
-    // Draw main depot - only if no order is selected
-  if (simulationState.mainDepot && !selectedOrder) {
+  // Draw main depot
+  if (simulationState.mainDepot) {
     const x = simulationState.mainDepot.position?.x || 0;
     const y = simulationState.mainDepot.position?.y || 0;
     const { x: screenX, y: screenY } = mapToScreenCoords(x, y);
@@ -405,23 +394,23 @@ export const renderElements = ({
           <>
             {/* Depot info - only show if selected */}
             {selectedDepot?.depot.id === simulationState.mainDepot?.id && (
-          <>
-            <Rect
-              x={depotSize}
-              y={-8 * (zoom / 15)}
-              width={120 * (zoom / 15)}
-              height={16 * (zoom / 15)}
-              fill="rgba(255, 255, 255, 0.8)"
-              cornerRadius={3}
-            />
-            <ColoredText
-              x={depotSize + 4 * (zoom / 15)}
-              y={-8 * (zoom / 15)}
-              text="Depósito Principal"
-              fontSize={12 * (zoom / 15)}
-              fontStyle="bold"
-              color="#1e40af"
-            />
+              <>
+                <Rect
+                  x={depotSize}
+                  y={-8 * (zoom / 15)}
+                  width={120 * (zoom / 15)}
+                  height={16 * (zoom / 15)}
+                  fill="rgba(255, 255, 255, 0.8)"
+                  cornerRadius={3}
+                />
+                <ColoredText
+                  x={depotSize + 4 * (zoom / 15)}
+                  y={-8 * (zoom / 15)}
+                  text="Depósito Principal"
+                  fontSize={12 * (zoom / 15)}
+                  fontStyle="bold"
+                  color="#1e40af"
+                />
               </>
             )}
           </>
@@ -430,8 +419,8 @@ export const renderElements = ({
     );
   }
 
-    // Draw auxiliary depots - only if no order is selected
-  if (simulationState.auxDepots && !selectedOrder) {
+  // Draw auxiliary depots
+  if (simulationState.auxDepots) {
     simulationState.auxDepots.forEach((depot, index) => {
       const x = depot.position?.x || 0;
       const y = depot.position?.y || 0;
@@ -491,23 +480,23 @@ export const renderElements = ({
             <>
               {/* Depot info - only show if selected */}
               {selectedDepot?.depot.id === depot.id && !selectedDepot?.isMainDepot && selectedDepot?.index === index + 1 && (
-            <>
-              <Rect
-                x={depotSize}
-                y={-8 * (zoom / 15)}
-                width={100 * (zoom / 15)}
-                height={16 * (zoom / 15)}
-                fill="rgba(255, 255, 255, 0.8)"
-                cornerRadius={3}
-              />
-              <ColoredText
-                x={depotSize + 4 * (zoom / 15)}
-                y={-8 * (zoom / 15)}
-                text={`Depósito Aux. ${index + 1}`}
-                fontSize={10 * (zoom / 15)}
-                fontStyle="bold"
-                color="#3b82f6"
-              />
+                <>
+                  <Rect
+                    x={depotSize}
+                    y={-8 * (zoom / 15)}
+                    width={100 * (zoom / 15)}
+                    height={16 * (zoom / 15)}
+                    fill="rgba(255, 255, 255, 0.8)"
+                    cornerRadius={3}
+                  />
+                  <ColoredText
+                    x={depotSize + 4 * (zoom / 15)}
+                    y={-8 * (zoom / 15)}
+                    text={`Depósito Aux. ${index + 1}`}
+                    fontSize={10 * (zoom / 15)}
+                    fontStyle="bold"
+                    color="#3b82f6"
+                  />
                 </>
               )}
             </>
@@ -521,32 +510,20 @@ export const renderElements = ({
   if (enhancedVehicles) {
     enhancedVehicles.forEach((vehicle, index) => {
       if (!vehicle.currentPosition) return;
-      
-      // If an order is selected, only show vehicles that are serving that order
-      if (selectedOrder) {
-        const isServingSelectedOrder = vehicle.currentOrders?.some(order => order.id === selectedOrder.id) ||
-          vehicle.currentPlan?.actions?.some(action => action.orderId === selectedOrder.id);
-        
-        if (!isServingSelectedOrder) {
-          return; // Skip this vehicle if it's not serving the selected order
-        }
-      }
-      
       const plan = vehicle.currentPlan;
       if (!plan || !plan.actions || plan.actions.length === 0) return;
 
-      // 1. Agrupa las acciones en bloques (cada bloque termina en SERVE, RELOAD, REFUEL, o MAINTENANCE)
+      // 1. Agrupa las acciones en bloques (cada bloque termina en SERVE)
       const actionBlocks: (typeof plan.actions)[] = [];
       let tempBlock: typeof plan.actions = [];
       plan.actions.forEach((action) => {
-        // Inicia un nuevo bloque en DRIVE si el anterior terminó en una acción de finalización
-        if (action.type && action.type === "DRIVE" && tempBlock.length > 0) {
+        // Inicia un nuevo bloque en DRIVE si el anterior terminó en SERVE o está vacío
+        if (action.type === "DRIVE" && tempBlock.length > 0) {
           actionBlocks.push([...tempBlock]);
           tempBlock = [];
         }
         tempBlock.push(action);
-        // Termina el bloque en SERVE, RELOAD, REFUEL, o MAINTENANCE
-        if (action.type && ["SERVE", "RELOAD", "REFUEL", "MAINTENANCE"].includes(action.type)) {
+        if (action.type === "SERVE") {
           actionBlocks.push([...tempBlock]);
           tempBlock = [];
         }
@@ -558,7 +535,6 @@ export const renderElements = ({
       let currentActionIdx = -1;
       let indexFrom = 0;
 
-      // Primero, intenta encontrar la posición exacta en algún path
       for (const block of actionBlocks) {
         for (let i = 0; i < block.length; i++) {
           const action = block[i];
@@ -579,223 +555,42 @@ export const renderElements = ({
         if (blockToDraw) break;
       }
 
-      // Si no se encontró la posición exacta, busca el bloque más cercano
-      if (!blockToDraw) {
-        let minDistance = Infinity;
-        for (const block of actionBlocks) {
-          for (let i = 0; i < block.length; i++) {
-            const action = block[i];
-            if (!action.path || action.path.length < 2) continue;
-            
-            // Encuentra el punto más cercano en este path
-            for (let j = 0; j < action.path.length; j++) {
-              const point = action.path[j];
-              const distance = Math.sqrt(
-                Math.pow((point.x ?? 0) - (vehicle.currentPosition?.x ?? 0), 2) +
-                Math.pow((point.y ?? 0) - (vehicle.currentPosition?.y ?? 0), 2)
-              );
-              if (distance < minDistance) {
-                minDistance = distance;
-                blockToDraw = block;
-                currentActionIdx = i;
-                indexFrom = j;
-              }
-            }
-          }
-        }
-      }
+      if (!blockToDraw) return; // No hay bloque que contenga la posición actual
 
-      if (!blockToDraw) {
-        console.log(`No se encontró bloque para el vehículo ${vehicle.id} en posición ${vehicle.currentPosition?.x}, ${vehicle.currentPosition?.y}`);
-        return; // No hay bloque que contenga la posición actual
-      }
-
-      // Definir si el vehículo está resaltado o seleccionado
+      // Definir si el vehículo está resaltado
       const isHighlightedVehicle = highlightedVehicleIds.includes(vehicle.id || '');
-      const isSelectedVehicle = selectedVehicleId === vehicle.id;
-      
-      // Si hay un vehículo seleccionado, solo mostrar rutas de ese vehículo
-      // Si hay un pedido seleccionado, mostrar rutas de vehículos que lo atienden
-      if (selectedVehicleId && !isSelectedVehicle) {
-        return; // No mostrar rutas de otros vehículos cuando hay uno seleccionado
-      }
-      
-      // Si hay un pedido seleccionado, mostrar rutas completas de vehículos que lo atienden
-      const shouldShowRoutes = !selectedVehicleId || isSelectedVehicle || 
-        (selectedOrder && (isHighlightedVehicle || isSelectedVehicle));
-      
-      // Debug: mostrar información del bloque encontrado
-      console.log(`Vehículo ${vehicle.id}: bloque encontrado con ${blockToDraw.length} acciones, acción actual: ${currentActionIdx}`);
-      blockToDraw.forEach((action, idx) => {
-        console.log(`  Acción ${idx}: ${action.type} - ${action.path?.length || 0} puntos`);
-      });
 
-      // 3. Imprime las rutas según si el vehículo está seleccionado, resaltado o normal
-              if (isSelectedVehicle || (selectedOrder && isHighlightedVehicle)) {
-          // Para vehículos seleccionados o que atienden un pedido seleccionado: mostrar TODAS las rutas desde la posición actual
-          const vehicleType = isSelectedVehicle ? "seleccionado" : "que atiende pedido seleccionado";
-          console.log(`Vehículo ${vehicleType} ${vehicle.id}: mostrando todas las rutas desde la posición actual hasta el pedido`);
-          
-          // Si hay un pedido seleccionado, asegurarse de mostrar la ruta completa hasta ese pedido
-          const targetOrderId = selectedOrder?.id;
-        
-        // Primero, encontrar en qué bloque y acción está actualmente el vehículo
-        let currentBlockIdx = -1;
-        let currentActionIdx = -1;
-        let indexFrom = 0;
-        
-        for (let blockIdx = 0; blockIdx < actionBlocks.length; blockIdx++) {
-          const block = actionBlocks[blockIdx];
-          for (let i = 0; i < block.length; i++) {
-            const action = block[i];
-            if (!action.path || action.path.length < 2) continue;
-            const idx = action.path.findIndex(
-              (p) =>
-                Math.abs((p.x ?? 0) - (vehicle.currentPosition?.x ?? 0)) < 0.01 &&
-                Math.abs((p.y ?? 0) - (vehicle.currentPosition?.y ?? 0)) < 0.01
-            );
-            if (idx !== -1) {
-              currentBlockIdx = blockIdx;
-              currentActionIdx = i;
-              indexFrom = idx;
-              break;
-            }
-          }
-          if (currentBlockIdx !== -1) break;
-        }
-        
-        // Si no se encontró la posición exacta, buscar el punto más cercano
-        if (currentBlockIdx === -1) {
-          let minDistance = Infinity;
-          for (let blockIdx = 0; blockIdx < actionBlocks.length; blockIdx++) {
-            const block = actionBlocks[blockIdx];
-            for (let i = 0; i < block.length; i++) {
-              const action = block[i];
-              if (!action.path || action.path.length < 2) continue;
-              for (let j = 0; j < action.path.length; j++) {
-                const point = action.path[j];
-                const distance = Math.sqrt(
-                  Math.pow((point.x ?? 0) - (vehicle.currentPosition?.x ?? 0), 2) +
-                  Math.pow((point.y ?? 0) - (vehicle.currentPosition?.y ?? 0), 2)
-                );
-                if (distance < minDistance) {
-                  minDistance = distance;
-                  currentBlockIdx = blockIdx;
-                  currentActionIdx = i;
-                  indexFrom = j;
-                }
-              }
-            }
-          }
-        }
-        
-                  // Ahora renderizar solo desde la posición actual hacia adelante
-          let foundTargetOrder = false;
-          
-          for (let blockIdx = currentBlockIdx; blockIdx < actionBlocks.length; blockIdx++) {
-            const block = actionBlocks[blockIdx];
-            
-            block.forEach((action, actionIdx) => {
-              if (!action.path || action.path.length < 2) return;
-              
-              // Si hay un pedido seleccionado y ya encontramos la acción que lo atiende, parar
-              if (targetOrderId && foundTargetOrder && action.type === 'SERVE' && action.orderId === targetOrderId) {
-                return;
-              }
-              
-              let pathToDraw: typeof action.path = [];
-              
-              if (blockIdx === currentBlockIdx) {
-                // Bloque actual: solo dibujar desde la posición actual
-                if (actionIdx < currentActionIdx) {
-                  return; // Ya completada, no dibujar
-                } else if (actionIdx === currentActionIdx) {
-                  // Acción actual: solo desde la posición actual
-                  pathToDraw = action.path.slice(indexFrom);
-                } else {
-                  // Acciones futuras del bloque actual: dibujar todo
-                  pathToDraw = action.path;
-                }
-              } else {
-                // Bloques futuros: dibujar todo
-                pathToDraw = action.path;
-              }
-              
-              // Marcar si encontramos la acción que atiende al pedido seleccionado
-              if (targetOrderId && action.type === 'SERVE' && action.orderId === targetOrderId) {
-                foundTargetOrder = true;
-              }
-            
-                          if (pathToDraw.length >= 2) {
-                // Verificar si la posición actual del vehículo está en esta línea
-                const vehiclePosition = vehicle.currentPosition;
-                const isVehicleOnThisPath = pathToDraw.some(point => 
-                  Math.abs((point.x ?? 0) - (vehiclePosition?.x ?? 0)) < 0.01 &&
-                  Math.abs((point.y ?? 0) - (vehiclePosition?.y ?? 0)) < 0.01
-                );
-                
-                // Solo dibujar la línea si el vehículo está en esta ruta
-                if (isVehicleOnThisPath) {
-                  const screenPoints: number[] = [];
-                  pathToDraw.forEach((point) => {
-                    const { x, y } = mapToScreenCoords(point.x || 0, point.y || 0);
-                    screenPoints.push(x, y);
-                  });
-
-                  elements.push(
-                    <Line
-                      key={`route-${vehicle.id}-block-${blockIdx}-action-${actionIdx}`}
-                      points={screenPoints}
-                      stroke="#9333ea"
-                      strokeWidth={4 * (zoom / 15)}
-                      dash={[4 * (zoom / 15), 2 * (zoom / 15)]}
-                      lineCap="round"
-                      lineJoin="round"
-                      opacity={1.0}
-                      shadowColor="rgba(0,0,0,0.2)"
-                      shadowBlur={6}
-                      shadowOffset={{ x: 1, y: 1 }}
-                      shadowOpacity={0.6}
-                      onClick={() => {
-                        alert(`Ruta del camión: ${vehicle.id}`);
-                      }}
-                      cursor="pointer"
-                    />
-                  );
-                }
-              }
-          });
-        }
-      } else {
-        // Para vehículos normales o resaltados: lógica original
+      // 3. Imprime las rutas según si el vehículo está resaltado o no
       blockToDraw.forEach((action, actionIdx) => {
         if (!action.path || action.path.length < 2) return;
 
         let pathToDraw: typeof action.path = [];
-          
-          // Determina qué parte del path dibujar
-        if (actionIdx < currentActionIdx) {
-            // Acción ya completada, no dibujar
-          return;
-        } else if (actionIdx === currentActionIdx) {
-            // Acción actual: dibujar desde la posición actual
-          pathToDraw = action.path.slice(indexFrom);
-        } else {
-            // Acciones futuras: dibujar todo el path
-          pathToDraw = action.path;
-        }
-
-          // Lógica de visualización para vehículos normales o resaltados
-          let shouldDraw = false;
-          if (isHighlightedVehicle) {
-            // Vehículo resaltado: mostrar todas las rutas futuras del bloque actual
-            shouldDraw = true;
+        
+        if (isHighlightedVehicle) {
+          // Para vehículos resaltados, mostrar todas las rutas futuras
+          if (actionIdx < currentActionIdx) {
+            // Ya recorrida, no se pinta
+            return;
+          } else if (actionIdx === currentActionIdx) {
+            // Solo pinta desde la posición actual
+            pathToDraw = action.path.slice(indexFrom);
           } else {
-            // Vehículo normal: mostrar solo la ruta actual y la siguiente
-            shouldDraw = actionIdx <= currentActionIdx + 1;
+            // Futuras: pinta toda la ruta
+            pathToDraw = action.path;
           }
-          
-          if (!shouldDraw) return;
+        } else {
+          // Para vehículos normales, mostrar solo la ruta actual
+          if (actionIdx < currentActionIdx) {
+            // Ya recorrida, no se pinta
+            return;
+          } else if (actionIdx === currentActionIdx) {
+            // Solo pinta desde la posición actual
+            pathToDraw = action.path.slice(indexFrom);
+          } else {
+            // Futuras: pinta toda la ruta
+            pathToDraw = action.path;
+          }
+        }
 
         if (pathToDraw.length >= 2) {
           const screenPoints: number[] = [];
@@ -804,41 +599,41 @@ export const renderElements = ({
             screenPoints.push(x, y);
           });
 
-            // Color según tipo de acción y estado del vehículo
-            let lineColor: string;
-            
-            // Para vehículos seleccionados o resaltados, mostrar todas las rutas en morado
-            if (isHighlightedVehicle) {
-              lineColor = "#9333ea"; // Morado para todas las rutas del vehículo seleccionado/resaltado
-            } else {
-              // Color normal según tipo de acción
-          const actionColorMap: Record<string, string> = {
-            DRIVE: "#4f46e5",
-            SERVE: "#16a34a",
-            RELOAD: "#eab308",
-            REFUEL: "#f97316",
-            MAINTENANCE: "#64748b",
-            WAIT: "#a3a3a3",
-          };
-              lineColor = action.type
-            ? actionColorMap[action.type] || "#4f46e5"
-            : "#4f46e5";
-            }
+          // Color según tipo de acción y si el vehículo está resaltado
+          let lineColor: string;
+          
+          // Para vehículos resaltados, mostrar todas las rutas futuras en morado
+          if (isHighlightedVehicle) {
+            lineColor = "#9333ea"; // Morado para todas las rutas del vehículo seleccionado
+          } else {
+            // Color normal según tipo de acción
+            const actionColorMap: Record<string, string> = {
+              DRIVE: "#4f46e5",
+              SERVE: "#16a34a",
+              RELOAD: "#eab308",
+              REFUEL: "#f97316",
+              MAINTENANCE: "#64748b",
+              WAIT: "#a3a3a3",
+            };
+            lineColor = action.type
+              ? actionColorMap[action.type] || "#4f46e5"
+              : "#4f46e5";
+          }
 
           elements.push(
             <Line
               key={`route-${vehicle.id}-action-${actionIdx}`}
               points={screenPoints}
               stroke={lineColor}
-                strokeWidth={isHighlightedVehicle ? 3 * (zoom / 15) : 2 * (zoom / 15)}
+              strokeWidth={isHighlightedVehicle ? 3 * (zoom / 15) : 2 * (zoom / 15)}
               dash={[4 * (zoom / 15), 2 * (zoom / 15)]}
               lineCap="round"
               lineJoin="round"
-                opacity={isHighlightedVehicle ? 0.9 : 0.7}
+              opacity={isHighlightedVehicle ? 0.9 : 0.7}
               shadowColor="rgba(0,0,0,0.2)"
-                shadowBlur={isHighlightedVehicle ? 5 : 3}
+              shadowBlur={isHighlightedVehicle ? 5 : 3}
               shadowOffset={{ x: 1, y: 1 }}
-                shadowOpacity={isHighlightedVehicle ? 0.5 : 0.3}
+              shadowOpacity={isHighlightedVehicle ? 0.5 : 0.3}
               onClick={() => {
                 alert(`Ruta del camión: ${vehicle.id}`);
               }}
@@ -847,7 +642,6 @@ export const renderElements = ({
           );
         }
       });
-      }
 
       // Imprime SIEMPRE el camión en su posición actual
       const x = vehicle.currentPosition?.x || 0;
@@ -857,73 +651,17 @@ export const renderElements = ({
 
       let direction = vehicle.currentOrientation || "east";
 
-      // Para determinar la dirección, usar la misma lógica de búsqueda de posición actual
-      let currentAction = null;
-      let currentPath = null;
-      let directionIndexFrom = 0;
-      
-      if (isSelectedVehicle) {
-        // Para vehículos seleccionados, usar la misma lógica de búsqueda que ya implementamos
-        // Buscar en qué bloque y acción está actualmente el vehículo
-        for (let blockIdx = 0; blockIdx < actionBlocks.length; blockIdx++) {
-          const block = actionBlocks[blockIdx];
-          for (let i = 0; i < block.length; i++) {
-            const action = block[i];
-            if (!action.path || action.path.length < 2) continue;
-            const idx = action.path.findIndex(
-              (p) =>
-                Math.abs((p.x ?? 0) - (vehicle.currentPosition?.x ?? 0)) < 0.01 &&
-                Math.abs((p.y ?? 0) - (vehicle.currentPosition?.y ?? 0)) < 0.01
-            );
-            if (idx !== -1) {
-              currentAction = action;
-              currentPath = action.path;
-              directionIndexFrom = idx;
-              break;
-            }
-          }
-          if (currentAction) break;
-        }
-        
-        // Si no se encontró la posición exacta, buscar el punto más cercano
-        if (!currentAction) {
-          let minDistance = Infinity;
-          for (let blockIdx = 0; blockIdx < actionBlocks.length; blockIdx++) {
-            const block = actionBlocks[blockIdx];
-            for (let i = 0; i < block.length; i++) {
-              const action = block[i];
-              if (!action.path || action.path.length < 2) continue;
-              for (let j = 0; j < action.path.length; j++) {
-                const point = action.path[j];
-                const distance = Math.sqrt(
-                  Math.pow((point.x ?? 0) - (vehicle.currentPosition?.x ?? 0), 2) +
-                  Math.pow((point.y ?? 0) - (vehicle.currentPosition?.y ?? 0), 2)
-                );
-                if (distance < minDistance) {
-                  minDistance = distance;
-                  currentAction = action;
-                  currentPath = action.path;
-                  directionIndexFrom = j;
-                }
-              }
-            }
-          }
-        }
-      } else {
-        // Para vehículos normales, usar el bloque encontrado
-        currentAction = blockToDraw?.[currentActionIdx];
-        currentPath = currentAction?.path;
-        directionIndexFrom = indexFrom;
-      }
+      const action = blockToDraw?.[currentActionIdx];
+      const path = action?.path;
 
       if (
-        Array.isArray(currentPath) &&
-        currentPath.length > directionIndexFrom + 1 &&
-        currentPath[directionIndexFrom] &&
-        currentPath[directionIndexFrom + 1]
+        Array.isArray(path) &&
+        path.length > indexFrom + 1 &&
+        path[indexFrom] &&
+        path[indexFrom + 1]
       ) {
-        const current = currentPath[directionIndexFrom];
-        const next = currentPath[directionIndexFrom + 1];
+        const current = path[indexFrom];
+        const next = path[indexFrom + 1];
 
         if (
           typeof current.x === "number" &&
@@ -1033,28 +771,28 @@ export const renderElements = ({
             <>
               {/* Vehicle ID - only show if selected */}
               {isSelected && (
-            <>
-              <Rect
-                x={vehicleSize}
-                y={-8 * (zoom / 15)}
-                width={40 * (zoom / 15)}
-                height={16 * (zoom / 15)}
-                fill="rgba(255, 255, 255, 0.7)"
-                cornerRadius={2}
-              />
-              <ColoredText
-                x={vehicleSize + 2 * (zoom / 15)}
-                y={-8 * (zoom / 15)}
-                text={`${vehicle.id?.substring(0, 5) || "N/A"}`}
-                fontSize={10 * (zoom / 15)}
-                color={
-                  vehicle.status?.toLowerCase() === "active"
-                    ? "#16a34a"
-                    : vehicle.status?.toLowerCase() === "maintenance"
-                      ? "#f97316"
-                      : "#1d4ed8"
-                }
-              />
+                <>
+                  <Rect
+                    x={vehicleSize}
+                    y={-8 * (zoom / 15)}
+                    width={40 * (zoom / 15)}
+                    height={16 * (zoom / 15)}
+                    fill="rgba(255, 255, 255, 0.7)"
+                    cornerRadius={2}
+                  />
+                  <ColoredText
+                    x={vehicleSize + 2 * (zoom / 15)}
+                    y={-8 * (zoom / 15)}
+                    text={`${vehicle.id?.substring(0, 5) || "N/A"}`}
+                    fontSize={10 * (zoom / 15)}
+                    color={
+                      vehicle.status?.toLowerCase() === "active"
+                        ? "#16a34a"
+                        : vehicle.status?.toLowerCase() === "maintenance"
+                          ? "#f97316"
+                          : "#1d4ed8"
+                    }
+                  />
                 </>
               )}
 
@@ -1097,8 +835,6 @@ export const renderElements = ({
         </Group>
       );
     });
-    
-
   }
 
   return elements;
