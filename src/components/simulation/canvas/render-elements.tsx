@@ -67,7 +67,7 @@ export const renderElements = ({
 
   const elements: React.ReactNode[] = [];
 
-  // Process vehicles first to get enhanced data with orientations and current orders
+  // Process vehicles first para obtener enhancedVehicles
   const enhancedVehicles = (simulationState.vehicles || []).map((vehicle) =>
     enhanceVehicleWithPlan(
       vehicle,
@@ -76,8 +76,23 @@ export const renderElements = ({
     )
   );
 
-  // Process orders with vehicle assignments
-  const enhancedOrders = (simulationState.pendingOrders || []).map((order) =>
+  // Si hay un vehículo seleccionado, filtra solo ese vehículo y los pedidos que va a atender
+  let filteredVehicles = enhancedVehicles;
+  let filteredOrders = simulationState.pendingOrders || [];
+  let selectedVehiclePlan = null;
+  let selectedVehicleOrderIds: string[] = [];
+  if (selectedVehicleId) {
+    // Solo el vehículo seleccionado
+    filteredVehicles = enhancedVehicles.filter(v => v.id === selectedVehicleId);
+    // Encuentra el plan del vehículo seleccionado
+    selectedVehiclePlan = simulationState.currentVehiclePlans?.find(plan => plan.vehicleId === selectedVehicleId) || null;
+    selectedVehicleOrderIds = (selectedVehiclePlan?.actions?.filter(a => a.orderId).map(a => a.orderId).filter(Boolean) as string[]) || [];
+    // Filtra los pedidos que están en el plan del vehículo
+    filteredOrders = filteredOrders.filter(order => order.id && selectedVehicleOrderIds.includes(order.id));
+  }
+
+  // Procesa los pedidos con asignación de vehículos
+  const enhancedOrders = filteredOrders.map((order) =>
     enhanceOrderWithVehicles(
       order,
       enhancedVehicles,
@@ -158,7 +173,7 @@ export const renderElements = ({
     });
   }
 
-  // Draw orders with colored indicators for volumes
+  // Draw orders con filteredOrders/enhancedOrders
   if (enhancedOrders && enhancedOrders.length > 0) {
     enhancedOrders.forEach((order, idx) => {
       const isOverdue = order.isOverdue || false;
@@ -545,9 +560,9 @@ export const renderElements = ({
     });
   }
 
-  // Draw vehicle routes and vehicles using enhanced logic from types.ts
-  if (enhancedVehicles) {
-    enhancedVehicles.forEach((vehicle, index) => {
+  // Draw vehicle routes y vehicles usando filteredVehicles
+  if (filteredVehicles) {
+    filteredVehicles.forEach((vehicle, index) => {
       if (!vehicle.currentPosition) return;
       const plan = vehicle.currentPlan;
       if (!plan || !plan.actions || plan.actions.length === 0) return;
@@ -556,7 +571,6 @@ export const renderElements = ({
       const actionBlocks: (typeof plan.actions)[] = [];
       let tempBlock: typeof plan.actions = [];
       plan.actions.forEach((action) => {
-        // Inicia un nuevo bloque en DRIVE si el anterior terminó en SERVE o está vacío
         if (action.type === "DRIVE" && tempBlock.length > 0) {
           actionBlocks.push([...tempBlock]);
           tempBlock = [];
@@ -578,7 +592,6 @@ export const renderElements = ({
         for (let i = 0; i < block.length; i++) {
           const action = block[i];
           if (!action.path || action.path.length < 2) continue;
-          // ¿La posición actual del camión está en este path?
           const idx = action.path.findIndex(
             (p) =>
               Math.abs((p.x ?? 0) - (vehicle.currentPosition?.x ?? 0)) < 1 &&
@@ -598,81 +611,58 @@ export const renderElements = ({
 
       // Definir si el vehículo está resaltado
       const isHighlightedVehicle = highlightedVehicleIds.includes(vehicle.id || '');
+      const isSelectedVehicle = selectedVehicleId === vehicle.id;
 
-      // 3. Imprime las rutas según si el vehículo está resaltado o no
-      blockToDraw.forEach((action, actionIdx) => {
-        if (!action.path || action.path.length < 2) return;
-
-        let pathToDraw: typeof action.path = [];
-        
-        if (isHighlightedVehicle) {
-          // Para vehículos resaltados, mostrar todas las rutas futuras
-          if (actionIdx < currentActionIdx) {
-            // Ya recorrida, no se pinta
-            return;
-          } else if (actionIdx === currentActionIdx) {
-            // Solo pinta desde la posición actual
-            pathToDraw = action.path.slice(indexFrom);
-          } else {
-            // Futuras: pinta toda la ruta
-            pathToDraw = action.path;
+      // 3. Imprime la ruta futura (desde la posición actual hasta el final)
+      // Si hay un vehículo seleccionado, solo se muestra su ruta futura
+      if (selectedVehicleId) {
+        // Nueva lógica: encontrar la acción y el índice actual en el plan
+        let fullPath: { x: number; y: number }[] = [];
+        let found = false;
+        for (let actionIdx = 0; actionIdx < plan.actions.length; actionIdx++) {
+          const action = plan.actions[actionIdx];
+          if (!action.path || action.path.length < 2) continue;
+          if (!found) {
+            // Buscar si la posición actual está en este path
+            const idx = action.path.findIndex(
+              (p) =>
+                Math.abs((p.x ?? 0) - (vehicle.currentPosition?.x ?? 0)) < 1 &&
+                Math.abs((p.y ?? 0) - (vehicle.currentPosition?.y ?? 0)) < 1
+            );
+            if (idx !== -1) {
+              // Desde aquí empieza la ruta futura
+              const pathSlice = action.path.slice(idx).map(p => ({ x: p.x ?? 0, y: p.y ?? 0 }));
+              fullPath = fullPath.concat(pathSlice);
+              found = true;
+              continue;
+            }
           }
-        } else {
-          // Para vehículos normales, mostrar solo la ruta actual
-          if (actionIdx < currentActionIdx) {
-            // Ya recorrida, no se pinta
-            return;
-          } else if (actionIdx === currentActionIdx) {
-            // Solo pinta desde la posición actual
-            pathToDraw = action.path.slice(indexFrom);
-          } else {
-            // Futuras: pinta toda la ruta
-            pathToDraw = action.path;
+          if (found) {
+            // Acciones siguientes: todo el path
+            const pathMapped = action.path.map(p => ({ x: p.x ?? 0, y: p.y ?? 0 }));
+            fullPath = fullPath.concat(pathMapped);
           }
         }
-
-        if (pathToDraw.length >= 2) {
+        if (fullPath.length >= 2) {
           const screenPoints: number[] = [];
-          pathToDraw.forEach((point) => {
-            const { x, y } = mapToScreenCoords(point.x || 0, point.y || 0);
+          fullPath.forEach((point) => {
+            const { x, y } = mapToScreenCoords(point.x, point.y);
             screenPoints.push(x, y);
           });
-
-          // Color según tipo de acción y si el vehículo está resaltado
-          let lineColor: string;
-          
-          // Para vehículos resaltados, mostrar todas las rutas futuras en morado
-          if (isHighlightedVehicle) {
-            lineColor = "#9333ea"; // Morado para todas las rutas del vehículo seleccionado
-          } else {
-            // Color normal según tipo de acción
-            const actionColorMap: Record<string, string> = {
-              DRIVE: "#4f46e5",
-              SERVE: "#16a34a",
-              RELOAD: "#eab308",
-              REFUEL: "#f97316",
-              MAINTENANCE: "#64748b",
-              WAIT: "#a3a3a3",
-            };
-            lineColor = action.type
-              ? actionColorMap[action.type] || "#4f46e5"
-              : "#4f46e5";
-          }
-
           elements.push(
             <Line
-              key={`route-${vehicle.id}-action-${actionIdx}`}
+              key={`route-${vehicle.id}-full`}
               points={screenPoints}
-              stroke={lineColor}
-              strokeWidth={isHighlightedVehicle ? 3 * (zoom / 15) : 2 * (zoom / 15)}
+              stroke="#9333ea"
+              strokeWidth={3 * (zoom / 15)}
               dash={[4 * (zoom / 15), 2 * (zoom / 15)]}
               lineCap="round"
               lineJoin="round"
-              opacity={isHighlightedVehicle ? 0.9 : 0.7}
+              opacity={0.9}
               shadowColor="rgba(0,0,0,0.2)"
-              shadowBlur={isHighlightedVehicle ? 5 : 3}
+              shadowBlur={5}
               shadowOffset={{ x: 1, y: 1 }}
-              shadowOpacity={isHighlightedVehicle ? 0.5 : 0.3}
+              shadowOpacity={0.5}
               onClick={() => {
                 alert(`Ruta del camión: ${vehicle.id}`);
               }}
@@ -680,7 +670,102 @@ export const renderElements = ({
             />
           );
         }
-      });
+      } else if (isHighlightedVehicle) {
+        // Modo resaltado normal (sin selección): mostrar ruta futura del vehículo resaltado
+        let fullPath: { x: number; y: number }[] = [];
+        let foundCurrent = false;
+        plan.actions.forEach((action, idx) => {
+          if (!action.path || action.path.length < 2) return;
+          if (!foundCurrent && idx === currentActionIdx) {
+            const pathSlice = action.path.slice(indexFrom).map(p => ({ x: p.x ?? 0, y: p.y ?? 0 }));
+            fullPath = fullPath.concat(pathSlice);
+            foundCurrent = true;
+          } else if (foundCurrent) {
+            const pathMapped = action.path.map(p => ({ x: p.x ?? 0, y: p.y ?? 0 }));
+            fullPath = fullPath.concat(pathMapped);
+          }
+        });
+        if (fullPath.length >= 2) {
+          const screenPoints: number[] = [];
+          fullPath.forEach((point) => {
+            const { x, y } = mapToScreenCoords(point.x, point.y);
+            screenPoints.push(x, y);
+          });
+          elements.push(
+            <Line
+              key={`route-${vehicle.id}-full`}
+              points={screenPoints}
+              stroke="#9333ea"
+              strokeWidth={3 * (zoom / 15)}
+              dash={[4 * (zoom / 15), 2 * (zoom / 15)]}
+              lineCap="round"
+              lineJoin="round"
+              opacity={0.9}
+              shadowColor="rgba(0,0,0,0.2)"
+              shadowBlur={5}
+              shadowOffset={{ x: 1, y: 1 }}
+              shadowOpacity={0.5}
+              onClick={() => {
+                alert(`Ruta del camión: ${vehicle.id}`);
+              }}
+              cursor="pointer"
+            />
+          );
+        }
+      } else {
+        // Para vehículos normales, mostrar solo la ruta actual
+        blockToDraw.forEach((action, actionIdx) => {
+          if (!action.path || action.path.length < 2) return;
+          let pathToDraw: { x: number; y: number }[] = [];
+          if (actionIdx < currentActionIdx) {
+            // Ya recorrida, no se pinta
+            return;
+          } else if (actionIdx === currentActionIdx) {
+            pathToDraw = action.path.slice(indexFrom).map(p => ({ x: p.x ?? 0, y: p.y ?? 0 }));
+          } else {
+            pathToDraw = action.path.map(p => ({ x: p.x ?? 0, y: p.y ?? 0 }));
+          }
+          if (pathToDraw.length >= 2) {
+            const screenPoints: number[] = [];
+            pathToDraw.forEach((point) => {
+              const { x, y } = mapToScreenCoords(point.x, point.y);
+              screenPoints.push(x, y);
+            });
+            // Color normal según tipo de acción
+            const actionColorMap = {
+              DRIVE: "#4f46e5",
+              SERVE: "#16a34a",
+              RELOAD: "#eab308",
+              REFUEL: "#f97316",
+              MAINTENANCE: "#64748b",
+              WAIT: "#a3a3a3",
+            };
+            const lineColor = action.type
+              ? actionColorMap[action.type] || "#4f46e5"
+              : "#4f46e5";
+            elements.push(
+              <Line
+                key={`route-${vehicle.id}-action-${actionIdx}`}
+                points={screenPoints}
+                stroke={lineColor}
+                strokeWidth={2 * (zoom / 15)}
+                dash={[4 * (zoom / 15), 2 * (zoom / 15)]}
+                lineCap="round"
+                lineJoin="round"
+                opacity={0.7}
+                shadowColor="rgba(0,0,0,0.2)"
+                shadowBlur={3}
+                shadowOffset={{ x: 1, y: 1 }}
+                shadowOpacity={0.3}
+                onClick={() => {
+                  alert(`Ruta del camión: ${vehicle.id}`);
+                }}
+                cursor="pointer"
+              />
+            );
+          }
+        });
+      }
 
       // Imprime SIEMPRE el camión en su posición actual
       const x = vehicle.currentPosition?.x || 0;
