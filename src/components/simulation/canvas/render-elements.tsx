@@ -225,7 +225,7 @@ export const renderElements = ({
           }}
         >
           {/* Add highlight if being served, if this is the selected order, or if this order is highlighted */}
-          {(isBeingServed || isSelectedOrder || isHighlightedOrder) && (
+          {(isSelectedOrder || isHighlightedOrder) && (
             <>
               {/* Contorno interno semitransparente */}
               <Rect
@@ -308,29 +308,6 @@ export const renderElements = ({
                 color="#ffffff"
                 align="center"
               />
-
-              {/* Show vehicle count if being served */}
-              {isBeingServed && (
-                <>
-                  <Rect
-                    x={-iconSize - 5}
-                    y={-iconSize - 3}
-                    width={20 * (zoom / 15)}
-                    height={16 * (zoom / 15)}
-                    fill="#4ade80"
-                    cornerRadius={2}
-                  />
-                  <ColoredText
-                    x={-iconSize - 5}
-                    y={-iconSize - 3}
-                    width={20 * (zoom / 15)}
-                    text={`${order.servingVehicles?.length || 0}`}
-                    fontSize={10 * (zoom / 15)}
-                    color="#ffffff"
-                    align="center"
-                  />
-                </>
-              )}
             </>
           )}
         </Group>
@@ -398,18 +375,49 @@ export const renderElements = ({
                 <Rect
                   x={depotSize}
                   y={-8 * (zoom / 15)}
-                  width={120 * (zoom / 15)}
-                  height={16 * (zoom / 15)}
-                  fill="rgba(255, 255, 255, 0.8)"
-                  cornerRadius={3}
+                  width={160 * (zoom / 15)}
+                  height={60 * (zoom / 15)}
+                  fill="rgba(255, 255, 255, 0.95)"
+                  cornerRadius={6}
+                  shadowColor="#000"
+                  shadowBlur={8}
+                  shadowOpacity={0.12}
                 />
                 <ColoredText
-                  x={depotSize + 4 * (zoom / 15)}
-                  y={-8 * (zoom / 15)}
-                  text="Depósito Principal"
-                  fontSize={12 * (zoom / 15)}
+                  x={depotSize + 8 * (zoom / 15)}
+                  y={-6 * (zoom / 15)}
+                  text={`Depósito Principal`}
+                  fontSize={13 * (zoom / 15)}
                   fontStyle="bold"
                   color="#1e40af"
+                />
+                <ColoredText
+                  x={depotSize + 8 * (zoom / 15)}
+                  y={10 * (zoom / 15)}
+                  text={`GLP: ${(selectedDepot?.isMainDepot ? (simulationState.mainDepot.glpCapacityM3 ?? 0) : (simulationState.mainDepot.currentGlpM3 ?? 0)).toLocaleString()} m³`}
+                  fontSize={11 * (zoom / 15)}
+                  color="#0f172a"
+                />
+                <ColoredText
+                  x={depotSize + 8 * (zoom / 15)}
+                  y={22 * (zoom / 15)}
+                  text={`Capacidad: ${(simulationState.mainDepot.glpCapacityM3 ?? 0).toLocaleString()} m³`}
+                  fontSize={11 * (zoom / 15)}
+                  color="#64748b"
+                />
+                <ColoredText
+                  x={depotSize + 8 * (zoom / 15)}
+                  y={34 * (zoom / 15)}
+                  text={`%: ${simulationState.mainDepot.glpCapacityM3 ? ((simulationState.mainDepot.currentGlpM3 ?? 0) / (simulationState.mainDepot.glpCapacityM3 ?? 1) * 100).toFixed(1) : '0'}%`}
+                  fontSize={11 * (zoom / 15)}
+                  color="#0ea5e9"
+                />
+                <ColoredText
+                  x={depotSize + 8 * (zoom / 15)}
+                  y={46 * (zoom / 15)}
+                  text={`Ubicación: (${simulationState.mainDepot.position?.x ?? 0}, ${simulationState.mainDepot.position?.y ?? 0})`}
+                  fontSize={10 * (zoom / 15)}
+                  color="#334155"
                 />
               </>
             )}
@@ -479,23 +487,54 @@ export const renderElements = ({
           {!tooltip.show && (
             <>
               {/* Depot info - only show if selected */}
-              {selectedDepot?.depot.id === depot.id && !selectedDepot?.isMainDepot && selectedDepot?.index === index + 1 && (
+              {selectedDepot?.depot.id === depot.id && !selectedDepot?.isMainDepot && (
                 <>
                   <Rect
                     x={depotSize}
                     y={-8 * (zoom / 15)}
-                    width={100 * (zoom / 15)}
-                    height={16 * (zoom / 15)}
-                    fill="rgba(255, 255, 255, 0.8)"
-                    cornerRadius={3}
+                    width={150 * (zoom / 15)}
+                    height={56 * (zoom / 15)}
+                    fill="rgba(255, 255, 255, 0.95)"
+                    cornerRadius={6}
+                    shadowColor="#000"
+                    shadowBlur={8}
+                    shadowOpacity={0.12}
                   />
                   <ColoredText
-                    x={depotSize + 4 * (zoom / 15)}
-                    y={-8 * (zoom / 15)}
+                    x={depotSize + 8 * (zoom / 15)}
+                    y={-6 * (zoom / 15)}
                     text={`Depósito Aux. ${index + 1}`}
-                    fontSize={10 * (zoom / 15)}
+                    fontSize={12 * (zoom / 15)}
                     fontStyle="bold"
                     color="#3b82f6"
+                  />
+                  <ColoredText
+                    x={depotSize + 8 * (zoom / 15)}
+                    y={8 * (zoom / 15)}
+                    text={`GLP: ${(depot.currentGlpM3 ?? 0).toLocaleString()} m³`}
+                    fontSize={11 * (zoom / 15)}
+                    color="#0f172a"
+                  />
+                  <ColoredText
+                    x={depotSize + 8 * (zoom / 15)}
+                    y={20 * (zoom / 15)}
+                    text={`Capacidad: ${(depot.glpCapacityM3 ?? 0).toLocaleString()} m³`}
+                    fontSize={11 * (zoom / 15)}
+                    color="#64748b"
+                  />
+                  <ColoredText
+                    x={depotSize + 8 * (zoom / 15)}
+                    y={32 * (zoom / 15)}
+                    text={`%: ${depot.glpCapacityM3 ? ((depot.currentGlpM3 ?? 0) / (depot.glpCapacityM3 ?? 1) * 100).toFixed(1) : '0'}%`}
+                    fontSize={11 * (zoom / 15)}
+                    color="#0ea5e9"
+                  />
+                  <ColoredText
+                    x={depotSize + 8 * (zoom / 15)}
+                    y={44 * (zoom / 15)}
+                    text={`Ubicación: (${depot.position?.x ?? 0}, ${depot.position?.y ?? 0})`}
+                    fontSize={10 * (zoom / 15)}
+                    color="#334155"
                   />
                 </>
               )}
@@ -542,8 +581,8 @@ export const renderElements = ({
           // ¿La posición actual del camión está en este path?
           const idx = action.path.findIndex(
             (p) =>
-              Math.abs((p.x ?? 0) - (vehicle.currentPosition?.x ?? 0)) < 0.01 &&
-              Math.abs((p.y ?? 0) - (vehicle.currentPosition?.y ?? 0)) < 0.01
+              Math.abs((p.x ?? 0) - (vehicle.currentPosition?.x ?? 0)) < 1 &&
+              Math.abs((p.y ?? 0) - (vehicle.currentPosition?.y ?? 0)) < 1
           );
           if (idx !== -1) {
             blockToDraw = block;

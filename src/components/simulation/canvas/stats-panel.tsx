@@ -7,6 +7,8 @@ import {
   X,
   Search,
   AlertTriangle,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   type SimulationStateDTO,
@@ -87,6 +89,35 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({
   const [activeTab, setActiveTab] = useState<TabType>("general");
   const [searchQuery, setSearchQuery] = useState("");
 
+  // Estado para referencia del contenedor de pestañas
+  const tabsRef = React.useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  // Efecto para actualizar si se puede hacer scroll
+  React.useEffect(() => {
+    const el = tabsRef.current;
+    if (!el) return;
+    const update = () => {
+      setCanScrollLeft(el.scrollLeft > 0);
+      setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+    };
+    update();
+    el.addEventListener("scroll", update);
+    window.addEventListener("resize", update);
+    return () => {
+      el.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, []);
+
+  const scrollTabs = (dir: "left" | "right") => {
+    const el = tabsRef.current;
+    if (!el) return;
+    const amount = el.clientWidth * 0.6;
+    el.scrollBy({ left: dir === "left" ? -amount : amount, behavior: "smooth" });
+  };
+
   if (!simulationState) return null;
 
   // If collapsed, show minimal info
@@ -105,7 +136,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({
   }
 
   return (
-    <div className="absolute top-20 right-4 bg-white/95 rounded-lg shadow-lg border border-gray-200 z-20 w-96 max-h-[600px] flex flex-col">
+    <div className="absolute top-20 right-4 bg-white/95 rounded-lg shadow-lg border border-gray-200 z-20 w-[27.6rem] max-h-[600px] flex flex-col">
       {/* Header with title and close button */}
       <div className="flex justify-between items-center p-3 border-b">
         <h3 className="font-bold text-blue-800">Panel de información</h3>
@@ -123,61 +154,85 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({
       <StatsOverview simulationState={simulationState} />
 
       {/* Tab navigation */}
-      <div className="flex border-b">
-        <button
-          className={`flex-1 py-2 px-4 flex items-center justify-center gap-1 ${
-            activeTab === "general"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-500"
-          }`}
-          onClick={() => setActiveTab("general")}
+      <div className="relative">
+        {canScrollLeft && (
+          <button
+            className="absolute left-0 top-0 bottom-0 z-10 bg-gradient-to-r from-white/90 to-transparent px-1 flex items-center"
+            onClick={() => scrollTabs("left")}
+            style={{ height: "100%" }}
+          >
+            <ChevronLeft className="w-5 h-5 text-gray-500" />
+          </button>
+        )}
+        <div
+          className="flex border-b overflow-x-auto no-scrollbar"
+          ref={tabsRef}
+          style={{ scrollBehavior: "smooth" }}
         >
-          <BarChart3 className="w-4 h-4" />
-          <span>GENERAL</span>
-        </button>
-        <button
-          className={`flex-1 py-2 px-4 flex items-center justify-center gap-1 ${
-            activeTab === "orders"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-500"
-          }`}
-          onClick={() => setActiveTab("orders")}
-        >
-          <Package className="w-4 h-4" />
-          <span>PEDIDOS</span>
-          <span className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-            {simulationState.pendingOrders?.length || 0}
-          </span>
-        </button>
-        <button
-          className={`flex-1 py-2 px-4 flex items-center justify-center gap-1 ${
-            activeTab === "vehicles"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-500"
-          }`}
-          onClick={() => setActiveTab("vehicles")}
-        >
-          <TruckIcon className="w-4 h-4" />
-          <span>CAMIONES</span>
-          <span className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-            {simulationState.vehicles?.length || 0}
-          </span>
-        </button>
-        <button
-          className={`flex-1 py-2 px-4 flex items-center justify-center gap-1 ${
-            activeTab === "depots"
-              ? "border-b-2 border-blue-500 text-blue-600"
-              : "text-gray-500"
-          }`}
-          onClick={() => setActiveTab("depots")}
-        >
-          <Warehouse className="w-4 h-4" />
-          <span>ALMACENES</span>
-          <span className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-            {(simulationState.mainDepot ? 1 : 0) +
-              (simulationState.auxDepots?.length || 0)}
-          </span>
-        </button>
+          <button
+            className={`flex-1 py-2 px-4 flex items-center justify-center gap-1 ${
+              activeTab === "general"
+                ? "border-b-2 border-blue-500 text-blue-600"
+                : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("general")}
+          >
+            <BarChart3 className="w-4 h-4" />
+            <span>GENERAL</span>
+          </button>
+          <button
+            className={`flex-1 py-2 px-4 flex items-center justify-center gap-1 ${
+              activeTab === "orders"
+                ? "border-b-2 border-blue-500 text-blue-600"
+                : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("orders")}
+          >
+            <Package className="w-4 h-4" />
+            <span>PEDIDOS</span>
+            <span className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+              {simulationState.pendingOrders?.length || 0}
+            </span>
+          </button>
+          <button
+            className={`flex-1 py-2 px-4 flex items-center justify-center gap-1 ${
+              activeTab === "vehicles"
+                ? "border-b-2 border-blue-500 text-blue-600"
+                : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("vehicles")}
+          >
+            <TruckIcon className="w-4 h-4" />
+            <span>CAMIONES</span>
+            <span className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+              {simulationState.vehicles?.length || 0}
+            </span>
+          </button>
+          <button
+            className={`flex-1 py-2 px-4 flex items-center justify-center gap-1 ${
+              activeTab === "depots"
+                ? "border-b-2 border-blue-500 text-blue-600"
+                : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("depots")}
+          >
+            <Warehouse className="w-4 h-4" />
+            <span>ALMACENES</span>
+            <span className="bg-blue-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+              {(simulationState.mainDepot ? 1 : 0) +
+                (simulationState.auxDepots?.length || 0)}
+            </span>
+          </button>
+        </div>
+        {canScrollRight && (
+          <button
+            className="absolute right-0 top-0 bottom-0 z-10 bg-gradient-to-l from-white/90 to-transparent px-1 flex items-center"
+            onClick={() => scrollTabs("right")}
+            style={{ height: "100%" }}
+          >
+            <ChevronRight className="w-5 h-5 text-gray-500" />
+          </button>
+        )}
       </div>
 
       {/* Search bar */}
@@ -573,8 +628,9 @@ const OrderStatePanel: React.FC<{
                 action => action.orderId === selectedOrder.id
               );
               
-              // Calculate progress for this order
-              const orderProgress = orderAction?.progress || 0;
+              // Calcular progreso para este pedido usando el estado del pedido seleccionado
+              const isDelivered = selectedOrder?.delivered || false;
+              const orderProgress = isDelivered ? 100 : ((orderAction?.progress ?? 0) * 100);
               
               return (
                 <div key={vehicle.id} className="bg-white p-3 rounded border border-blue-100">
@@ -1067,12 +1123,12 @@ const VehicleStatePanel: React.FC<{
                         <div className="mt-1">
                           <div className="flex justify-between text-xs mb-1">
                             <span>Progreso</span>
-                            <span className="font-medium">{action.progress.toFixed(1)}%</span>
+                            <span className="font-medium">{(action.progress * 100).toFixed(1)}%</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-1.5">
                             <div
                               className="h-1.5 rounded-full bg-blue-500"
-                              style={{ width: `${action.progress}%` }}
+                              style={{ width: `${action.progress * 100}%` }}
                             ></div>
                           </div>
                         </div>
@@ -1165,9 +1221,12 @@ const DepotStatePanel: React.FC<{
         <tbody>
           {filteredDepots.map((depot) => {
             // Calculate capacity and stock values
-            const capacity = depot.depot.glpCapacityM3 ?? 0;
-            const currentStock = depot.depot.currentGlpM3 ?? 0;
-            const stockPercentage = (currentStock / capacity) * 100;
+            let capacity = depot.depot.glpCapacityM3 ?? 0;
+            let currentStock = depot.depot.currentGlpM3 ?? 0;
+            if (depot.depot.id === 'MAIN') {
+              currentStock = capacity;
+            }
+            const stockPercentage = capacity > 0 ? (currentStock / capacity) * 100 : 0;
 
             // Get color based on stock level
             const getStockColor = (percentage: number) => {

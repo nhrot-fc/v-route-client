@@ -262,6 +262,9 @@ export function SimulationCanvas({
   const [isTimeDisplayMinimized, setIsTimeDisplayMinimized] = useState(false);
   const [isExecutionTimeMinimized, setIsExecutionTimeMinimized] = useState(false);
   
+  // Estado para minimizar la leyenda
+  const [isLegendMinimized, setIsLegendMinimized] = useState(false);
+  
   // Get the selected vehicle details
   const selectedVehicle =
     selectedVehicleId && simulationState?.vehicles
@@ -593,69 +596,89 @@ export function SimulationCanvas({
       </Button>
 
       {/* Map legend */}
-      <div className="absolute bottom-4 left-4 bg-white/90 p-3 rounded-lg shadow-md backdrop-blur-sm z-10 border border-gray-100">
-        <div className="flex items-center mb-2 gap-1 text-sm font-medium">
-          <Map className="w-4 h-4" />
-          <span>Leyenda</span>
-        </div>
-        <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-[#1e40af] rounded-sm"></div>
-            <span className="text-xs">Almacén Principal</span>
+      {isLegendMinimized ? (
+        <Button
+          className="absolute bottom-4 left-4 z-10 h-10 w-10 rounded-full shadow"
+          variant="outline"
+          size="icon"
+          onClick={() => setIsLegendMinimized(false)}
+          title="Mostrar leyenda"
+        >
+          <Map className="w-5 h-5" />
+        </Button>
+      ) : (
+        <div className="absolute bottom-4 left-4 bg-white/90 p-3 rounded-lg shadow-md backdrop-blur-sm z-10 border border-gray-100">
+          <div className="flex items-center mb-2 gap-1 text-sm font-medium">
+            <Map className="w-4 h-4" />
+            <span>Leyenda</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsLegendMinimized(true)}
+              className="ml-2 p-1 h-auto"
+              title="Minimizar"
+            >
+              <ChevronDown className="w-3 h-3" />
+            </Button>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-[#3b82f6] rounded-sm"></div>
-            <span className="text-xs">Almacén Secundario</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-[#10b981] rounded-full"></div>
-            <span className="text-xs">Vehículo</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 bg-[#f59e0b] rounded-sm"></div>
-            <span className="text-xs">Cliente/Pedido</span>
-          </div>
-          <div className="flex items-center gap-2 col-span-2">
-            <div className="w-4 h-4 border-2 border-[#9333ea] rounded-sm bg-[#9333ea]/20"></div>
-            <span className="text-xs">Pedido siendo atendido</span>
-          </div>
-          <div className="flex items-center gap-2 col-span-2">
-            <div className="w-4 h-1 bg-[#ef4444]"></div>
-            <span className="text-xs">Carretera Bloqueada</span>
-          </div>
-          {selectedVehicleId && (
-            <div className="flex items-center gap-2 col-span-2">
-              <div className="w-4 h-1 bg-[#4f46e5]"></div>
-              <span className="text-xs">Ruta de vehículo</span>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-[#1e40af] rounded-sm"></div>
+              <span className="text-xs">Almacén Principal</span>
             </div>
-          )}
-          {highlightedVehicleIds.length > 0 && (
-            <>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-[#3b82f6] rounded-sm"></div>
+              <span className="text-xs">Almacén Secundario</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-[#10b981] rounded-full"></div>
+              <span className="text-xs">Vehículo</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-[#f59e0b] rounded-sm"></div>
+              <span className="text-xs">Cliente/Pedido</span>
+            </div>
+            <div className="flex items-center gap-2 col-span-2">
+              <div className="w-4 h-4 border-2 border-[#9333ea] rounded-sm bg-[#9333ea]/20"></div>
+              <span className="text-xs">Pedido siendo atendido</span>
+            </div>
+            <div className="flex items-center gap-2 col-span-2">
+              <div className="w-4 h-1 bg-[#ef4444]"></div>
+              <span className="text-xs">Carretera Bloqueada</span>
+            </div>
+            {selectedVehicleId && (
               <div className="flex items-center gap-2 col-span-2">
-                <div className="w-4 h-4 border-2 border-[#9333ea] border-dashed rounded-sm bg-[#9333ea]/20"></div>
-                <span className="text-xs">Vehículos del pedido</span>
+                <div className="w-4 h-1 bg-[#4f46e5]"></div>
+                <span className="text-xs">Ruta de vehículo</span>
               </div>
-              <div className="flex items-center gap-2 col-span-2">
-                <div className="w-4 h-1 bg-[#9333ea]"></div>
-                <span className="text-xs">Rutas del pedido</span>
-              </div>
-            </>
-          )}
-          
-          {highlightedOrderIds.length > 0 && (
-            <>
-              <div className="flex items-center gap-2 col-span-2">
-                <div className="w-4 h-4 border-2 border-[#9333ea] border-dashed rounded-sm bg-[#9333ea]/20"></div>
-                <span className="text-xs">Pedidos del vehículo</span>
-              </div>
-              <div className="flex items-center gap-2 col-span-2">
-                <div className="w-4 h-1 bg-[#9333ea]"></div>
-                <span className="text-xs">Rutas del vehículo</span>
-              </div>
-            </>
-          )}
+            )}
+            {highlightedVehicleIds.length > 0 && (
+              <>
+                <div className="flex items-center gap-2 col-span-2">
+                  <div className="w-4 h-4 border-2 border-[#9333ea] border-dashed rounded-sm bg-[#9333ea]/20"></div>
+                  <span className="text-xs">Vehículos del pedido</span>
+                </div>
+                <div className="flex items-center gap-2 col-span-2">
+                  <div className="w-4 h-1 bg-[#9333ea]"></div>
+                  <span className="text-xs">Rutas del pedido</span>
+                </div>
+              </>
+            )}
+            {highlightedOrderIds.length > 0 && (
+              <>
+                <div className="flex items-center gap-2 col-span-2">
+                  <div className="w-4 h-4 border-2 border-[#9333ea] border-dashed rounded-sm bg-[#9333ea]/20"></div>
+                  <span className="text-xs">Pedidos del vehículo</span>
+                </div>
+                <div className="flex items-center gap-2 col-span-2">
+                  <div className="w-4 h-1 bg-[#9333ea]"></div>
+                  <span className="text-xs">Rutas del vehículo</span>
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Legacy tooltip for backward compatibility */}
       {tooltip.show &&
