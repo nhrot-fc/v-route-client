@@ -717,23 +717,37 @@ export const renderElements = ({
           }
 
           // Draw future paths with highlighted style
-          paths.future.forEach((pathPoints, pathIdx) => {
-            const points: number[] = [];
-            pathPoints.forEach((point) => {
-              const coord = mapToScreenCoords(point.x || 0, point.y || 0);
-              points.push(coord.x, coord.y);
+          // Enhanced visual style based on previous implementation
+          if (paths.future.length > 0) {
+            // Combine all future paths into one continuous path for better visualization
+            let allFuturePoints: number[] = [];
+            paths.future.forEach((pathPoints) => {
+              const screenPoints = pathPoints.map(point => {
+                const coord = mapToScreenCoords(point.x || 0, point.y || 0);
+                return [coord.x, coord.y];
+              }).flat();
+              allFuturePoints = [...allFuturePoints, ...screenPoints];
             });
 
-            elements.push(
-              <Line
-                key={`vehicle-${vehicleId}-future-path-${pathIdx}`}
-                points={points}
-                stroke="#3b82f6"
-                strokeWidth={(2 * zoom) / 15}
-                dash={[4, 2]}
-              />
-            );
-          });
+            if (allFuturePoints.length > 0) {
+              elements.push(
+                <Line
+                  key={`vehicle-${vehicleId}-future-path`}
+                  points={allFuturePoints}
+                  stroke="#9333ea"
+                  strokeWidth={(3 * zoom) / 15}
+                  dash={[4 * (zoom / 15), 2 * (zoom / 15)]}
+                  lineCap="round"
+                  lineJoin="round"
+                  opacity={0.9}
+                  shadowColor="rgba(0,0,0,0.2)"
+                  shadowBlur={5}
+                  shadowOffset={{ x: 1, y: 1 }}
+                  shadowOpacity={0.5}
+                />
+              );
+            }
+          }
         }
       } else {
         // Scenario 1: Normal vehicle - just draw current action's remaining path
@@ -751,12 +765,26 @@ export const renderElements = ({
               points.push(coord.x, coord.y);
             });
 
+            // Use the action type to determine color like in the previous implementation
+            const actionColorMap: { [key: string]: string } = {
+              DRIVE: "#4f46e5",
+              SERVE: "#16a34a",
+              RELOAD: "#eab308",
+              REFUEL: "#f97316",
+              MAINTENANCE: "#64748b",
+              WAIT: "#a3a3a3",
+            };
+            const actionType = currentAction.type || "";
+            const lineColor = actionColorMap[actionType] || "#000000";
+
             elements.push(
               <Line
                 key={`vehicle-${vehicleId}-path`}
                 points={points}
-                stroke="#000000"
+                stroke={lineColor}
                 strokeWidth={(2 * zoom) / 15}
+                lineCap="round"
+                lineJoin="round"
               />
             );
           }
@@ -810,10 +838,11 @@ export const renderElements = ({
               width={style.rect.width}
               height={style.rect.height}
               fill={style.rect.fill}
-              stroke={style.rect.stroke}
+              stroke={isSelected ? "#3b82f6" : isHighlighted ? "#9333ea" : style.rect.stroke}
               strokeWidth={style.rect.strokeWidth}
               cornerRadius={style.rect.cornerRadius}
               opacity={style.rect.opacity}
+              dash={isHighlighted && !isSelected ? [5, 5] : []}
             />
           )}
 

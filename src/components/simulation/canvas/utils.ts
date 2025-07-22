@@ -136,7 +136,7 @@ export const enhanceVehicleWithPlan = (
     if (currentAction?.path && currentAction.path.length > 0) {
       const pathIndex =
         currentAction.progress !== undefined
-          ? Math.floor((currentAction.path.length - 1) * (currentAction.progress / 100))
+          ? Math.floor((currentAction.path.length - 1) * (currentAction.progress))
           : 0;
 
       const nextPathIndex = Math.min(pathIndex + 1, currentAction.path.length - 1);
@@ -221,9 +221,9 @@ export const getVehicleDirection = (
   const dy = (next.y ?? 0) - (current.y ?? 0);
   
   if (Math.abs(dx) > Math.abs(dy)) {
-    return dx > 0 ? "west" : "east";
+    return dx > 0 ? "east" : "west";
   } else {
-    return dy > 0 ? "north" : "south";
+    return dy > 0 ? "south" : "north";
   }
 };
 
@@ -247,18 +247,18 @@ export const prepareVehicleForRendering = (
   // Get vehicle direction
   let direction: "north" | "south" | "east" | "west" = "east"; // Default direction
   
-  if (currentAction?.path && currentAction.path.length >= 1 && 
+  if (currentAction?.path && currentAction.path.length >= 2 && 
       currentAction.progress !== undefined && vehicle.currentPosition) {
     
     // Calculate current position in path based on progress
-    const pathIndex = Math.ceil(
-      (currentAction.path.length - 1) * (currentAction.progress / 100)
+    const pathIndex = Math.floor(
+      (currentAction.path.length - 1) * (currentAction.progress)
     );
     
     // If we have at least one more point ahead in the path, use it to calculate direction
     if (pathIndex < currentAction.path.length - 1) {
-      const current = vehicle.currentPosition;
-      const next = currentAction.path[pathIndex];
+      const current = currentAction.path[pathIndex];
+      const next = currentAction.path[pathIndex + 1];
       
       if (current && next) {
         direction = getVehicleDirection(current, next);
@@ -302,7 +302,7 @@ export const mapVehicleStatusToColor = (status: VehicleDTOStatusEnum) => {
 /**
  * Calculates remaining path points based on action progress
  * @param path Full action path
- * @param progress Progress percentage (0-100)
+ * @param progress Progress percentage (0-1)
  * @returns Array of remaining path points
  */
 export const calculateRemainingPathPoints = (
@@ -314,8 +314,7 @@ export const calculateRemainingPathPoints = (
   }
 
   // Calculate the index in the path based on progress
-  const progressIndex = Math.ceil((path.length - 1) * (progress / 100));
-  
+  const progressIndex = Math.floor((path.length - 1) * (progress ));
   // Return the remaining path from the current position onward
   return path.slice(Math.max(0, progressIndex));
 };
@@ -359,7 +358,6 @@ export const getVehicleRenderStyle = (
 /**
  * Get all paths for a vehicle plan
  * @param vehiclePlan The vehicle's plan
- * @param currentActionIndex Current action index
  * @returns Object containing paths categorized as completed, current and future
  */
 export const getVehiclePlanPaths = (
@@ -386,16 +384,22 @@ export const getVehiclePlanPaths = (
   const currentPath = currentAction?.path || [];
   
   // Calculate remaining path based on progress
-  const currentRemainingPath = calculateRemainingPathPoints(
-    currentPath, 
-    currentAction?.progress
-  );
+  let currentRemainingPath: Position[] = [];
+  if (currentPath.length > 0 && currentAction?.progress !== undefined) {
+    // Find the exact point in the path based on progress
+    const progressIndex = Math.floor((currentPath.length - 1) * (currentAction.progress));
+    currentRemainingPath = currentPath.slice(Math.max(0, progressIndex));
+  }
   
-  // Future paths (next actions)
-  const futurePaths = vehiclePlan.actions
-    .slice(currentIndex + 1)
-    .filter(action => action.path && action.path.length > 0)
-    .map(action => action.path as Position[]);
+  // Future paths (next actions) - collect all paths from future actions
+  let futurePaths: Position[][] = [];
+  const futureActions = vehiclePlan.actions.slice(currentIndex + 1);
+  
+  if (futureActions.length > 0) {
+    futurePaths = futureActions
+      .filter(action => action.path && action.path.length > 0)
+      .map(action => action.path as Position[]);
+  }
   
   return {
     completed: completedPaths,

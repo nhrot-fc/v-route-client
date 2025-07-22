@@ -554,7 +554,8 @@ const OrderStatePanel: React.FC<{
             <th className="py-2 px-3 text-left">Código</th>
             <th className="py-2 px-3 text-left">Estado</th>
             <th className="py-2 px-3 text-left">Tiempo Restante</th>
-            <th className="py-2 px-3 text-left">Volumen (m³)</th>
+            <th className="py-2 px-3 text-left">Solicitado (m³)</th>
+            <th className="py-2 px-3 text-left">Restante (m³)</th>
             <th className="py-2 px-3 text-left">Ubicación</th>
           </tr>
         </thead>
@@ -620,7 +621,10 @@ const OrderStatePanel: React.FC<{
                   </span>
                 </td>
                 <td className="py-2 px-3">
-                  {order.glpRequestM3?.toFixed(0) || 0}
+                  {order.glpRequestM3?.toFixed(1) || 0}
+                </td>
+                <td className="py-2 px-3">
+                  {order.remainingGlpM3?.toFixed(1) || 0}
                 </td>
                 <td className="py-2 px-3">
                   ({order.position?.x?.toFixed(0) || 0},{" "}
