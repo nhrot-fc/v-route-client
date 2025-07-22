@@ -129,40 +129,37 @@ export const renderElements = ({
   // --- FILTRADO ESPECIAL AL SELECCIONAR UN ALMACÉN ---
   if (selectedDepot && selectedDepot.depot && selectedDepot.depot.position) {
     const depotPos = selectedDepot.depot.position;
-    // Buscar vehículos cuya ACCIÓN ACTUAL termina en el almacén seleccionado
+  
+    // Filtra vehículos cuya ACCIÓN ACTUAL (usando currentActionIndex) termina en el almacén seleccionado.
     const vehiclesToDepot = enhancedVehicles.filter(vehicle => {
       const plan = vehicle.currentPlan;
-      if (!plan || !plan.actions || plan.actions.length === 0) return false;
-      // Buscar la acción actual (la que contiene la posición actual)
-      let currentActionIdx = -1;
-      let indexFrom = 0;
-      for (let i = 0; i < plan.actions.length; i++) {
-        const action = plan.actions[i];
-        if (!action.path || action.path.length < 2) continue;
-        const idx = action.path.findIndex(
-          (p) =>
-            Math.abs((p.x ?? 0) - (vehicle.currentPosition?.x ?? 0)) < 1 &&
-            Math.abs((p.y ?? 0) - (vehicle.currentPosition?.y ?? 0)) < 1
-        );
-        if (idx !== -1) {
-          currentActionIdx = i;
-          indexFrom = idx;
-          break;
-        }
+      const currentActionIndex = plan?.currentActionIndex;
+  
+      // Valida que el plan y el índice de la acción actual existan y sean válidos.
+      if (
+        !plan?.actions ||
+        typeof currentActionIndex !== 'number' ||
+        currentActionIndex < 0 ||
+        currentActionIndex >= plan.actions.length
+      ) {
+        return false;
       }
-      if (currentActionIdx === -1) return false;
-      const action = plan.actions[currentActionIdx];
-      if (action.path && action.path.length > 0) {
-        const lastPoint = action.path[action.path.length - 1];
-        if (
-          Math.abs((lastPoint.x ?? 0) - (depotPos.x ?? 0)) < 1 &&
-          Math.abs((lastPoint.y ?? 0) - (depotPos.y ?? 0)) < 1
-        ) {
-          return true;
-        }
+  
+      const currentAction = plan.actions[currentActionIndex];
+  
+      // Valida que la acción actual tenga una ruta (path) con al menos un punto.
+      if (!currentAction?.path || currentAction.path.length === 0) {
+        return false;
       }
-      return false;
+  
+      // Compara el destino de la acción actual con la posición del almacén.
+      const lastPoint = currentAction.path[currentAction.path.length - 1];
+      return (
+        Math.abs((lastPoint.x ?? 0) - (depotPos.x ?? 0)) < 1 &&
+        Math.abs((lastPoint.y ?? 0) - (depotPos.y ?? 0)) < 1
+      );
     });
+  
     filteredVehicles = vehiclesToDepot;
     // Ocultar todos los pedidos
     enhancedOrders = [];
@@ -265,8 +262,6 @@ export const renderElements = ({
       else volumeColor = "#f97316"; // orange - large
 
       // Highlight orders if they are being served by vehicles, if this is the selected order, or if this order is in a selected vehicle's plan
-      const isBeingServed =
-        order.servingVehicles && order.servingVehicles.length > 0;
       const isSelectedOrder = selectedOrder?.id === order.id;
       const isHighlightedOrder = highlightedOrderIds.includes(order.id || '');
 
@@ -655,7 +650,9 @@ export const renderElements = ({
       let blockToDraw: typeof plan.actions | null = null;
       let currentActionIdx = -1;
       let indexFrom = 0;
-
+      //
+      const currentAction = plan.currentAction;
+      //To do refactor to use currentActionIndex instead of stimated the positions
       for (const block of actionBlocks) {
         for (let i = 0; i < block.length; i++) {
           const action = block[i];
