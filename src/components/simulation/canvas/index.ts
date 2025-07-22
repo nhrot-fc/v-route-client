@@ -2,7 +2,6 @@
 export * from './types';
 export * from './map-icon';
 export * from './colored-text';
-export * from './progress-bar';
 export * from './info-box';
 export * from './grid';
 export * from './hover-handler';

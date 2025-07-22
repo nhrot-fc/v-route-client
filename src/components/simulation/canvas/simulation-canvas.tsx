@@ -204,7 +204,6 @@ const ExecutionTimeDisplay = ({
  * Displays a Konva-based canvas for visualization of simulation data
  */
 export function SimulationCanvas({
-  simulationId,
   simulationInfo,
   simulationState,
 }: SimulationCanvasProps) {
@@ -220,11 +219,10 @@ export function SimulationCanvas({
   // Enhanced tooltip state for new InfoBox component
   const [enhancedTooltip, setEnhancedTooltip] = useState<EnhancedTooltipInfo>({
     show: false,
-    x: 0,
-    y: 0,
     title: "",
     color: "#1e40af",
     details: [],
+    position: "top-right"
   });
 
   // Zoom and pan state
@@ -368,11 +366,10 @@ export function SimulationCanvas({
     setTooltip({ show: false, x: 0, y: 0, content: "" });
     setEnhancedTooltip({
       show: false,
-      x: 0,
-      y: 0,
       title: "",
       color: "#1e40af",
       details: [],
+      position: "top-right"
     });
   }, []);
   
@@ -680,42 +677,14 @@ export function SimulationCanvas({
         </div>
       )}
 
-      {/* Legacy tooltip for backward compatibility */}
-      {tooltip.show &&
-        !selectedVehicle &&
-        !selectedDepot &&
-        !selectedOrder && (
-          <div
-            className="absolute bg-white p-3 rounded-lg shadow-lg text-xs z-20 pointer-events-none border border-gray-200"
-            style={{
-              left: `${tooltip.x}px`,
-              top: `${tooltip.y}px`,
-              maxWidth: "220px",
-              backdropFilter: "blur(8px)",
-              backgroundColor: "rgba(255, 255, 255, 0.97)",
-            }}
-          >
-            {tooltip.content.split("\n").map((line, i) => (
-              <div key={i} className={i === 0 ? "font-bold text-blue-700" : ""}>
-                {line}
-              </div>
-            ))}
-          </div>
-        )}
-
-      {/* Enhanced tooltip */}
-      {enhancedTooltip.show &&
-        !selectedVehicle &&
-        !selectedDepot &&
-        !selectedOrder && (
-          <InfoBox
-            title={enhancedTooltip.title}
-            details={enhancedTooltip.details}
-            color={enhancedTooltip.color}
-            x={enhancedTooltip.x}
-            y={enhancedTooltip.y}
-          />
-        )}
+      {/* Enhanced HTML tooltip - replacing both the legacy and enhanced Konva tooltips */}
+      <InfoBox
+        title={enhancedTooltip.title}
+        details={enhancedTooltip.details}
+        color={enhancedTooltip.color}
+        show={enhancedTooltip.show && !selectedVehicle && !selectedDepot && !selectedOrder}
+        position={enhancedTooltip.position || "top-right"}
+      />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import type { VehicleDTO, OrderDTO, Position, VehiclePlanDTO, ActionDTO } from "@/lib/api-client";
+import { type VehicleDTO, type OrderDTO, type Position, type VehiclePlanDTO, type ActionDTO, VehicleDTOStatusEnum } from "@/lib/api-client";
 import type { EnhancedVehicleDTO, EnhancedOrderDTO, VehicleOrientation } from "./types";
 
 /**
@@ -205,4 +205,225 @@ export const enhanceOrderWithVehicles = (
     servingVehicles,
     isOverdue
   };
+};
+
+/**
+ * Gets the appropriate vehicle direction based on movement vector
+ * Returns one of: 'north', 'south', 'east', 'west'
+ */
+export const getVehicleDirection = (
+  current: Position | undefined,
+  next: Position | undefined
+): "north" | "south" | "east" | "west" => {
+  if (!current || !next) return "east"; // Default direction
+  
+  const dx = (next.x ?? 0) - (current.x ?? 0);
+  const dy = (next.y ?? 0) - (current.y ?? 0);
+  
+  if (Math.abs(dx) > Math.abs(dy)) {
+    return dx > 0 ? "west" : "east";
+  } else {
+    return dy > 0 ? "north" : "south";
+  }
+};
+
+/**
+ * Prepares vehicle data for simple rendering
+ * Returns all the necessary data to render a vehicle on the map
+ */
+export const prepareVehicleForRendering = (
+  vehicle: VehicleDTO,
+  currentAction?: ActionDTO | null
+) => {
+  // Get vehicle position
+  const position = vehicle.currentPosition || { x: 0, y: 0 };
+  
+  // Get GLP color based on current level
+  const glpColor = getGlpColorLevel(
+    vehicle.currentGlpM3 || 0,
+    vehicle.glpCapacityM3 || 1
+  );
+  
+  // Get vehicle direction
+  let direction: "north" | "south" | "east" | "west" = "east"; // Default direction
+  
+  if (currentAction?.path && currentAction.path.length >= 1 && 
+      currentAction.progress !== undefined && vehicle.currentPosition) {
+    
+    // Calculate current position in path based on progress
+    const pathIndex = Math.ceil(
+      (currentAction.path.length - 1) * (currentAction.progress / 100)
+    );
+    
+    // If we have at least one more point ahead in the path, use it to calculate direction
+    if (pathIndex < currentAction.path.length - 1) {
+      const current = vehicle.currentPosition;
+      const next = currentAction.path[pathIndex];
+      
+      if (current && next) {
+        direction = getVehicleDirection(current, next);
+      }
+    }
+  }
+  
+  return {
+    position,
+    glpColor,
+    direction,
+    id: vehicle.id,
+    status: vehicle.status
+  };
+};
+
+
+export const mapVehicleStatusToColor = (status: VehicleDTOStatusEnum) => {
+  switch (status) {
+    case VehicleDTOStatusEnum.Available:
+      return "#16a34a";
+    case VehicleDTOStatusEnum.Maintenance:
+      return "#f97316";
+    case VehicleDTOStatusEnum.Driving:
+      return "#1d4ed8";
+    case VehicleDTOStatusEnum.Reloading:
+      return "#eab308";
+    case VehicleDTOStatusEnum.Refueling:
+      return "#10b981";
+    case VehicleDTOStatusEnum.Serving:
+      return "#3b82f6";
+    case VehicleDTOStatusEnum.Incident:
+      return "#ef4444";
+    case VehicleDTOStatusEnum.Idle:
+      return "#6b7280";
+    default:
+      return "#6b7280";
+  }
+};
+
+/**
+ * Calculates remaining path points based on action progress
+ * @param path Full action path
+ * @param progress Progress percentage (0-100)
+ * @returns Array of remaining path points
+ */
+export const calculateRemainingPathPoints = (
+  path: Position[] | undefined,
+  progress: number | undefined
+): Position[] => {
+  if (!path || path.length < 2 || progress === undefined) {
+    return [];
+  }
+
+  // Calculate the index in the path based on progress
+  const progressIndex = Math.ceil((path.length - 1) * (progress / 100));
+  
+  // Return the remaining path from the current position onward
+  return path.slice(Math.max(0, progressIndex));
+};
+
+/**
+ * Gets style properties for a vehicle based on its status
+ * @param vehicle Vehicle data
+ * @param isSelected Whether the vehicle is selected
+ * @param isHighlighted Whether the vehicle is highlighted
+ * @returns Style properties for rendering
+ */
+export const getVehicleRenderStyle = (
+  vehicle: VehicleDTO,
+  isSelected: boolean = false,
+  isHighlighted: boolean = false
+) => {
+  // Get status color
+  const statusColor = mapVehicleStatusToColor(vehicle.status as VehicleDTOStatusEnum);
+  
+  // Calculate icon size based on selection/highlight state
+  const iconSize = isSelected || isHighlighted ? 22 : 20;
+  
+  // Calculate rectangle style for selected/highlighted vehicles
+  const rect = isSelected || isHighlighted ? {
+    width: iconSize * 1.5,
+    height: iconSize * 1.5,
+    fill: "transparent",
+    stroke: statusColor,
+    strokeWidth: 2,
+    cornerRadius: 4,
+    opacity: 0.8
+  } : null;
+  
+  return {
+    iconSize,
+    statusColor,
+    rect
+  };
+};
+
+/**
+ * Get all paths for a vehicle plan
+ * @param vehiclePlan The vehicle's plan
+ * @param currentActionIndex Current action index
+ * @returns Object containing paths categorized as completed, current and future
+ */
+export const getVehiclePlanPaths = (
+  vehiclePlan?: VehiclePlanDTO | null
+) => {
+  if (!vehiclePlan?.actions || vehiclePlan.currentActionIndex === undefined) {
+    return {
+      completed: [],
+      current: [],
+      future: []
+    };
+  }
+  
+  const currentIndex = vehiclePlan.currentActionIndex;
+  const currentAction = vehiclePlan.actions[currentIndex];
+  
+  // Completed paths (previous actions)
+  const completedPaths = vehiclePlan.actions
+    .slice(0, currentIndex)
+    .filter(action => action.path && action.path.length > 0)
+    .map(action => action.path as Position[]);
+  
+  // Current action path
+  const currentPath = currentAction?.path || [];
+  
+  // Calculate remaining path based on progress
+  const currentRemainingPath = calculateRemainingPathPoints(
+    currentPath, 
+    currentAction?.progress
+  );
+  
+  // Future paths (next actions)
+  const futurePaths = vehiclePlan.actions
+    .slice(currentIndex + 1)
+    .filter(action => action.path && action.path.length > 0)
+    .map(action => action.path as Position[]);
+  
+  return {
+    completed: completedPaths,
+    current: currentRemainingPath,
+    future: futurePaths
+  };
+};
+
+/**
+ * Collects all order and depot IDs from a vehicle's plan
+ * for highlighting related elements
+ */
+export const getRelatedElementsFromPlan = (
+  vehiclePlan?: VehiclePlanDTO | null
+) => {
+  if (!vehiclePlan?.actions) {
+    return { orderIds: [], depotIds: [] };
+  }
+  
+  const orderIds = vehiclePlan.actions
+    .filter(action => action.orderId)
+    .map(action => action.orderId as string)
+    .filter(Boolean);
+  
+  const depotIds = vehiclePlan.actions
+    .filter(action => action.depotId)
+    .map(action => action.depotId as string)
+    .filter(Boolean);
+  
+  return { orderIds, depotIds };
 };

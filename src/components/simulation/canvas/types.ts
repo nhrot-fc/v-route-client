@@ -53,11 +53,13 @@ export interface TooltipInfo {
 
 export interface EnhancedTooltipInfo {
   show: boolean;
-  x: number;
-  y: number;
   title: string;
   color: string;
   details: Array<{label: string; value: string; color?: string}>;
+  position?: "top-right" | "top-left" | "bottom-right" | "bottom-left";
+  // x and y are kept for backward compatibility with other components
+  x?: number;
+  y?: number;
 }
 
 // Data formatting helpers

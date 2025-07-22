@@ -1,11 +1,9 @@
 import React from "react";
 import { Group, Line, Rect } from "react-konva";
-import type {
-  SimulationStateDTO,
-  DepotDTO,
-  OrderDTO,
-  ActionDTO,
-  Position,
+import {
+  type SimulationStateDTO,
+  type DepotDTO,
+  type OrderDTO,
 } from "@/lib/api-client";
 import type {
   TooltipInfo,
@@ -14,12 +12,14 @@ import type {
 } from "./types";
 import { MapIcon } from "./map-icon";
 import { ColoredText } from "./colored-text";
-import { ProgressBar } from "./progress-bar";
 import {
-  getGlpColorLevel,
   getOrderSizeCategory,
   enhanceVehicleWithPlan,
   enhanceOrderWithVehicles,
+  prepareVehicleForRendering,
+  calculateRemainingPathPoints,
+  getVehicleRenderStyle,
+  getVehiclePlanPaths,
 } from "./utils";
 import { handleElementHover } from "./hover-handler";
 
@@ -559,7 +559,7 @@ export const renderElements = ({
                 data: {
                   ...depot,
                   id: depot.id?.toString() || `aux-depot-${index + 1}`,
-                  glpCapacityM3: 160,
+                  glpCapacityM3: depot.glpCapacityM3 || 0,
                 },
               },
               pointerPosition || null,
@@ -656,180 +656,129 @@ export const renderElements = ({
   // Draw vehicle routes y vehicles usando filteredVehicles
   if (filteredVehicles) {
     filteredVehicles.forEach((vehicle, index) => {
-      if (!vehicle.currentPosition) return;
-      const plan = vehicle.currentPlan;
-      if (!plan || !plan.actions || plan.actions.length === 0) return;
+      const vehicleId = vehicle.id || "";
+      const isSelected = selectedVehicleId === vehicleId;
+      const isHighlighted = highlightedVehicleIds.includes(vehicleId);
 
-      const currentAction: ActionDTO | undefined = plan.currentAction;
-      if (!currentAction) return;
+      // Get vehicle position and rendering properties
+      const { position, glpColor, direction } = prepareVehicleForRendering(
+        vehicle,
+        vehicle.currentPlan?.currentAction
+      );
 
-      const isSelected = selectedVehicleId === vehicle.id;
-      const isHighlighted = highlightedVehicleIds.includes(vehicle.id || "");
+      const { x, y } = mapToScreenCoords(position.x ?? 0, position.y ?? 0);
 
-      // ESCENARIO 1: Vehículo normal - Solo dibujar la ruta de la acción actual
-      if (!isSelected && !isHighlighted) {
-        // Solo dibujar el camino futuro de la acción actual basado en el progreso
-        if (
-          currentAction?.path &&
-          currentAction.path.length >= 2 &&
-          currentAction.progress !== undefined
-        ) {
-          // Calculamos el índice en el path basado en el progreso actual
-          const pathIndex = Math.floor(
-            (currentAction.path.length - 1) * (currentAction.progress / 100)
-          );
+      // Get style properties based on vehicle status and selection state
+      const style = getVehicleRenderStyle(vehicle, isSelected, isHighlighted);
 
-          // Solo dibujamos desde la posición actual hacia adelante
-          if (pathIndex < currentAction.path.length - 1) {
-            const futurePoints: number[] = [];
-            for (let i = pathIndex; i < currentAction.path.length; i++) {
-              const point = currentAction.path[i];
-              const { x, y } = mapToScreenCoords(point.x ?? 0, point.y ?? 0);
-              futurePoints.push(x, y);
-            }
+      // SCENARIO 1, 2, 3: Draw appropriate paths based on selection state
+      if (isSelected || isHighlighted) {
+        // Scenarios 2 & 3: Draw complete plan for selected/highlighted vehicles
+        if (vehicle.currentPlan) {
+          const paths = getVehiclePlanPaths(vehicle.currentPlan);
 
-            if (futurePoints.length >= 4) {
-              // Al menos dos puntos (x,y)
-              elements.push(
-                <Line
-                  key={`route-${vehicle.id}-current`}
-                  points={futurePoints}
-                  stroke="#64748b" // Gris para rutas normales
-                  strokeWidth={2 * (zoom / 15)}
-                  lineCap="round"
-                  lineJoin="round"
-                  opacity={0.6}
-                />
-              );
-            }
-          }
-        }
-      }
-      // ESCENARIO 2 y 3: Vehículo seleccionado o resaltado - Dibujar todo el plan
-      else {
-        // 1. Dibujar la ruta futura completa (desde la posición actual hasta el final del plan)
-        let fullPath: { x: number; y: number }[] = [];
+          // Draw completed paths (past actions) with faded style
+          paths.completed.forEach((pathPoints, pathIdx) => {
+            const points: number[] = [];
+            pathPoints.forEach((point) => {
+              const coord = mapToScreenCoords(point.x || 0, point.y || 0);
+              points.push(coord.x, coord.y);
+            });
 
-        // 1.1 Agregar el camino restante de la acción actual
-        if (currentAction?.path && currentAction.path.length >= 2) {
-          // Calcular posición actual basada en el progreso
-          const pathIndex =
-            currentAction.progress !== undefined
-              ? Math.floor(
-                  (currentAction.path.length - 1) *
-                    (currentAction.progress / 100)
-                )
-              : 0;
-
-          // Agregar desde el punto actual hasta el final de esta acción
-          const pathSlice = currentAction.path
-            .slice(pathIndex)
-            .map((p) => ({ x: p.x ?? 0, y: p.y ?? 0 }));
-          fullPath = fullPath.concat(pathSlice);
-        }
-
-        // 1.2 Agregar las rutas de todas las acciones posteriores
-        for (
-          let actionIdx = (plan.currentActionIndex ?? 0) + 1;
-          actionIdx < plan.actions.length;
-          actionIdx++
-        ) {
-          const action = plan.actions[actionIdx];
-          if (!action.path || action.path.length < 2) continue;
-
-          const pathMapped = action.path.map((p) => ({
-            x: p.x ?? 0,
-            y: p.y ?? 0,
-          }));
-          fullPath = fullPath.concat(pathMapped);
-        }
-
-        if (fullPath.length >= 2) {
-          const screenPoints: number[] = [];
-          fullPath.forEach((point) => {
-            const { x, y } = mapToScreenCoords(point.x, point.y);
-            screenPoints.push(x, y);
+            elements.push(
+              <Line
+                key={`vehicle-${vehicleId}-completed-path-${pathIdx}`}
+                points={points}
+                stroke="#6b7280"
+                strokeWidth={(1.5 * zoom) / 15}
+                opacity={0.5}
+                dash={[2, 2]}
+              />
+            );
           });
-          elements.push(
-            <Line
-              key={`route-${vehicle.id}-full`}
-              points={screenPoints}
-              stroke="#9333ea" // Morado para rutas destacadas
-              strokeWidth={3 * (zoom / 15)}
-              dash={[4 * (zoom / 15), 2 * (zoom / 15)]}
-              lineCap="round"
-              lineJoin="round"
-              opacity={0.9}
-              shadowColor="rgba(0,0,0,0.2)"
-              shadowBlur={5}
-              shadowOffset={{ x: 1, y: 1 }}
-              shadowOpacity={0.5}
-            />
-          );
+
+          // Draw current path with normal style
+          if (paths.current.length > 0) {
+            const points: number[] = [];
+            paths.current.forEach((point) => {
+              const coord = mapToScreenCoords(point.x || 0, point.y || 0);
+              points.push(coord.x, coord.y);
+            });
+
+            elements.push(
+              <Line
+                key={`vehicle-${vehicleId}-current-path`}
+                points={points}
+                stroke="#000000"
+                strokeWidth={(2 * zoom) / 15}
+              />
+            );
+          }
+
+          // Draw future paths with highlighted style
+          paths.future.forEach((pathPoints, pathIdx) => {
+            const points: number[] = [];
+            pathPoints.forEach((point) => {
+              const coord = mapToScreenCoords(point.x || 0, point.y || 0);
+              points.push(coord.x, coord.y);
+            });
+
+            elements.push(
+              <Line
+                key={`vehicle-${vehicleId}-future-path-${pathIdx}`}
+                points={points}
+                stroke="#3b82f6"
+                strokeWidth={(2 * zoom) / 15}
+                dash={[4, 2]}
+              />
+            );
+          });
         }
-      }
+      } else {
+        // Scenario 1: Normal vehicle - just draw current action's remaining path
+        if (vehicle.currentPlan?.currentAction?.path) {
+          const currentAction = vehicle.currentPlan.currentAction;
+          const remainingPath = calculateRemainingPathPoints(
+            currentAction.path,
+            currentAction.progress
+          );
 
-      // Imprime SIEMPRE el camión en su posición actual
-      const x = vehicle.currentPosition?.x || 0;
-      const y = vehicle.currentPosition?.y || 0;
-      const { x: screenX, y: screenY } = mapToScreenCoords(x, y);
-      const vehicleSize = 20 * (zoom / 15);
+          if (remainingPath.length > 0) {
+            const points: number[] = [];
+            remainingPath.forEach((point) => {
+              const coord = mapToScreenCoords(point.x || 0, point.y || 0);
+              points.push(coord.x, coord.y);
+            });
 
-      let direction: "north" | "south" | "east" | "west" = "west";
-
-      // Obtener el path de la acción actual usando currentActionIndex
-      const path: Position[] = currentAction.path || [];
-
-      // Si hay un progress definido, usarlo para determinar la posición actual en el path
-      if (path.length >= 2 && currentAction.progress !== undefined) {
-        // Calculamos la posición actual basado en el progreso
-        const pathIndex = Math.floor(
-          (path.length - 1) * (currentAction.progress / 100)
-        );
-
-        // Si tenemos al menos un punto más adelante en el path, lo usamos para calcular la dirección
-        if (pathIndex < path.length - 1) {
-          const current = path[pathIndex];
-          const next = path[pathIndex + 1];
-
-          if (
-            current &&
-            next &&
-            typeof current.x === "number" &&
-            typeof current.y === "number" &&
-            typeof next.x === "number" &&
-            typeof next.y === "number"
-          ) {
-            direction = getAutoDirection(
-              { x: current.x, y: current.y },
-              { x: next.x, y: next.y }
+            elements.push(
+              <Line
+                key={`vehicle-${vehicleId}-path`}
+                points={points}
+                stroke="#000000"
+                strokeWidth={(2 * zoom) / 15}
+              />
             );
           }
         }
       }
 
-      const glpColor = getGlpColorLevel(
-        vehicle.currentGlpM3 || 0,
-        vehicle.glpCapacityM3 || 1
-      );
-      const hasActiveOrders =
-        vehicle.currentOrders && vehicle.currentOrders.length > 0;
-
+      // Draw vehicle with proper styling
       elements.push(
         <Group
           key={`vehicle-${index}`}
-          x={screenX}
-          y={screenY}
+          x={x}
+          y={y}
           onMouseEnter={(e) => {
             const stage = e.target.getStage();
             const pointerPosition = stage?.getPointerPosition();
             handleElementHover(
               {
                 type: "vehicle",
-                x,
-                y,
-                radius: vehicleSize,
+                x: position.x || 0,
+                y: position.y || 0,
+                radius: style.iconSize,
                 data: vehicle,
+                orientation: direction,
               },
               pointerPosition || null,
               setTooltip,
@@ -840,128 +789,39 @@ export const renderElements = ({
             handleElementHover(null, null, setTooltip, setEnhancedTooltip)
           }
           onClick={() => {
+            // Select vehicle on click
             if (onVehicleSelect) {
-              onVehicleSelect(isSelected ? null : vehicle.id || null);
+              onVehicleSelect(vehicleId);
             }
           }}
           onTap={() => {
+            // For touch devices
             if (onVehicleSelect) {
-              onVehicleSelect(isSelected ? null : vehicle.id || null);
+              onVehicleSelect(vehicleId);
             }
           }}
         >
-          {isSelected && (
+          {/* Draw selection/highlight rectangle if needed */}
+          {style.rect && (
             <Rect
-              x={-vehicleSize - 3}
-              y={-vehicleSize - 3}
-              width={vehicleSize * 2 + 6}
-              height={vehicleSize * 2 + 6}
-              fill="transparent"
-              stroke="#3b82f6"
-              strokeWidth={2}
-              cornerRadius={4}
+              x={-style.rect.width / 2}
+              y={-style.rect.height / 2}
+              width={style.rect.width}
+              height={style.rect.height}
+              fill={style.rect.fill}
+              stroke={style.rect.stroke}
+              strokeWidth={style.rect.strokeWidth}
+              cornerRadius={style.rect.cornerRadius}
+              opacity={style.rect.opacity}
             />
-          )}
-
-          {isHighlighted && !isSelected && (
-            <>
-              {/* Contorno interno semitransparente */}
-              <Rect
-                x={-vehicleSize - 2}
-                y={-vehicleSize - 2}
-                width={vehicleSize * 2 + 4}
-                height={vehicleSize * 2 + 4}
-                fill="rgba(147, 51, 234, 0.2)"
-                stroke="transparent"
-                cornerRadius={3}
-              />
-              {/* Contorno externo morado */}
-              <Rect
-                x={-vehicleSize - 3}
-                y={-vehicleSize - 3}
-                width={vehicleSize * 2 + 6}
-                height={vehicleSize * 2 + 6}
-                fill="transparent"
-                stroke="#9333ea"
-                strokeWidth={3}
-                cornerRadius={4}
-                dash={[5, 5]}
-              />
-            </>
           )}
 
           <MapIcon
             src={`/icons/colored/${glpColor}/truck-${direction}.svg`}
             x={0}
             y={0}
-            size={vehicleSize}
+            size={style.iconSize * (zoom / 15)}
           />
-
-          {!tooltip.show && (
-            <>
-              {/* Vehicle ID - only show if selected */}
-              {isSelected && (
-                <>
-                  <Rect
-                    x={vehicleSize}
-                    y={-8 * (zoom / 15)}
-                    width={40 * (zoom / 15)}
-                    height={16 * (zoom / 15)}
-                    fill="rgba(255, 255, 255, 0.7)"
-                    cornerRadius={2}
-                  />
-                  <ColoredText
-                    x={vehicleSize + 2 * (zoom / 15)}
-                    y={-8 * (zoom / 15)}
-                    text={`${vehicle.id?.substring(0, 5) || "N/A"}`}
-                    fontSize={10 * (zoom / 15)}
-                    color={
-                      vehicle.status?.toLowerCase() === "active"
-                        ? "#16a34a"
-                        : vehicle.status?.toLowerCase() === "maintenance"
-                          ? "#f97316"
-                          : "#1d4ed8"
-                    }
-                  />
-                </>
-              )}
-
-              <ProgressBar
-                x={-vehicleSize / 2}
-                y={vehicleSize + 3 * (zoom / 15)}
-                width={vehicleSize}
-                height={4 * (zoom / 15)}
-                value={
-                  (vehicle.currentGlpM3 || 0) / (vehicle.glpCapacityM3 || 1)
-                }
-                color={glpColor === "red" ? "#dc2626" : "#10b981"}
-                background="rgba(0, 0, 0, 0.2)"
-                strokeWidth={0.5}
-              />
-
-              {hasActiveOrders && (
-                <>
-                  <Rect
-                    x={-vehicleSize - 5}
-                    y={-vehicleSize - 3}
-                    width={20 * (zoom / 15)}
-                    height={16 * (zoom / 15)}
-                    fill="#3b82f6"
-                    cornerRadius={2}
-                  />
-                  <ColoredText
-                    x={-vehicleSize - 5}
-                    y={-vehicleSize - 3}
-                    width={20 * (zoom / 15)}
-                    text={`${vehicle.currentOrders?.length || 0}`}
-                    fontSize={10 * (zoom / 15)}
-                    color="#ffffff"
-                    align="center"
-                  />
-                </>
-              )}
-            </>
-          )}
         </Group>
       );
     });
@@ -969,17 +829,3 @@ export const renderElements = ({
 
   return elements;
 };
-
-// Función para calcular la orientación
-function getAutoDirection(
-  current: { x: number; y: number },
-  next: { x: number; y: number }
-): "north" | "south" | "east" | "west" {
-  const dx = (next.x ?? 0) - (current.x ?? 0);
-  const dy = (next.y ?? 0) - (current.y ?? 0);
-  if (Math.abs(dx) > Math.abs(dy)) {
-    return dx > 0 ? "east" : "west";
-  } else {
-    return dy > 0 ? "south" : "north";
-  }
-}

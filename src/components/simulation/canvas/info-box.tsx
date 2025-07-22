@@ -1,93 +1,59 @@
-import React from "react";
-import { Group, Rect, Text } from "react-konva";
-
 interface InfoBoxProps {
   title: string;
   details: Array<{ label: string; value: string; color?: string }>;
   color?: string;
-  x: number;
-  y: number;
-  width?: number;
+  show: boolean;
+  position?: "top-right" | "top-left" | "bottom-right" | "bottom-left";
 }
 
 /**
- * InfoBox component for showing detailed tooltips on hover
+ * InfoBox component for showing detailed tooltips using standard HTML/Tailwind
  * Displays a title header and a list of labeled details
  */
 export const InfoBox = ({
   title,
   details,
   color = "#1e40af",
-  x,
-  y,
-  width = 200,
+  show,
+  position = "top-right",
 }: InfoBoxProps) => {
-  const lineHeight = 18;
-  const padding = 10;
-  const headerHeight = 22;
-  const totalHeight = headerHeight + details.length * lineHeight + padding * 2;
+  if (!show) return null;
   
+  // Position classes based on the position prop
+  const positionClasses = {
+    "top-right": "top-4 right-4",
+    "top-left": "top-4 left-4",
+    "bottom-right": "bottom-4 right-4",
+    "bottom-left": "bottom-4 left-4",
+  };
+
   return (
-    <Group>
-      {/* Main container */}
-      <Rect
-        x={x}
-        y={y}
-        width={width}
-        height={totalHeight}
-        fill="rgba(255, 255, 255, 0.95)"
-        stroke={color}
-        strokeWidth={1}
-        cornerRadius={4}
-        shadowColor="rgba(0,0,0,0.3)"
-        shadowBlur={8}
-        shadowOffset={{ x: 2, y: 2 }}
-        shadowOpacity={0.5}
-      />
-      
-      {/* Title bar */}
-      <Rect
-        x={x}
-        y={y}
-        width={width}
-        height={headerHeight}
-        fill={color}
-        cornerRadius={4}
-        cornerRadiusBottomLeft={0}
-        cornerRadiusBottomRight={0}
-      />
-      
-      <Text
-        x={x + padding}
-        y={y + 5}
-        text={title}
-        fontSize={12}
-        fontStyle="bold"
-        fill="#ffffff"
-      />
+    <div 
+      className={`absolute ${positionClasses[position]} z-50 w-72 bg-white/95 rounded-lg shadow-lg border overflow-hidden backdrop-blur-sm`}
+      style={{ borderColor: color }}
+    >
+      {/* Header */}
+      <div 
+        className="px-3 py-2 text-white text-sm font-medium"
+        style={{ backgroundColor: color }}
+      >
+        {title}
+      </div>
       
       {/* Details */}
-      {details.map((detail, idx) => (
-        <React.Fragment key={idx}>
-          {/* Label */}
-          <Text
-            x={x + padding}
-            y={y + headerHeight + idx * lineHeight + padding}
-            text={`${detail.label}:`}
-            fontSize={11}
-            fontStyle="bold"
-            fill="#4b5563"
-          />
-          {/* Value */}
-          <Text
-            x={x + 70 + padding}
-            y={y + headerHeight + idx * lineHeight + padding}
-            text={detail.value}
-            fontSize={11}
-            fill={detail.color || "#000000"}
-          />
-        </React.Fragment>
-      ))}
-    </Group>
+      <div className="p-3">
+        {details.map((detail, idx) => (
+          <div key={idx} className="flex justify-between items-center py-1 text-sm">
+            <span className="font-medium text-gray-700">{detail.label}:</span>
+            <span 
+              className="font-medium" 
+              style={{ color: detail.color || "#000000" }}
+            >
+              {detail.value}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }; 
