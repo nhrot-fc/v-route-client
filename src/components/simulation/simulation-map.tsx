@@ -12,7 +12,6 @@ import { useWebSocket } from "@/lib/websocket-context";
 import { useSimulation } from "@/hooks/use-simulation";
 import { Card } from "@/components/ui/card";
 import { SimulationCanvas } from "./canvas/simulation-canvas";
-import { Prueba } from "./prueba";
 
 export function SimulationMap() {
   const {
