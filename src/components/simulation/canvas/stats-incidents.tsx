@@ -3,9 +3,10 @@ import React from "react";
 
 interface StatsIncidentsProps {
   simulationState: SimulationStateDTO | null;
-  simulationId?: string;
+  simulationId: string;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
+  searchQuery?: string;
 }
 
 export const StatsIncidents: React.FC<StatsIncidentsProps> = ({
@@ -13,6 +14,7 @@ export const StatsIncidents: React.FC<StatsIncidentsProps> = ({
   simulationState,
   isCollapsed = false,
   onToggleCollapse,
+  searchQuery = "",
 }) => {
   if (isCollapsed) {
     return (
@@ -34,10 +36,10 @@ export const StatsIncidents: React.FC<StatsIncidentsProps> = ({
       vehicleId: "V-001",
       type: "Avería",
       shift: "T1",
-      occurrenceTime: "2024-06-01T10:00:00Z",
+      occurrenceTime: "2024-06-01T10:15:00",
       resolved: false,
-      immobilizationEndTime: "2024-06-01T12:00:00Z",
-      availabilityTime: "2024-06-01T13:00:00Z",
+      immobilizationEndTime: "2024-06-01T12:30:00",
+      availabilityTime: "2024-06-01T13:00:00",
       returnToDepotRequired: true,
     },
     {
@@ -45,56 +47,52 @@ export const StatsIncidents: React.FC<StatsIncidentsProps> = ({
       vehicleId: "V-002",
       type: "Accidente",
       shift: "T2",
-      occurrenceTime: "2024-06-01T11:00:00Z",
+      occurrenceTime: "2024-06-01T11:45:00",
       resolved: true,
-      immobilizationEndTime: "2024-06-01T12:30:00Z",
-      availabilityTime: "2024-06-01T13:30:00Z",
+      immobilizationEndTime: "2024-06-01T13:10:00",
+      availabilityTime: "2024-06-01T13:40:00",
       returnToDepotRequired: false,
     },
   ];
 
+  // Filtro de búsqueda usando la prop searchQuery
+  const texto = searchQuery.toLowerCase();
+  const incidentesFiltrados = incidentesEjemplo.filter((incidente) => (
+    incidente.vehicleId.toLowerCase().includes(texto) ||
+    incidente.type.toLowerCase().includes(texto) ||
+    incidente.shift.toLowerCase().includes(texto) ||
+    incidente.occurrenceTime.toLowerCase().includes(texto) ||
+    incidente.immobilizationEndTime.toLowerCase().includes(texto) ||
+    incidente.availabilityTime.toLowerCase().includes(texto)
+  ));
+
   return (
-    <div className="absolute top-40 right-4 bg-white/95 rounded-lg shadow-lg border border-gray-200 z-20 w-[24rem] max-h-[400px] flex flex-col">
-      <div className="flex justify-between items-center p-3 border-b">
-        <h3 className="font-bold text-red-800">Panel de Incidentes</h3>
-        {onToggleCollapse && (
-          <button
-            onClick={onToggleCollapse}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            X
-          </button>
-        )}
-      </div>
-      <div className="flex-1 overflow-y-auto p-4">
-        <span className="text-lg font-bold text-red-600 mb-2 block">Incidentes activos</span>
-        {true ? (
-          <ol className="list-decimal ml-5 space-y-2">
-            {incidentesEjemplo.map((incidente, idx) => {
-              // Preparo los campos a mostrar
-              const campos = [
-                `Vehículo: ${incidente.vehicleId}`,
-                `Tipo: ${incidente.type}`,
-                `Turno: ${incidente.shift}`,
-                // Si quieres más campos, agrégalos aquí
-              ];
-              // Si hay menos de 3 campos, relleno con ""
-              while (campos.length < 3) campos.push("");
-              return (
-                <li key={incidente.id || idx} className="bg-red-50 p-2 rounded mb-4">
-                  <div className="grid grid-cols-3 gap-2">
-                    {campos.map((campo, i) => (
-                      <div key={i}>{campo}</div>
-                    ))}
-                  </div>
-                </li>
-              );
-            })}
-          </ol>
-        ) : (
-          <span className="text-gray-500">No hay incidentes activos.</span>
-        )}
-      </div>
+    <div className="p-4">
+      <span className="text-lg font-bold text-red-600 mb-2 block">Incidentes activos</span>
+      <table className="w-full text-sm">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="py-2 px-3 text-left">Vehículo</th>
+            <th className="py-2 px-3 text-left">Tipo</th>
+            <th className="py-2 px-3 text-left">Turno</th>
+            <th className="py-2 px-3 text-left">Ocurrencia</th>
+            <th className="py-2 px-3 text-left">Resolución</th>
+            <th className="py-2 px-3 text-left">Disponibilidad</th>
+          </tr>
+        </thead>
+        <tbody>
+          {incidentesFiltrados.map((incidente, idx) => (
+            <tr key={incidente.id || idx} className="border-t hover:bg-red-50">
+              <td className="py-2 px-3">{incidente.vehicleId}</td>
+              <td className="py-2 px-3">{incidente.type}</td>
+              <td className="py-2 px-3">{incidente.shift}</td>
+              <td className="py-2 px-3">{new Date(incidente.occurrenceTime).toLocaleDateString()} {new Date(incidente.occurrenceTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+              <td className="py-2 px-3">{new Date(incidente.immobilizationEndTime).toLocaleDateString()} {new Date(incidente.immobilizationEndTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+              <td className="py-2 px-3">{new Date(incidente.availabilityTime).toLocaleDateString()} {new Date(incidente.availabilityTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

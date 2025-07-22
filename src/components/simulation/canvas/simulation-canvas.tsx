@@ -551,12 +551,6 @@ export function SimulationCanvas({
         selectedOrder={selectedOrder}
         onOrderSelect={handleOrderSelect}
       />
-      <StatsIncidents
-        simulationId={simulationInfo?.id ?? ""}
-        simulationState={simulationState}
-        isCollapsed={isIncidentsPanelCollapsed}
-        onToggleCollapse={toggleIncidentsPanelCollapsed}
-      />
       {/* Zoom controls */}
       <div className="absolute bottom-4 right-4 flex flex-col gap-2 bg-white/90 p-3 rounded-lg shadow-md backdrop-blur-sm z-10 border border-gray-100">
         <Button

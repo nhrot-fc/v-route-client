@@ -10,6 +10,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { StatsIncidents } from "./stats-incidents";
 import {
   type SimulationStateDTO,
   type OrderDTO,
@@ -39,8 +40,8 @@ import {
 } from "@/components/ui/select";
 import { formatPercentageValue } from "./utils";
 
-// Define panel tab types
-type TabType = "general" | "vehicles" | "orders" | "depots" | "blockages";
+// Define panel tab types (agrego 'incidents')
+type TabType = "general" | "vehicles" | "orders" | "depots" | "blockages" | "incidents";
 
 interface StatsPanelProps {
   simulationId?: string;
@@ -223,6 +224,17 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({
                 (simulationState.auxDepots?.length || 0)}
             </span>
           </button>
+          <button
+            className={`flex-1 py-2 px-4 flex items-center justify-center gap-1 ${
+              activeTab === "incidents"
+                ? "border-b-2 border-blue-500 text-blue-600"
+                : "text-gray-500"
+            }`}
+            onClick={() => setActiveTab("incidents")}
+          >
+            <AlertTriangle className="w-4 h-4" />
+            <span>INCIDENTES</span>
+          </button>
         </div>
         {canScrollRight && (
           <button
@@ -305,6 +317,14 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({
           />
         )}
 
+        {activeTab === "incidents" && (
+          <StatsIncidents
+            simulationId={simulationId ?? ""}
+            simulationState={simulationState}
+            isCollapsed={false}
+            searchQuery={searchQuery}
+          />
+        )}
         {/* Add BlockageStatePanel when needed */}
       </div>
 
@@ -486,8 +506,8 @@ const OrderStatePanel: React.FC<{
 }> = ({ simulationState, searchQuery, selectedOrder, onOrderSelect }) => {
   const orders = simulationState.pendingOrders || [];
 
-  // Filter based on search query
-  const filteredOrders = searchQuery
+  // Filter and order based on search query and remaining time
+  const filteredOrders = (searchQuery
     ? orders.filter(
         (order) =>
           order.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -497,7 +517,17 @@ const OrderStatePanel: React.FC<{
             order.position?.y?.toString()
           ).includes(searchQuery)
       )
-    : orders;
+    : orders
+  )
+    .slice() // copia para no mutar el original
+    .sort((a, b) => {
+      // Si falta alguna fecha, los manda al final
+      if (!a.deadlineTime || !simulationState.currentTime) return 1;
+      if (!b.deadlineTime || !simulationState.currentTime) return -1;
+      const aRestante = new Date(a.deadlineTime).getTime() - new Date(simulationState.currentTime).getTime();
+      const bRestante = new Date(b.deadlineTime).getTime() - new Date(simulationState.currentTime).getTime();
+      return aRestante - bRestante;
+    });
 
   // Get vehicles serving the selected order
   const getVehiclesServingOrder = (orderId: string) => {
