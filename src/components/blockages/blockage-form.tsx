@@ -17,6 +17,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useBlockages } from "@/hooks/use-blockages";
 import { type BlockageDTO, type Position } from "@/lib/api-client";
+import { DateUtils } from "@/lib/date-utils";
 import {
   Card,
   CardContent,
@@ -104,7 +105,7 @@ export function BlockageForm() {
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     try {
-      // Construct start and end times
+      // Construct start time using DateUtils to handle timezone correctly
       const startTime = new Date(data.startDate);
       startTime.setHours(
         parseInt(data.startHour),
@@ -112,9 +113,12 @@ export function BlockageForm() {
         0,
         0,
       );
+      const startTimeFixed = DateUtils.removeTimezone(startTime);
 
+      // Construct end time using DateUtils to handle timezone correctly
       const endTime = new Date(data.endDate);
       endTime.setHours(parseInt(data.endHour), parseInt(data.endMinute), 0, 0);
+      const endTimeFixed = DateUtils.removeTimezone(endTime);
 
       // Create linePoints string from points array: "x1,y1,x2,y2,...,xn,yn"
       const blockageLines: Position[] = data.points.map((point) => ({
@@ -125,8 +129,8 @@ export function BlockageForm() {
       // Create blockage object with linePoints format
       const blockageData: BlockageDTO = {
         blockageLines,
-        startTime: startTime.toISOString(),
-        endTime: endTime.toISOString(),
+        startTime: startTimeFixed.toISOString(),
+        endTime: endTimeFixed.toISOString(),
       };
 
       await createBlockage(blockageData);

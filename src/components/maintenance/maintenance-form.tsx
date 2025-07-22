@@ -30,6 +30,7 @@ import * as z from "zod";
 import { useToast } from "@/components/ui/use-toast";
 import { useMaintenance } from "@/hooks/use-maintenance";
 import { useVehicles } from "@/hooks/use-vehicles";
+import { DateUtils } from "@/lib/date-utils";
 
 // Define form schema
 const formSchema = z.object({
@@ -59,10 +60,13 @@ export function MaintenanceForm() {
   const onSubmit = async (data: FormValues) => {
     setIsSubmitting(true);
     try {
+      // Apply DateUtils to handle timezone correctly for backend submission
+      const assignedDate = DateUtils.removeTimezone(data.assignedDate);
+      
       // Format dates for API
       const maintenanceData = {
         vehicleId: data.vehicleId,
-        assignedDate: data.assignedDate.toISOString(),
+        assignedDate: assignedDate.toISOString(),
       };
 
       await createMaintenance(maintenanceData);

@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { useOrders } from "@/hooks/use-orders";
 import { type OrderDTO } from "@/lib/api-client";
+import { DateUtils } from "@/lib/date-utils";
 
 interface OrderFormProps {
   onOrderAdded?: () => void;
@@ -60,13 +61,12 @@ export default function OrderForm({ onOrderAdded }: OrderFormProps) {
       return;
     }
 
-    const now = new Date();
-
-    // Calcular la fecha límite basada en las horas de plazo
+    // Create "local" dates using DateUtils for backend submission
+    const now = DateUtils.createLocalDate();
     const due = new Date(now);
     due.setHours(due.getHours() + plazoHoras);
+    const dueFixed = DateUtils.removeTimezone(due);
 
-    // Generar ID basado en el cliente y la fecha
     const idFecha = now.toISOString().split("T")[0].replace(/-/g, "");
     const orderId = `${clienteId}-${idFecha}`;
 
@@ -74,7 +74,7 @@ export default function OrderForm({ onOrderAdded }: OrderFormProps) {
       id: orderId,
       position: { x, y },
       arrivalTime: now.toISOString(),
-      deadlineTime: due.toISOString(),
+      deadlineTime: dueFixed.toISOString(),
       glpRequestM3: volumen,
       remainingGlpM3: volumen,
       delivered: false,

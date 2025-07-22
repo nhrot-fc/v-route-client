@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/card";
 import { useBlockages } from "@/hooks/use-blockages";
 import { type BlockageDTO, type Position } from "@/lib/api-client";
+import { DateUtils } from "@/lib/date-utils";
 
 export function BlockageUploadForm() {
   const [file, setFile] = useState<File | null>(null);
@@ -53,17 +54,19 @@ export function BlockageUploadForm() {
 
     const [, days, hours, minutes] = match;
 
-    // Usar el año y mes de referencia proporcionados con UTC para evitar ajustes de zona horaria
-    const timestamp = Date.UTC(
+    // Crear fecha inicialmente con UTC para evitar problemas de zona horaria
+    const utcDate = new Date(Date.UTC(
       refYear,
       refMonth - 1,
       parseInt(days),
       parseInt(hours),
       parseInt(minutes),
       0
-    );
-    const utcDate = new Date(timestamp);
-    return utcDate.toISOString();
+    ));
+    
+    // Aplicar DateUtils para manejar la zona horaria correctamente para el backend
+    const fixedDate = DateUtils.removeTimezone(utcDate);
+    return fixedDate.toISOString();
   };
 
   // Parse blockage line to create blockage objects

@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { FileText, Upload, Download, CalendarIcon } from "lucide-react";
 import { useOrders } from "@/hooks/use-orders";
 import { type OrderDTO } from "@/lib/api-client";
+import { DateUtils } from "@/lib/date-utils";
 
 interface OrderUploadFormProps {
   onOrdersUploaded?: () => void;
@@ -100,17 +101,19 @@ export function OrderUploadForm({ onOrdersUploaded }: OrderUploadFormProps) {
         const hours = hourMatch ? parseInt(hourMatch[1]) : 0;
         const minutes = minuteMatch ? parseInt(minuteMatch[1]) : 0;
 
-        // Crear la fecha de llegada usando UTC para evitar el ajuste por zona horaria
-        // Date.UTC devuelve un timestamp que luego convertimos a objeto Date
+        // Crear fecha base con UTC
         const arrivalTimestamp = Date.UTC(
           refYear,
-          refMonth - 1, // Mes en JavaScript es 0-indexed (0-11)
+          refMonth - 1,
           days,
           hours,
           minutes,
           0,
         );
         const arrivalDate = new Date(arrivalTimestamp);
+        
+        // Aplicar DateUtils para manejar correctamente la zona horaria para el backend
+        const arrivalDateFixed = DateUtils.removeTimezone(arrivalDate);
 
         // Parse GLP request (remove m3 suffix)
         const glpRequestM3 = parseFloat(glpRequestStr.replace("m3", ""));
@@ -118,16 +121,13 @@ export function OrderUploadForm({ onOrdersUploaded }: OrderUploadFormProps) {
         // Parse deadline hours (remove h suffix)
         const deadlineHours = parseInt(deadlineStr.replace("h", ""));
 
-        // Calcular la fecha límite sumando las horas de plazo, también en UTC
-        const deadlineTimestamp =
-          arrivalTimestamp + deadlineHours * 60 * 60 * 1000;
-        const deadlineDate = new Date(deadlineTimestamp);
+        // Calcular la fecha límite sumando las horas de plazo a la fecha de llegada
+        const deadlineDate = new Date(arrivalDateFixed);
+        deadlineDate.setHours(deadlineDate.getHours() + deadlineHours);
+        const deadlineDateFixed = DateUtils.removeTimezone(deadlineDate);
 
         // Crear un ID que refleje correctamente el cliente y la fecha/hora de llegada
-        // Extraemos los componentes de fecha directamente de la fecha UTC
-        const stringId = `${clientId}-${arrivalDate.getUTCFullYear()}-${
-          arrivalDate.getUTCMonth() + 1
-        }-${arrivalDate.getUTCDate()}T${arrivalDate.getUTCHours()}:${arrivalDate.getUTCMinutes()}`;
+        const stringId = `${clientId}-${arrivalDateFixed.toISOString().split("T")[0].replace(/-/g, "")}`;
 
         // Create order DTO
         const order: OrderDTO = {
@@ -136,8 +136,8 @@ export function OrderUploadForm({ onOrdersUploaded }: OrderUploadFormProps) {
             x: parseFloat(posX),
             y: parseFloat(posY),
           },
-          arrivalTime: arrivalDate.toISOString(),
-          deadlineTime: deadlineDate.toISOString(),
+          arrivalTime: arrivalDateFixed.toISOString(),
+          deadlineTime: deadlineDateFixed.toISOString(),
           glpRequestM3,
           remainingGlpM3: glpRequestM3, // Initially, remaining = requested
           delivered: false,

@@ -23,6 +23,7 @@ import {
 import { useMaintenance } from "@/hooks/use-maintenance";
 import { type MaintenanceDTO } from "@/lib/api-client";
 import { useVehicles } from "@/hooks/use-vehicles";
+import { DateUtils } from "@/lib/date-utils";
 
 export function MaintenanceUploadForm() {
   const [file, setFile] = useState<File | null>(null);
@@ -117,7 +118,7 @@ export function MaintenanceUploadForm() {
     const hour = hourMatch ? parseInt(hourMatch[1], 10) : 0;
     const minute = minuteMatch ? parseInt(minuteMatch[1], 10) : 0;
 
-    // Crear la fecha usando UTC para evitar el ajuste por zona horaria
+    // Crear fecha base usando UTC
     const timestamp = Date.UTC(year, month - 1, day, hour, minute);
     const date = new Date(timestamp);
 
@@ -125,7 +126,8 @@ export function MaintenanceUploadForm() {
       throw new Error("Fecha inválida");
     }
 
-    return date;
+    // Aplicar DateUtils para manejar la zona horaria correctamente para el backend
+    return DateUtils.removeTimezone(date);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
