@@ -28,6 +28,7 @@ import type {
   TooltipInfo,
   EnhancedTooltipInfo,
 } from "./types";
+import { StatsIncidents } from "./stats-incidents";
 
 // Time display component to show current simulation time
 const TimeDisplay = ({ 
@@ -262,6 +263,8 @@ export function SimulationCanvas({
   
   // Estado para minimizar la leyenda
   const [isLegendMinimized, setIsLegendMinimized] = useState(false);
+  // Nuevo estado para colapsar el panel de incidentes
+  const [isIncidentsPanelCollapsed, setIsIncidentsPanelCollapsed] = useState(false);
   
   // Get the selected vehicle details
   const selectedVehicle =
@@ -344,7 +347,9 @@ export function SimulationCanvas({
   const togglePanelCollapsed = useCallback(() => {
     setIsPanelCollapsed((prev) => !prev);
   }, []);
-  
+  const toggleIncidentsPanelCollapsed = useCallback(() => {
+    setIsIncidentsPanelCollapsed((prev) => !prev);
+  }, []);
   // Toggle time displays minimized state
   const toggleTimeDisplayMinimized = useCallback(() => {
     setIsTimeDisplayMinimized((prev) => !prev);
@@ -543,7 +548,6 @@ export function SimulationCanvas({
         selectedOrder={selectedOrder}
         onOrderSelect={handleOrderSelect}
       />
-
       {/* Zoom controls */}
       <div className="absolute bottom-4 right-4 flex flex-col gap-2 bg-white/90 p-3 rounded-lg shadow-md backdrop-blur-sm z-10 border border-gray-100">
         <Button

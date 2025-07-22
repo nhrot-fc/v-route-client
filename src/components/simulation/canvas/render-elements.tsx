@@ -291,6 +291,7 @@ export const renderElements = ({
       else volumeColor = "#f97316"; // orange - large
 
       // Highlight orders if they are being served by vehicles, if this is the selected order, or if this order is in a selected vehicle's plan
+
       const isSelectedOrder = selectedOrder?.id === order.id;
       const isHighlightedOrder = highlightedOrderIds.includes(order.id || "");
 
