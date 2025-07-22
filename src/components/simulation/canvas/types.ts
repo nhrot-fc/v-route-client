@@ -108,29 +108,8 @@ export type MapElement =
   | VehicleMapElement
   | BlockageMapElement;
   
-// Route point for vehicle path visualization
-export interface RoutePoint {
-  x: number;
-  y: number;
-  timestamp?: string;
-  actionType?: string;
-}
-
-// Vehicle route for visualization
-export interface VehicleRoute {
-  vehicleId: string;
-  points: RoutePoint[];
-  completed?: boolean;
-  ordersServed?: string[];
-  depotsVisited?: string[];
-}
-
-
-
-
 // SimulationStateDTO -> extract vehicles, orders, ... -> transform to EnhancedVehicleDTO, EnhancedOrderDTO, etc.
 // To enhance the simulation state with additional information from the current VehiclePlanDTO and other DTOs
-
 export interface EnhancedSimulationStateDTO {
   vehicles: EnhancedVehicleDTO[];
   orders: EnhancedOrderDTO[];

@@ -17,6 +17,7 @@ import {
   type VehicleDTO,
   type IncidentCreateDTO,
   IncidentCreateDTOTypeEnum,
+  type ActionDTO,
 } from "@/lib/api-client";
 import { useSimulation } from "@/hooks/use-simulation";
 import {
@@ -28,7 +29,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -1065,7 +1065,7 @@ const VehicleStatePanel: React.FC<{
             >
               Cancelar
             </Button>
-            <Button onClick={handleBreakdownSubmit} disabled={isBreakdownLoading}>
+            <Button onClick={() => void handleBreakdownSubmit()} disabled={isBreakdownLoading}>
               {isBreakdownLoading ? "Reportando..." : "Reportar Avería"}
             </Button>
           </DialogFooter>
@@ -1083,7 +1083,7 @@ const VehicleStatePanel: React.FC<{
           </div>
           
           <div className="space-y-2">
-            {selectedVehicleFutureActions.map((action: any, index: number) => {
+            {selectedVehicleFutureActions.map((action: ActionDTO & { isCurrent: boolean }, index: number) => {
               const actionTypeColors = {
                 DRIVE: "bg-blue-100 text-blue-700",
                 SERVE: "bg-green-100 text-green-700",
@@ -1221,7 +1221,7 @@ const DepotStatePanel: React.FC<{
         <tbody>
           {filteredDepots.map((depot) => {
             // Calculate capacity and stock values
-            let capacity = depot.depot.glpCapacityM3 ?? 0;
+            const capacity = depot.depot.glpCapacityM3 ?? 0;
             let currentStock = depot.depot.currentGlpM3 ?? 0;
             if (depot.depot.id === 'MAIN') {
               currentStock = capacity;

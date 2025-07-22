@@ -124,24 +124,33 @@ export const enhanceVehicleWithPlan = (
   let currentAction: ActionDTO | undefined = undefined;
   let nextPoint: Position | null = null;
 
-  for (const action of vehiclePlan.actions || []) {
-    if (action.path && action.path.length > 0) {
-      currentAction = action;
-
+  // Usar currentActionIndex para identificar la acción actual
+  if (vehiclePlan.currentActionIndex !== undefined && 
+      vehiclePlan.currentActionIndex >= 0 && 
+      vehiclePlan.actions && 
+      vehiclePlan.currentActionIndex < vehiclePlan.actions.length) {
+    
+    currentAction = vehiclePlan.actions[vehiclePlan.currentActionIndex];
+    
+    // Obtener el punto siguiente basado en el progreso de la acción actual
+    if (currentAction?.path && currentAction.path.length > 0) {
       const pathIndex =
-        action.progress !== undefined
-          ? Math.floor((action.path.length - 1) * (action.progress / 100))
+        currentAction.progress !== undefined
+          ? Math.floor((currentAction.path.length - 1) * (currentAction.progress / 100))
           : 0;
 
-      const nextPathIndex = Math.min(pathIndex + 1, action.path.length - 1);
-      nextPoint = action.path[nextPathIndex];
-
-      if (action.orderId) {
-        const order = pendingOrders.find(o => o.id === action.orderId);
-        if (order) currentOrders.push(order);
+      const nextPathIndex = Math.min(pathIndex + 1, currentAction.path.length - 1);
+      nextPoint = currentAction.path[nextPathIndex];
+    }
+  }
+  
+  // Recopilar todas las órdenes asociadas a las acciones del plan
+  for (const action of vehiclePlan.actions || []) {
+    if (action.orderId) {
+      const order = pendingOrders.find(o => o.id === action.orderId);
+      if (order && !currentOrders.some(o => o.id === order.id)) {
+        currentOrders.push(order);
       }
-
-      break;
     }
   }
 

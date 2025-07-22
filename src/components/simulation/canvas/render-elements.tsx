@@ -1,10 +1,15 @@
 import React from "react";
 import { Group, Line, Rect } from "react-konva";
-import type { SimulationStateDTO, DepotDTO, OrderDTO } from "@/lib/api-client";
+import type {
+  SimulationStateDTO,
+  DepotDTO,
+  OrderDTO,
+  ActionDTO,
+  Position,
+} from "@/lib/api-client";
 import type {
   TooltipInfo,
   EnhancedTooltipInfo,
-  RoutePoint,
   EnhancedOrderDTO,
 } from "./types";
 import { MapIcon } from "./map-icon";
@@ -83,12 +88,23 @@ export const renderElements = ({
   let selectedVehicleOrderIds: string[] = [];
   if (selectedVehicleId) {
     // Solo el vehículo seleccionado
-    filteredVehicles = enhancedVehicles.filter(v => v.id === selectedVehicleId);
+    filteredVehicles = enhancedVehicles.filter(
+      (v) => v.id === selectedVehicleId
+    );
     // Encuentra el plan del vehículo seleccionado
-    selectedVehiclePlan = simulationState.currentVehiclePlans?.find(plan => plan.vehicleId === selectedVehicleId) || null;
-    selectedVehicleOrderIds = (selectedVehiclePlan?.actions?.filter(a => a.orderId).map(a => a.orderId).filter(Boolean) as string[]) || [];
+    selectedVehiclePlan =
+      simulationState.currentVehiclePlans?.find(
+        (plan) => plan.vehicleId === selectedVehicleId
+      ) || null;
+    selectedVehicleOrderIds =
+      (selectedVehiclePlan?.actions
+        ?.filter((a) => a.orderId)
+        .map((a) => a.orderId)
+        .filter(Boolean) as string[]) || [];
     // Filtra los pedidos que están en el plan del vehículo
-    filteredOrders = filteredOrders.filter(order => order.id && selectedVehicleOrderIds.includes(order.id));
+    filteredOrders = filteredOrders.filter(
+      (order) => order.id && selectedVehicleOrderIds.includes(order.id)
+    );
   }
 
   // Procesa los pedidos con asignación de vehículos
@@ -103,23 +119,36 @@ export const renderElements = ({
   // --- FILTRADO ESPECIAL AL SELECCIONAR UN PEDIDO ---
   if (selectedOrder) {
     // 1. Solo mostrar el pedido seleccionado
-    enhancedOrders = enhancedOrders.filter(order => order.id === selectedOrder.id);
+    enhancedOrders = enhancedOrders.filter(
+      (order) => order.id === selectedOrder.id
+    );
 
     // 2. Obtener los vehículos que atienden este pedido
     let servingVehicleIds: string[] = [];
-    if (enhancedOrders[0]?.servingVehicles && enhancedOrders[0].servingVehicles.length > 0) {
-      servingVehicleIds = enhancedOrders[0].servingVehicles.map(v => v.id).filter(Boolean) as string[];
+    if (
+      enhancedOrders[0]?.servingVehicles &&
+      enhancedOrders[0].servingVehicles.length > 0
+    ) {
+      servingVehicleIds = enhancedOrders[0].servingVehicles
+        .map((v) => v.id)
+        .filter(Boolean) as string[];
     } else if (simulationState.currentVehiclePlans) {
       // Buscar manualmente en los planes de vehículos
       servingVehicleIds = simulationState.currentVehiclePlans
-        .filter(plan => plan.actions && plan.actions.some(action => action.orderId === selectedOrder.id))
-        .map(plan => plan.vehicleId)
-        .filter((id): id is string => typeof id === 'string');
+        .filter(
+          (plan) =>
+            plan.actions &&
+            plan.actions.some((action) => action.orderId === selectedOrder.id)
+        )
+        .map((plan) => plan.vehicleId)
+        .filter((id): id is string => typeof id === "string");
     }
 
     // 3. Filtrar vehículos: solo los que atienden el pedido, pero solo si hay alguno
     if (servingVehicleIds.length > 0) {
-      filteredVehicles = enhancedVehicles.filter(v => v.id && servingVehicleIds.includes(v.id));
+      filteredVehicles = enhancedVehicles.filter(
+        (v) => v.id && servingVehicleIds.includes(v.id)
+      );
     } else {
       // Si no hay vehículos asignados, no mostrar ningún vehículo
       filteredVehicles = [];
@@ -129,29 +158,29 @@ export const renderElements = ({
   // --- FILTRADO ESPECIAL AL SELECCIONAR UN ALMACÉN ---
   if (selectedDepot && selectedDepot.depot && selectedDepot.depot.position) {
     const depotPos = selectedDepot.depot.position;
-  
+
     // Filtra vehículos cuya ACCIÓN ACTUAL (usando currentActionIndex) termina en el almacén seleccionado.
-    const vehiclesToDepot = enhancedVehicles.filter(vehicle => {
+    const vehiclesToDepot = enhancedVehicles.filter((vehicle) => {
       const plan = vehicle.currentPlan;
       const currentActionIndex = plan?.currentActionIndex;
-  
+
       // Valida que el plan y el índice de la acción actual existan y sean válidos.
       if (
         !plan?.actions ||
-        typeof currentActionIndex !== 'number' ||
+        typeof currentActionIndex !== "number" ||
         currentActionIndex < 0 ||
         currentActionIndex >= plan.actions.length
       ) {
         return false;
       }
-  
+
       const currentAction = plan.actions[currentActionIndex];
-  
+
       // Valida que la acción actual tenga una ruta (path) con al menos un punto.
       if (!currentAction?.path || currentAction.path.length === 0) {
         return false;
       }
-  
+
       // Compara el destino de la acción actual con la posición del almacén.
       const lastPoint = currentAction.path[currentAction.path.length - 1];
       return (
@@ -159,7 +188,7 @@ export const renderElements = ({
         Math.abs((lastPoint.y ?? 0) - (depotPos.y ?? 0)) < 1
       );
     });
-  
+
     filteredVehicles = vehiclesToDepot;
     // Ocultar todos los pedidos
     enhancedOrders = [];
@@ -263,7 +292,7 @@ export const renderElements = ({
 
       // Highlight orders if they are being served by vehicles, if this is the selected order, or if this order is in a selected vehicle's plan
       const isSelectedOrder = selectedOrder?.id === order.id;
-      const isHighlightedOrder = highlightedOrderIds.includes(order.id || '');
+      const isHighlightedOrder = highlightedOrderIds.includes(order.id || "");
 
       elements.push(
         <Group
@@ -486,7 +515,7 @@ export const renderElements = ({
                 <ColoredText
                   x={depotSize + 8 * (zoom / 15)}
                   y={34 * (zoom / 15)}
-                  text={`%: ${simulationState.mainDepot.glpCapacityM3 ? ((simulationState.mainDepot.currentGlpM3 ?? 0) / (simulationState.mainDepot.glpCapacityM3 ?? 1) * 100).toFixed(1) : '0'}%`}
+                  text={`%: ${simulationState.mainDepot.glpCapacityM3 ? (((simulationState.mainDepot.currentGlpM3 ?? 0) / (simulationState.mainDepot.glpCapacityM3 ?? 1)) * 100).toFixed(1) : "0"}%`}
                   fontSize={11 * (zoom / 15)}
                   color="#0ea5e9"
                 />
@@ -565,57 +594,58 @@ export const renderElements = ({
           {!tooltip.show && (
             <>
               {/* Depot info - only show if selected */}
-              {selectedDepot?.depot.id === depot.id && !selectedDepot?.isMainDepot && (
-                <>
-                  <Rect
-                    x={depotSize}
-                    y={-8 * (zoom / 15)}
-                    width={150 * (zoom / 15)}
-                    height={56 * (zoom / 15)}
-                    fill="rgba(255, 255, 255, 0.95)"
-                    cornerRadius={6}
-                    shadowColor="#000"
-                    shadowBlur={8}
-                    shadowOpacity={0.12}
-                  />
-                  <ColoredText
-                    x={depotSize + 8 * (zoom / 15)}
-                    y={-6 * (zoom / 15)}
-                    text={`Depósito Aux. ${index + 1}`}
-                    fontSize={12 * (zoom / 15)}
-                    fontStyle="bold"
-                    color="#3b82f6"
-                  />
-                  <ColoredText
-                    x={depotSize + 8 * (zoom / 15)}
-                    y={8 * (zoom / 15)}
-                    text={`GLP: ${(depot.currentGlpM3 ?? 0).toLocaleString()} m³`}
-                    fontSize={11 * (zoom / 15)}
-                    color="#0f172a"
-                  />
-                  <ColoredText
-                    x={depotSize + 8 * (zoom / 15)}
-                    y={20 * (zoom / 15)}
-                    text={`Capacidad: ${(depot.glpCapacityM3 ?? 0).toLocaleString()} m³`}
-                    fontSize={11 * (zoom / 15)}
-                    color="#64748b"
-                  />
-                  <ColoredText
-                    x={depotSize + 8 * (zoom / 15)}
-                    y={32 * (zoom / 15)}
-                    text={`%: ${depot.glpCapacityM3 ? ((depot.currentGlpM3 ?? 0) / (depot.glpCapacityM3 ?? 1) * 100).toFixed(1) : '0'}%`}
-                    fontSize={11 * (zoom / 15)}
-                    color="#0ea5e9"
-                  />
-                  <ColoredText
-                    x={depotSize + 8 * (zoom / 15)}
-                    y={44 * (zoom / 15)}
-                    text={`Ubicación: (${depot.position?.x ?? 0}, ${depot.position?.y ?? 0})`}
-                    fontSize={10 * (zoom / 15)}
-                    color="#334155"
-                  />
-                </>
-              )}
+              {selectedDepot?.depot.id === depot.id &&
+                !selectedDepot?.isMainDepot && (
+                  <>
+                    <Rect
+                      x={depotSize}
+                      y={-8 * (zoom / 15)}
+                      width={150 * (zoom / 15)}
+                      height={56 * (zoom / 15)}
+                      fill="rgba(255, 255, 255, 0.95)"
+                      cornerRadius={6}
+                      shadowColor="#000"
+                      shadowBlur={8}
+                      shadowOpacity={0.12}
+                    />
+                    <ColoredText
+                      x={depotSize + 8 * (zoom / 15)}
+                      y={-6 * (zoom / 15)}
+                      text={`Depósito Aux. ${index + 1}`}
+                      fontSize={12 * (zoom / 15)}
+                      fontStyle="bold"
+                      color="#3b82f6"
+                    />
+                    <ColoredText
+                      x={depotSize + 8 * (zoom / 15)}
+                      y={8 * (zoom / 15)}
+                      text={`GLP: ${(depot.currentGlpM3 ?? 0).toLocaleString()} m³`}
+                      fontSize={11 * (zoom / 15)}
+                      color="#0f172a"
+                    />
+                    <ColoredText
+                      x={depotSize + 8 * (zoom / 15)}
+                      y={20 * (zoom / 15)}
+                      text={`Capacidad: ${(depot.glpCapacityM3 ?? 0).toLocaleString()} m³`}
+                      fontSize={11 * (zoom / 15)}
+                      color="#64748b"
+                    />
+                    <ColoredText
+                      x={depotSize + 8 * (zoom / 15)}
+                      y={32 * (zoom / 15)}
+                      text={`%: ${depot.glpCapacityM3 ? (((depot.currentGlpM3 ?? 0) / (depot.glpCapacityM3 ?? 1)) * 100).toFixed(1) : "0"}%`}
+                      fontSize={11 * (zoom / 15)}
+                      color="#0ea5e9"
+                    />
+                    <ColoredText
+                      x={depotSize + 8 * (zoom / 15)}
+                      y={44 * (zoom / 15)}
+                      text={`Ubicación: (${depot.position?.x ?? 0}, ${depot.position?.y ?? 0})`}
+                      fontSize={10 * (zoom / 15)}
+                      color="#334155"
+                    />
+                  </>
+                )}
             </>
           )}
         </Group>
@@ -630,84 +660,57 @@ export const renderElements = ({
       const plan = vehicle.currentPlan;
       if (!plan || !plan.actions || plan.actions.length === 0) return;
 
-      // 1. Agrupa las acciones en bloques (cada bloque termina en SERVE)
-      const actionBlocks: (typeof plan.actions)[] = [];
-      let tempBlock: typeof plan.actions = [];
-      plan.actions.forEach((action) => {
-        if (action.type === "DRIVE" && tempBlock.length > 0) {
-          actionBlocks.push([...tempBlock]);
-          tempBlock = [];
-        }
-        tempBlock.push(action);
-        if (action.type === "SERVE") {
-          actionBlocks.push([...tempBlock]);
-          tempBlock = [];
-        }
-      });
-      if (tempBlock.length > 0) actionBlocks.push([...tempBlock]);
-
-      // 2. Busca el bloque cuyo path contiene la posición actual del camión
-      let blockToDraw: typeof plan.actions | null = null;
-      let currentActionIdx = -1;
-      let indexFrom = 0;
-      //
-      const currentAction = plan.currentAction;
-      //To do refactor to use currentActionIndex instead of stimated the positions
-      for (const block of actionBlocks) {
-        for (let i = 0; i < block.length; i++) {
-          const action = block[i];
-          if (!action.path || action.path.length < 2) continue;
-          const idx = action.path.findIndex(
-            (p) =>
-              Math.abs((p.x ?? 0) - (vehicle.currentPosition?.x ?? 0)) < 1 &&
-              Math.abs((p.y ?? 0) - (vehicle.currentPosition?.y ?? 0)) < 1
-          );
-          if (idx !== -1) {
-            blockToDraw = block;
-            currentActionIdx = i;
-            indexFrom = idx;
-            break;
-          }
-        }
-        if (blockToDraw) break;
-      }
-
-      if (!blockToDraw) return; // No hay bloque que contenga la posición actual
+      const currentAction: ActionDTO | undefined = plan.currentAction;
+      if (!currentAction) return;
 
       // Definir si el vehículo está resaltado
-      const isHighlightedVehicle = highlightedVehicleIds.includes(vehicle.id || '');
-      const isSelectedVehicle = selectedVehicleId === vehicle.id;
+      const isHighlightedVehicle = highlightedVehicleIds.includes(
+        vehicle.id || ""
+      );
 
       // 3. Imprime la ruta futura (desde la posición actual hasta el final)
       // Si hay un vehículo seleccionado, solo se muestra su ruta futura
       if (selectedVehicleId) {
-        // Nueva lógica: encontrar la acción y el índice actual en el plan
+        // Usar el currentActionIndex que ya viene en el plan para identificar la acción actual
         let fullPath: { x: number; y: number }[] = [];
-        let found = false;
-        for (let actionIdx = 0; actionIdx < plan.actions.length; actionIdx++) {
+
+        // Si existe un currentActionIndex válido, lo usamos como punto de partida
+
+        // Primero, agregamos el camino restante de la acción actual
+        if (currentAction?.path && currentAction.path.length >= 2) {
+          // Si hay un progreso definido, lo usamos para encontrar el punto actual en el path
+          const pathIndex =
+            currentAction.progress !== undefined
+              ? Math.floor(
+                  (currentAction.path.length - 1) *
+                    (currentAction.progress / 100)
+                )
+              : 0;
+
+          // Agregamos desde el punto actual hasta el final de esta acción
+          const pathSlice = currentAction.path
+            .slice(pathIndex)
+            .map((p) => ({ x: p.x ?? 0, y: p.y ?? 0 }));
+          fullPath = fullPath.concat(pathSlice);
+        }
+
+        // Luego agregamos las rutas de todas las acciones posteriores
+        for (
+          let actionIdx = (plan.currentActionIndex ?? 0) + 1;
+          actionIdx < plan.actions.length;
+          actionIdx++
+        ) {
           const action = plan.actions[actionIdx];
           if (!action.path || action.path.length < 2) continue;
-          if (!found) {
-            // Buscar si la posición actual está en este path
-            const idx = action.path.findIndex(
-              (p) =>
-                Math.abs((p.x ?? 0) - (vehicle.currentPosition?.x ?? 0)) < 1 &&
-                Math.abs((p.y ?? 0) - (vehicle.currentPosition?.y ?? 0)) < 1
-            );
-            if (idx !== -1) {
-              // Desde aquí empieza la ruta futura
-              const pathSlice = action.path.slice(idx).map(p => ({ x: p.x ?? 0, y: p.y ?? 0 }));
-              fullPath = fullPath.concat(pathSlice);
-              found = true;
-              continue;
-            }
-          }
-          if (found) {
-            // Acciones siguientes: todo el path
-            const pathMapped = action.path.map(p => ({ x: p.x ?? 0, y: p.y ?? 0 }));
-            fullPath = fullPath.concat(pathMapped);
-          }
+
+          // Agregamos todo el path de las acciones siguientes
+          const pathMapped = action.path.map((p) => ({
+            x: p.x ?? 0,
+            y: p.y ?? 0,
+          }));
+          fullPath = fullPath.concat(pathMapped);
         }
+
         if (fullPath.length >= 2) {
           const screenPoints: number[] = [];
           fullPath.forEach((point) => {
@@ -737,33 +740,43 @@ export const renderElements = ({
         }
       } else if (isHighlightedVehicle) {
         // Modo resaltado normal (sin selección): mostrar ruta futura del vehículo resaltado
-        // --- NUEVA LÓGICA: mostrar solo desde la posición actual hasta el final ---
         let fullPath: { x: number; y: number }[] = [];
-        let found = false;
-        for (let actionIdx = 0; actionIdx < plan.actions.length; actionIdx++) {
+
+        // Si existe un currentActionIndex válido, lo usamos como punto de partida
+        if (currentAction?.path && currentAction.path.length >= 2) {
+          // Si hay un progreso definido, lo usamos para encontrar el punto actual en el path
+          const pathIndex =
+            currentAction.progress !== undefined
+              ? Math.floor(
+                  (currentAction.path.length - 1) *
+                    (currentAction.progress / 100)
+                )
+              : 0;
+
+          // Agregamos desde el punto actual hasta el final de esta acción
+          const pathSlice = currentAction.path
+            .slice(pathIndex)
+            .map((p) => ({ x: p.x ?? 0, y: p.y ?? 0 }));
+          fullPath = fullPath.concat(pathSlice);
+        }
+
+        // Luego agregamos las rutas de todas las acciones posteriores
+        for (
+          let actionIdx = (plan.currentActionIndex ?? 0) + 1;
+          actionIdx < plan.actions.length;
+          actionIdx++
+        ) {
           const action = plan.actions[actionIdx];
           if (!action.path || action.path.length < 2) continue;
-          if (!found) {
-            // Buscar si la posición actual está en este path
-            const idx = action.path.findIndex(
-              (p) =>
-                Math.abs((p.x ?? 0) - (vehicle.currentPosition?.x ?? 0)) < 1 &&
-                Math.abs((p.y ?? 0) - (vehicle.currentPosition?.y ?? 0)) < 1
-            );
-            if (idx !== -1) {
-              // Desde aquí empieza la ruta futura
-              const pathSlice = action.path.slice(idx).map(p => ({ x: p.x ?? 0, y: p.y ?? 0 }));
-              fullPath = fullPath.concat(pathSlice);
-              found = true;
-              continue;
-            }
-          }
-          if (found) {
-            // Acciones siguientes: todo el path
-            const pathMapped = action.path.map(p => ({ x: p.x ?? 0, y: p.y ?? 0 }));
-            fullPath = fullPath.concat(pathMapped);
-          }
+
+          // Agregamos todo el path de las acciones siguientes
+          const pathMapped = action.path.map((p) => ({
+            x: p.x ?? 0,
+            y: p.y ?? 0,
+          }));
+          fullPath = fullPath.concat(pathMapped);
         }
+
         if (fullPath.length >= 2) {
           const screenPoints: number[] = [];
           fullPath.forEach((point) => {
@@ -791,59 +804,6 @@ export const renderElements = ({
             />
           );
         }
-      } else {
-        // Para vehículos normales, mostrar solo la ruta actual
-        blockToDraw.forEach((action, actionIdx) => {
-          if (!action.path || action.path.length < 2) return;
-          let pathToDraw: { x: number; y: number }[] = [];
-          if (actionIdx < currentActionIdx) {
-            // Ya recorrida, no se pinta
-            return;
-          } else if (actionIdx === currentActionIdx) {
-            pathToDraw = action.path.slice(indexFrom).map(p => ({ x: p.x ?? 0, y: p.y ?? 0 }));
-          } else {
-            pathToDraw = action.path.map(p => ({ x: p.x ?? 0, y: p.y ?? 0 }));
-          }
-          if (pathToDraw.length >= 2) {
-            const screenPoints: number[] = [];
-            pathToDraw.forEach((point) => {
-              const { x, y } = mapToScreenCoords(point.x, point.y);
-              screenPoints.push(x, y);
-            });
-            // Color normal según tipo de acción
-            const actionColorMap = {
-              DRIVE: "#4f46e5",
-              SERVE: "#16a34a",
-              RELOAD: "#eab308",
-              REFUEL: "#f97316",
-              MAINTENANCE: "#64748b",
-              WAIT: "#a3a3a3",
-            };
-            const lineColor = action.type
-              ? actionColorMap[action.type] || "#4f46e5"
-              : "#4f46e5";
-            elements.push(
-              <Line
-                key={`route-${vehicle.id}-action-${actionIdx}`}
-                points={screenPoints}
-                stroke={lineColor}
-                strokeWidth={2 * (zoom / 15)}
-                dash={[4 * (zoom / 15), 2 * (zoom / 15)]}
-                lineCap="round"
-                lineJoin="round"
-                opacity={0.7}
-                shadowColor="rgba(0,0,0,0.2)"
-                shadowBlur={3}
-                shadowOffset={{ x: 1, y: 1 }}
-                shadowOpacity={0.3}
-                onClick={() => {
-                  alert(`Ruta del camión: ${vehicle.id}`);
-                }}
-                cursor="pointer"
-              />
-            );
-          }
-        });
       }
 
       // Imprime SIEMPRE el camión en su posición actual
@@ -852,67 +812,45 @@ export const renderElements = ({
       const { x: screenX, y: screenY } = mapToScreenCoords(x, y);
       const vehicleSize = 20 * (zoom / 15);
 
-      // Obtener el path de la acción actual si existe
-      let path: { x?: number; y?: number }[] | undefined = undefined;
-      if (blockToDraw && currentActionIdx !== -1) {
-        path = blockToDraw[currentActionIdx]?.path;
-      }
       let direction: "north" | "south" | "east" | "west" = "west";
-      // Intentar calcular la dirección siempre
-      let foundDirection = false;
-      if (
-        Array.isArray(path) &&
-        path.length > indexFrom + 1 &&
-        path[indexFrom] &&
-        path[indexFrom + 1]
-      ) {
-        const current = path[indexFrom];
-        const next = path[indexFrom + 1];
-        if (
-          typeof current.x === "number" &&
-          typeof current.y === "number" &&
-          typeof next.x === "number" &&
-          typeof next.y === "number"
-        ) {
-          direction = getAutoDirection(
-            { x: current.x, y: current.y },
-            { x: next.x, y: next.y }
-          );
-          foundDirection = true;
-        }
-      }
-      // Si no se pudo calcular con el path actual, intentar con la última acción del plan
-      if (!foundDirection && plan && plan.actions && plan.actions.length > 0) {
-        // Buscar la última acción con path válido
-        for (let i = plan.actions.length - 1; i >= 0; i--) {
-          const action = plan.actions[i];
-          if (action.path && action.path.length >= 2) {
-            const prev = action.path[action.path.length - 2];
-            const curr = action.path[action.path.length - 1];
-            if (
-              typeof prev.x === "number" &&
-              typeof prev.y === "number" &&
-              typeof curr.x === "number" &&
-              typeof curr.y === "number"
-            ) {
-              direction = getAutoDirection(
-                { x: prev.x, y: prev.y },
-                { x: curr.x, y: curr.y }
-              );
-              foundDirection = true;
-              break;
-            }
+
+      // Obtener el path de la acción actual usando currentActionIndex
+      const path: Position[] = currentAction.path || [];
+
+      // Si hay un progress definido, usarlo para determinar la posición actual en el path
+      if (path.length >= 2 && currentAction.progress !== undefined) {
+        // Calculamos la posición actual basado en el progreso
+        const pathIndex = Math.floor(
+          (path.length - 1) * (currentAction.progress / 100)
+        );
+
+        // Si tenemos al menos un punto más adelante en el path, lo usamos para calcular la dirección
+        if (pathIndex < path.length - 1) {
+          const current = path[pathIndex];
+          const next = path[pathIndex + 1];
+
+          if (
+            current &&
+            next &&
+            typeof current.x === "number" &&
+            typeof current.y === "number" &&
+            typeof next.x === "number" &&
+            typeof next.y === "number"
+          ) {
+            direction = getAutoDirection(
+              { x: current.x, y: current.y },
+              { x: next.x, y: next.y }
+            );
           }
         }
       }
-      // Si no se pudo calcular, dejar 'east' por defecto
 
       const glpColor = getGlpColorLevel(
         vehicle.currentGlpM3 || 0,
         vehicle.glpCapacityM3 || 1
       );
       const isSelected = selectedVehicleId === vehicle.id;
-      const isHighlighted = highlightedVehicleIds.includes(vehicle.id || '');
+      const isHighlighted = highlightedVehicleIds.includes(vehicle.id || "");
       const hasActiveOrders =
         vehicle.currentOrders && vehicle.currentOrders.length > 0;
 
@@ -963,7 +901,7 @@ export const renderElements = ({
               cornerRadius={4}
             />
           )}
-          
+
           {isHighlighted && !isSelected && (
             <>
               {/* Contorno interno semitransparente */}
