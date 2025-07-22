@@ -663,88 +663,56 @@ export const renderElements = ({
       const currentAction: ActionDTO | undefined = plan.currentAction;
       if (!currentAction) return;
 
-      // Definir si el vehículo está resaltado
-      const isHighlightedVehicle = highlightedVehicleIds.includes(
-        vehicle.id || ""
-      );
+      const isSelected = selectedVehicleId === vehicle.id;
+      const isHighlighted = highlightedVehicleIds.includes(vehicle.id || "");
 
-      // 3. Imprime la ruta futura (desde la posición actual hasta el final)
-      // Si hay un vehículo seleccionado, solo se muestra su ruta futura
-      if (selectedVehicleId) {
-        // Usar el currentActionIndex que ya viene en el plan para identificar la acción actual
-        let fullPath: { x: number; y: number }[] = [];
-
-        // Si existe un currentActionIndex válido, lo usamos como punto de partida
-
-        // Primero, agregamos el camino restante de la acción actual
-        if (currentAction?.path && currentAction.path.length >= 2) {
-          // Si hay un progreso definido, lo usamos para encontrar el punto actual en el path
-          const pathIndex =
-            currentAction.progress !== undefined
-              ? Math.floor(
-                  (currentAction.path.length - 1) *
-                    (currentAction.progress / 100)
-                )
-              : 0;
-
-          // Agregamos desde el punto actual hasta el final de esta acción
-          const pathSlice = currentAction.path
-            .slice(pathIndex)
-            .map((p) => ({ x: p.x ?? 0, y: p.y ?? 0 }));
-          fullPath = fullPath.concat(pathSlice);
-        }
-
-        // Luego agregamos las rutas de todas las acciones posteriores
-        for (
-          let actionIdx = (plan.currentActionIndex ?? 0) + 1;
-          actionIdx < plan.actions.length;
-          actionIdx++
+      // ESCENARIO 1: Vehículo normal - Solo dibujar la ruta de la acción actual
+      if (!isSelected && !isHighlighted) {
+        // Solo dibujar el camino futuro de la acción actual basado en el progreso
+        if (
+          currentAction?.path &&
+          currentAction.path.length >= 2 &&
+          currentAction.progress !== undefined
         ) {
-          const action = plan.actions[actionIdx];
-          if (!action.path || action.path.length < 2) continue;
-
-          // Agregamos todo el path de las acciones siguientes
-          const pathMapped = action.path.map((p) => ({
-            x: p.x ?? 0,
-            y: p.y ?? 0,
-          }));
-          fullPath = fullPath.concat(pathMapped);
-        }
-
-        if (fullPath.length >= 2) {
-          const screenPoints: number[] = [];
-          fullPath.forEach((point) => {
-            const { x, y } = mapToScreenCoords(point.x, point.y);
-            screenPoints.push(x, y);
-          });
-          elements.push(
-            <Line
-              key={`route-${vehicle.id}-full`}
-              points={screenPoints}
-              stroke="#9333ea"
-              strokeWidth={3 * (zoom / 15)}
-              dash={[4 * (zoom / 15), 2 * (zoom / 15)]}
-              lineCap="round"
-              lineJoin="round"
-              opacity={0.9}
-              shadowColor="rgba(0,0,0,0.2)"
-              shadowBlur={5}
-              shadowOffset={{ x: 1, y: 1 }}
-              shadowOpacity={0.5}
-              onClick={() => {
-                alert(`Ruta del camión: ${vehicle.id}`);
-              }}
-              cursor="pointer"
-            />
+          // Calculamos el índice en el path basado en el progreso actual
+          const pathIndex = Math.floor(
+            (currentAction.path.length - 1) * (currentAction.progress / 100)
           );
+
+          // Solo dibujamos desde la posición actual hacia adelante
+          if (pathIndex < currentAction.path.length - 1) {
+            const futurePoints: number[] = [];
+            for (let i = pathIndex; i < currentAction.path.length; i++) {
+              const point = currentAction.path[i];
+              const { x, y } = mapToScreenCoords(point.x ?? 0, point.y ?? 0);
+              futurePoints.push(x, y);
+            }
+
+            if (futurePoints.length >= 4) {
+              // Al menos dos puntos (x,y)
+              elements.push(
+                <Line
+                  key={`route-${vehicle.id}-current`}
+                  points={futurePoints}
+                  stroke="#64748b" // Gris para rutas normales
+                  strokeWidth={2 * (zoom / 15)}
+                  lineCap="round"
+                  lineJoin="round"
+                  opacity={0.6}
+                />
+              );
+            }
+          }
         }
-      } else if (isHighlightedVehicle) {
-        // Modo resaltado normal (sin selección): mostrar ruta futura del vehículo resaltado
+      }
+      // ESCENARIO 2 y 3: Vehículo seleccionado o resaltado - Dibujar todo el plan
+      else {
+        // 1. Dibujar la ruta futura completa (desde la posición actual hasta el final del plan)
         let fullPath: { x: number; y: number }[] = [];
 
-        // Si existe un currentActionIndex válido, lo usamos como punto de partida
+        // 1.1 Agregar el camino restante de la acción actual
         if (currentAction?.path && currentAction.path.length >= 2) {
-          // Si hay un progreso definido, lo usamos para encontrar el punto actual en el path
+          // Calcular posición actual basada en el progreso
           const pathIndex =
             currentAction.progress !== undefined
               ? Math.floor(
@@ -753,14 +721,14 @@ export const renderElements = ({
                 )
               : 0;
 
-          // Agregamos desde el punto actual hasta el final de esta acción
+          // Agregar desde el punto actual hasta el final de esta acción
           const pathSlice = currentAction.path
             .slice(pathIndex)
             .map((p) => ({ x: p.x ?? 0, y: p.y ?? 0 }));
           fullPath = fullPath.concat(pathSlice);
         }
 
-        // Luego agregamos las rutas de todas las acciones posteriores
+        // 1.2 Agregar las rutas de todas las acciones posteriores
         for (
           let actionIdx = (plan.currentActionIndex ?? 0) + 1;
           actionIdx < plan.actions.length;
@@ -769,7 +737,6 @@ export const renderElements = ({
           const action = plan.actions[actionIdx];
           if (!action.path || action.path.length < 2) continue;
 
-          // Agregamos todo el path de las acciones siguientes
           const pathMapped = action.path.map((p) => ({
             x: p.x ?? 0,
             y: p.y ?? 0,
@@ -787,7 +754,7 @@ export const renderElements = ({
             <Line
               key={`route-${vehicle.id}-full`}
               points={screenPoints}
-              stroke="#9333ea"
+              stroke="#9333ea" // Morado para rutas destacadas
               strokeWidth={3 * (zoom / 15)}
               dash={[4 * (zoom / 15), 2 * (zoom / 15)]}
               lineCap="round"
@@ -797,10 +764,6 @@ export const renderElements = ({
               shadowBlur={5}
               shadowOffset={{ x: 1, y: 1 }}
               shadowOpacity={0.5}
-              onClick={() => {
-                alert(`Ruta del camión: ${vehicle.id}`);
-              }}
-              cursor="pointer"
             />
           );
         }
@@ -849,8 +812,6 @@ export const renderElements = ({
         vehicle.currentGlpM3 || 0,
         vehicle.glpCapacityM3 || 1
       );
-      const isSelected = selectedVehicleId === vehicle.id;
-      const isHighlighted = highlightedVehicleIds.includes(vehicle.id || "");
       const hasActiveOrders =
         vehicle.currentOrders && vehicle.currentOrders.length > 0;
 
