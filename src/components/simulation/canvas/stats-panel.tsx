@@ -136,7 +136,7 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({
   }
 
   return (
-    <div className="absolute top-20 right-4 bg-white/95 rounded-lg shadow-lg border border-gray-200 z-20 w-[27.6rem] max-h-[600px] flex flex-col">
+    <div className="absolute top-20 right-4 bg-white/95 rounded-lg shadow-lg border border-gray-200 z-20 w-[36rem] max-h-[700px] flex flex-col">
       {/* Header with title and close button */}
       <div className="flex justify-between items-center p-3 border-b">
         <h3 className="font-bold text-blue-800">Panel de información</h3>

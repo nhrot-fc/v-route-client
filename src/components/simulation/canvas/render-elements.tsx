@@ -262,6 +262,7 @@ export const renderElements = ({
       else volumeColor = "#f97316"; // orange - large
 
       // Highlight orders if they are being served by vehicles, if this is the selected order, or if this order is in a selected vehicle's plan
+
       const isSelectedOrder = selectedOrder?.id === order.id;
       const isHighlightedOrder = highlightedOrderIds.includes(order.id || '');
 
@@ -650,9 +651,7 @@ export const renderElements = ({
       let blockToDraw: typeof plan.actions | null = null;
       let currentActionIdx = -1;
       let indexFrom = 0;
-      //
-      const currentAction = plan.currentAction;
-      //To do refactor to use currentActionIndex instead of stimated the positions
+
       for (const block of actionBlocks) {
         for (let i = 0; i < block.length; i++) {
           const action = block[i];
