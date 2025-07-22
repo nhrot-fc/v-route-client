@@ -319,7 +319,6 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({
 
         {activeTab === "incidents" && (
           <StatsIncidents
-            simulationId={simulationId ?? ""}
             simulationState={simulationState}
             isCollapsed={false}
             searchQuery={searchQuery}
