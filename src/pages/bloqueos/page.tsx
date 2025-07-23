@@ -20,6 +20,11 @@ import {
 } from "@/components/ui/dialog";
 import { TableFilterTabs } from "@/components/ui/table-filter-tabs";
 
+function parseAsLocal(dateStr: string) {
+  // add 5 hours to the date
+  return new Date(new Date(dateStr).getTime() + 5 * 60 * 60 * 1000);
+}
+
 export default function BlockagesPage() {
   const [activeTab, setActiveTab] = useState("list");
   const [newOpen, setNewOpen] = useState(false);
@@ -69,20 +74,6 @@ export default function BlockagesPage() {
 
   const totalBlockages = blockages.length;
 
-  // Format date and time
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return "-";
-    return new Date(dateString).toLocaleDateString("es-ES");
-  };
-
-  const formatTime = (dateString?: string) => {
-    if (!dateString) return "-";
-    return new Date(dateString).toLocaleTimeString("es-ES", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
   const formatLinePoints = (linePoints?: string) => {
     if (!linePoints) return "-";
 
@@ -129,17 +120,13 @@ export default function BlockagesPage() {
       cell: (blockage: Blockage) => (
         <div className="flex items-center">
           <Calendar className="mr-2 h-4 w-4 text-primary-600" />
-          {formatDate(blockage.startTime)}
-        </div>
-      ),
-    },
-    {
-      header: "Hora Inicio",
-      accessorKey: "startTimeHour" as keyof Blockage,
-      cell: (blockage: Blockage) => (
-        <div className="flex items-center">
-          <Clock className="mr-2 h-4 w-4 text-primary-600" />
-          {formatTime(blockage.startTime)}
+          {blockage.startTime ? parseAsLocal(blockage.startTime).toLocaleTimeString([], {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          }) : "N/A"}
         </div>
       ),
     },
@@ -149,17 +136,13 @@ export default function BlockagesPage() {
       cell: (blockage: Blockage) => (
         <div className="flex items-center">
           <Calendar className="mr-2 h-4 w-4 text-primary-600" />
-          {formatDate(blockage.endTime)}
-        </div>
-      ),
-    },
-    {
-      header: "Hora Fin",
-      accessorKey: "endTimeHour" as keyof Blockage,
-      cell: (blockage: Blockage) => (
-        <div className="flex items-center">
-          <Clock className="mr-2 h-4 w-4 text-primary-600" />
-          {formatTime(blockage.endTime)}
+          {blockage.endTime ? parseAsLocal(blockage.endTime).toLocaleTimeString([], {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          }) : "N/A"}
         </div>
       ),
     },

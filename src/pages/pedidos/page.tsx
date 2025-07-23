@@ -1,5 +1,3 @@
-
-
 import { useState, useMemo } from "react";
 import {
   Card,
@@ -34,6 +32,14 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+function parseAsLocal(dateStr: string) {
+  // Si no tiene milisegundos, agregar .000 para forzar comportamiento local
+  if (!/\.\d+/.test(dateStr)) {
+    dateStr += '.000';
+  }
+  return new Date(dateStr);
+}
+
 // Extend the OrderDTO type to handle our custom fields
 interface OrderWithStatus extends OrderDTO {
   isInRoute?: boolean;
@@ -53,11 +59,12 @@ export default function PedidosPage() {
   const [overdueAt, setOverdueAt] = useState<string | undefined>(undefined);
 
   // Determine if pending filter should be applied based on active tab
-  const pendingFilter = activeTab === "pendiente" 
-    ? true 
-    : activeTab === "entregado" 
-      ? false 
-      : undefined;
+  const pendingFilter =
+    activeTab === "pendiente"
+      ? true
+      : activeTab === "entregado"
+        ? false
+        : undefined;
 
   // Use pagination parameters in the hook
   const { orders, loading, error, totalItems, totalPages, refetch } = useOrders(
@@ -116,13 +123,13 @@ export default function PedidosPage() {
 
   // Count orders by status - this will be updated with API counts once available
   const pendingCount = ordersWithStatus.filter(
-    (order) => !order.delivered && !order.isInRoute,
+    (order) => !order.delivered && !order.isInRoute
   ).length;
   const inRouteCount = ordersWithStatus.filter(
-    (order) => !order.delivered && order.isInRoute,
+    (order) => !order.delivered && order.isInRoute
   ).length;
   const deliveredCount = ordersWithStatus.filter(
-    (order) => order.delivered,
+    (order) => order.delivered
   ).length;
 
   // Define table columns
@@ -133,11 +140,14 @@ export default function PedidosPage() {
       className: "font-medium",
     },
     {
-      header: "Hora Llegada",
+      header: "Fecha Llegada",
       accessorKey: "arrivalTime" as keyof OrderWithStatus,
       cell: (order: OrderWithStatus) =>
         order.arrivalTime
-          ? new Date(order.arrivalTime).toLocaleTimeString([], {
+          ? parseAsLocal(order.arrivalTime).toLocaleTimeString([], {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
               hour: "2-digit",
               minute: "2-digit",
             })
@@ -148,7 +158,10 @@ export default function PedidosPage() {
       accessorKey: "deadlineTime" as keyof OrderWithStatus,
       cell: (order: OrderWithStatus) =>
         order.deadlineTime
-          ? new Date(order.deadlineTime).toLocaleTimeString([], {
+          ? parseAsLocal(order.deadlineTime).toLocaleTimeString([], {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
               hour: "2-digit",
               minute: "2-digit",
             })
@@ -195,54 +208,43 @@ export default function PedidosPage() {
   ];
 
   // Define filter tabs
-  const filterTabs = useMemo(() => [
-    {
-      id: "pendiente",
-      label: "Pendientes",
-      icon: <Timer className="h-4 w-4" />,
-      count: pendingCount,
-      filter: (order: OrderWithStatus) => !order.delivered && !order.isInRoute,
-    },
-    {
-      id: "en-ruta",
-      label: "En Ruta",
-      icon: <Truck className="h-4 w-4" />,
-      count: inRouteCount,
-      filter: (order: OrderWithStatus) => !order.delivered && !!order.isInRoute,
-    },
-    {
-      id: "entregado",
-      label: "Entregados",
-      icon: <CheckCircle className="h-4 w-4" />,
-      count: deliveredCount,
-      filter: (order: OrderWithStatus) => !!order.delivered,
-    },
-  ], [pendingCount, inRouteCount, deliveredCount]);
+  const filterTabs = useMemo(
+    () => [
+      {
+        id: "pendiente",
+        label: "Pendientes",
+        icon: <Timer className="h-4 w-4" />,
+        count: pendingCount,
+        filter: (order: OrderWithStatus) =>
+          !order.delivered && !order.isInRoute,
+      },
+      {
+        id: "en-ruta",
+        label: "En Ruta",
+        icon: <Truck className="h-4 w-4" />,
+        count: inRouteCount,
+        filter: (order: OrderWithStatus) =>
+          !order.delivered && !!order.isInRoute,
+      },
+      {
+        id: "entregado",
+        label: "Entregados",
+        icon: <CheckCircle className="h-4 w-4" />,
+        count: deliveredCount,
+        filter: (order: OrderWithStatus) => !!order.delivered,
+      },
+    ],
+    [pendingCount, inRouteCount, deliveredCount]
+  );
 
   // Define actions
-  const actions = [
-    {
-      id: "assign",
-      label: "Asignar vehículo",
-      icon: <Truck className="h-4 w-4" />,
-      onClick: (order: OrderWithStatus) =>
-        console.log("Asignar vehículo a:", order.id),
-      hidden: (order: OrderWithStatus) =>
-        !!order.isInRoute || !!order.delivered,
-    },
-    {
-      id: "edit",
-      label: "Editar pedido",
-      icon: <Plus className="h-4 w-4 rotate-45" />,
-      onClick: (order: OrderWithStatus) => console.log("Editar:", order.id),
-    },
-    {
-      id: "delete",
-      label: "Eliminar pedido",
-      icon: <Plus className="h-4 w-4 rotate-45" />,
-      onClick: (order: OrderWithStatus) => console.log("Eliminar:", order.id),
-    },
-  ];
+  const actions: {
+    id: string;
+    label: string;
+    icon: React.ReactNode;
+    onClick: (order: OrderWithStatus) => void;
+    hidden?: (order: OrderWithStatus) => boolean;
+  }[] = [];
 
   // Filter data based on active tab and search term
   const filteredData = useMemo(() => {
@@ -267,7 +269,7 @@ export default function PedidosPage() {
           (order.position &&
             `(${order.position.x}, ${order.position.y})`
               .toLowerCase()
-              .includes(searchTerm.toLowerCase())),
+              .includes(searchTerm.toLowerCase()))
       );
     }
 

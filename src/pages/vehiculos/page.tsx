@@ -120,6 +120,12 @@ export default function VehiculosPage() {
         return <StatusBadge status="warning" text="Mantenimiento" />;
       case VehicleStatusEnum.Incident:
         return <StatusBadge status="error" text="Averiado" />;
+      case VehicleStatusEnum.Idle:
+        return <StatusBadge status="pending" text="Inactivo" />;
+      case VehicleStatusEnum.Refueling:
+        return <StatusBadge status="pending" text="Abasteciendo" />;
+      case VehicleStatusEnum.Reloading:
+        return <StatusBadge status="pending" text="Recargando" />;
       default:
         return <StatusBadge status="pending" text="Desconocido" />;
     }

@@ -1,0 +1,320 @@
+import React, { useState } from "react";
+import { AlertTriangle } from "lucide-react";
+import type {
+  SimulationStateDTO,
+  VehicleDTO,
+  IncidentCreateDTO,
+} from "@/lib/api-client";
+import { IncidentCreateDTOTypeEnum } from "@/lib/api-client";
+import { useSimulation } from "@/hooks/use-simulation";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { formatPercentageValue } from "./utils";
+
+interface StatsVehiclesProps {
+  simulationState: SimulationStateDTO;
+  simulationId?: string;
+  searchQuery: string;
+  selectedVehicleId: string | null;
+  onVehicleSelect?: (vehicleId: string | null) => void;
+}
+
+/**
+ * Componente para mostrar información sobre los vehículos
+ */
+export const StatsVehicles: React.FC<StatsVehiclesProps> = ({
+  simulationState,
+  simulationId,
+  searchQuery,
+  selectedVehicleId,
+  onVehicleSelect,
+}) => {
+  const vehicles = simulationState.vehicles || [];
+  const { createVehicleBreakdown, isLoading: isBreakdownLoading } =
+    useSimulation();
+
+  // State for breakdown dialog
+  const [isBreakdownDialogOpen, setIsBreakdownDialogOpen] = useState(false);
+  const [selectedVehicleForBreakdown, setSelectedVehicleForBreakdown] =
+    useState<VehicleDTO | null>(null);
+
+  // State for breakdown form
+  const [breakdownType, setBreakdownType] = useState<IncidentCreateDTOTypeEnum>(
+    IncidentCreateDTOTypeEnum.Ti1
+  );
+  const [breakdownError, setBreakdownError] = useState<string | null>(null);
+
+  // Filter based on search query
+  const filteredVehicles = searchQuery
+    ? vehicles.filter(
+        (vehicle) =>
+          vehicle.id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          vehicle.type?.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : vehicles;
+
+  const handleOpenBreakdownDialog = (vehicle: VehicleDTO) => {
+    setSelectedVehicleForBreakdown(vehicle);
+    setIsBreakdownDialogOpen(true);
+    setBreakdownError(null); // Reset error on open
+  };
+
+  const handleBreakdownSubmit = async () => {
+    if (!selectedVehicleForBreakdown || !simulationId) {
+      setBreakdownError(
+        "No se ha seleccionado un vehículo o simulación válida."
+      );
+      return;
+    }
+
+    const occurrenceTime = new Date(simulationState.currentTime || Date.now());
+
+    const breakdownData: IncidentCreateDTO = {
+      type: breakdownType,
+      occurrenceTime: occurrenceTime.toISOString(),
+    };
+
+    const result = await createVehicleBreakdown(
+      simulationId,
+      selectedVehicleForBreakdown.id!,
+      breakdownData
+    );
+
+    if (result) {
+      setIsBreakdownDialogOpen(false);
+      // Optionally, trigger a refresh or show a success toast
+    } else {
+      setBreakdownError("No se pudo reportar la avería. Intente de nuevo.");
+    }
+  };
+
+  return (
+    <div>
+      <table className="w-full text-sm">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="py-2 px-3 text-left">ID</th>
+            <th className="py-2 px-3 text-left">Tipo</th>
+            <th className="py-2 px-3 text-left">Estado</th>
+            <th className="py-2 px-3 text-left">GLP</th>
+            <th className="py-2 px-3 text-left">Combustible</th>
+            <th className="py-2 px-3 text-left">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredVehicles.map((vehicle) => {
+            const glpPercentage =
+              ((vehicle.currentGlpM3 || 0) / (vehicle.glpCapacityM3 || 1)) *
+              100;
+            const fuelPercentage =
+              ((vehicle.currentFuelGal || 0) /
+                (vehicle.fuelCapacityGal || 25)) *
+              100;
+
+            const glpFormatted = formatPercentageValue(
+              vehicle.currentGlpM3 || 0,
+              vehicle.glpCapacityM3 || 1
+            );
+
+            const fuelFormatted = formatPercentageValue(
+              vehicle.currentFuelGal || 0,
+              vehicle.fuelCapacityGal || 25
+            );
+
+            return (
+              <tr
+                key={vehicle.id}
+                className={`border-t hover:bg-blue-50 ${
+                  selectedVehicleId === vehicle.id ? "bg-blue-50" : ""
+                }`}
+              >
+                <td
+                  className="py-2 px-3 cursor-pointer"
+                  onClick={() =>
+                    onVehicleSelect && onVehicleSelect(vehicle.id || null)
+                  }
+                >
+                  {vehicle.id}
+                </td>
+                <td
+                  className="py-2 px-3 cursor-pointer"
+                  onClick={() =>
+                    onVehicleSelect && onVehicleSelect(vehicle.id || null)
+                  }
+                >
+                  <span
+                    className={`px-2 py-1 rounded-full text-xs text-white ${
+                      vehicle.type === "TA"
+                        ? "bg-red-500"
+                        : vehicle.type === "TB"
+                        ? "bg-blue-500"
+                        : vehicle.type === "TC"
+                        ? "bg-amber-500"
+                        : "bg-purple-500"
+                    }`}
+                  >
+                    {vehicle.type}
+                  </span>
+                </td>
+                <td
+                  className="py-2 px-3 cursor-pointer"
+                  onClick={() =>
+                    onVehicleSelect && onVehicleSelect(vehicle.id || null)
+                  }
+                >
+                  <span
+                    className={`${
+                      vehicle.status?.toLowerCase() === "active"
+                        ? "text-green-500"
+                        : vehicle.status?.toLowerCase() === "maintenance"
+                        ? "text-amber-500"
+                        : "text-red-500"
+                    }`}
+                  >
+                    {vehicle.status || "Desconocido"}
+                  </span>
+                </td>
+                <td
+                  className="py-2 px-3 cursor-pointer"
+                  onClick={() =>
+                    onVehicleSelect && onVehicleSelect(vehicle.id || null)
+                  }
+                >
+                  <div className="flex items-center">
+                    <div className="w-16 bg-gray-200 rounded-full h-1.5 mr-2">
+                      <div
+                        className="h-1.5 rounded-full"
+                        style={{
+                          width: `${glpPercentage}%`,
+                          backgroundColor: glpFormatted.color,
+                        }}
+                      ></div>
+                    </div>
+                    <span
+                      className="text-xs"
+                      style={{ color: glpFormatted.color }}
+                    >
+                      {Math.round(glpPercentage)}%
+                    </span>
+                  </div>
+                </td>
+                <td
+                  className="py-2 px-3 cursor-pointer"
+                  onClick={() =>
+                    onVehicleSelect && onVehicleSelect(vehicle.id || null)
+                  }
+                >
+                  <div className="flex items-center">
+                    <div className="w-16 bg-gray-200 rounded-full h-1.5 mr-2">
+                      <div
+                        className="h-1.5 rounded-full"
+                        style={{
+                          width: `${fuelPercentage}%`,
+                          backgroundColor: fuelFormatted.color,
+                        }}
+                      ></div>
+                    </div>
+                    <span
+                      className="text-xs"
+                      style={{ color: fuelFormatted.color }}
+                    >
+                      {Math.round(fuelPercentage)}%
+                    </span>
+                  </div>
+                </td>
+                <td className="py-2 px-3">
+                  <button
+                    onClick={() => handleOpenBreakdownDialog(vehicle)}
+                    className="p-1 text-red-500 hover:bg-red-100 rounded-full"
+                    title="Reportar avería"
+                  >
+                    <AlertTriangle className="w-4 h-4" />
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      {/* Breakdown Dialog */}
+      <Dialog
+        open={isBreakdownDialogOpen}
+        onOpenChange={setIsBreakdownDialogOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Reportar Avería para {selectedVehicleForBreakdown?.id}
+            </DialogTitle>
+            <DialogDescription>
+              Complete los detalles del incidente para inmovilizar el vehículo.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="breakdown-type" className="text-right">
+                Tipo
+              </Label>
+              <Select
+                value={breakdownType}
+                onValueChange={(value) =>
+                  setBreakdownType(value as IncidentCreateDTOTypeEnum)
+                }
+              >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Seleccione un tipo" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={IncidentCreateDTOTypeEnum.Ti1}>
+                    T1
+                  </SelectItem>
+                  <SelectItem value={IncidentCreateDTOTypeEnum.Ti2}>
+                    T2
+                  </SelectItem>
+                  <SelectItem value={IncidentCreateDTOTypeEnum.Ti3}>
+                    T3
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {breakdownError && (
+              <p className="text-red-500 text-sm col-span-4 text-center">
+                {breakdownError}
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsBreakdownDialogOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => void handleBreakdownSubmit()}
+              disabled={isBreakdownLoading}
+            >
+              {isBreakdownLoading ? "Reportando..." : "Reportar Avería"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}; 

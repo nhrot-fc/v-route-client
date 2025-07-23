@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { type Vehicle, VehicleStatusEnum, VehicleTypeEnum } from "@/lib/api-client";
+import {
+  type Vehicle,
+  VehicleStatusEnum,
+  VehicleTypeEnum,
+} from "@/lib/api-client";
 import { useVehicles } from "@/hooks/use-vehicles";
 import {
   Truck,
@@ -45,7 +49,7 @@ export function VehicleStatusList() {
           }
           return acc;
         },
-        { total: 0, available: 0, driving: 0, maintenance: 0, incident: 0 },
+        { total: 0, available: 0, driving: 0, maintenance: 0, incident: 0 }
       );
       setStatusCounts(counts);
 
@@ -98,9 +102,52 @@ export function VehicleStatusList() {
             Averiado
           </Badge>
         );
+      case VehicleStatusEnum.Idle:
+        return (
+          <Badge
+            variant="outline"
+            className="bg-gray-100 text-gray-800 hover:bg-gray-100 border-gray-200"
+          >
+            <AlertTriangle className="h-3 w-3 mr-1" />
+            Inactivo
+          </Badge>
+        );
+      case VehicleStatusEnum.Refueling:
+        return (
+          <Badge
+            variant="outline"
+            className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100 border-yellow-200"
+          >
+            <Fuel className="h-3 w-3 mr-1" />
+            Abasteciendo
+          </Badge>
+        );
+      case VehicleStatusEnum.Reloading:
+        return (
+          <Badge
+            variant="outline"
+            className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100 border-yellow-200"
+          >
+            <Fuel className="h-3 w-3 mr-1" />
+            Recargando
+          </Badge>
+        );
+      case VehicleStatusEnum.Serving:
+        return (
+          <Badge
+            variant="outline"
+            className="bg-yellow-100 text-yellow-800 hover:bg-yellow-100 border-yellow-200"
+          >
+            <Fuel className="h-3 w-3 mr-1" />
+            Servicio
+          </Badge>
+        );
       default:
         return (
-          <Badge variant="outline">
+          <Badge
+            variant="outline"
+            className="bg-gray-100 text-gray-800 hover:bg-gray-100 border-gray-200"
+          >
             <AlertTriangle className="h-3 w-3 mr-1" />
             Desconocido
           </Badge>

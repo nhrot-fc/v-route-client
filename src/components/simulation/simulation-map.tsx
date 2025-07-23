@@ -153,7 +153,7 @@ export function SimulationMap() {
 
   return (
     <Card className="p-4">
-      <div className="mb-4 flex flex-col space-y-4">
+      <div className="mb-4 h-screen flex flex-col space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex gap-2 items-center">
@@ -356,7 +356,7 @@ export function SimulationMap() {
           </div>
         )}
 
-        <div className="bg-slate-50 border rounded-md p-2 h-[700px] overflow-hidden mt-4">
+        <div className="bg-slate-50 h-full border rounded-md p-2 overflow-hidden mt-4">
           {currentSimulationId && simulationState ? (
             <SimulationCanvas
               simulationId={currentSimulationId}

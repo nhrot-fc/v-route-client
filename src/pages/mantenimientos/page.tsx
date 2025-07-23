@@ -91,25 +91,19 @@ export default function MantenimientosPage() {
       header: "Fecha Asignada",
       accessorKey: "assignedDate" as keyof MaintenanceDTO,
       cell: (item: MaintenanceDTO) =>
-        item.assignedDate
-          ? new Date(item.assignedDate).toLocaleDateString()
-          : "N/A",
+        item.assignedDate || "N/A",
     },
     {
       header: "Inicio Real",
       accessorKey: "realStart" as keyof MaintenanceDTO,
       cell: (item: MaintenanceDTO) =>
-        item.realStart
-          ? new Date(item.realStart).toLocaleDateString()
-          : "Pendiente",
+        item.realStart || "Pendiente",
     },
     {
       header: "Fin Real",
       accessorKey: "realEnd" as keyof MaintenanceDTO,
       cell: (item: MaintenanceDTO) =>
-        item.realEnd
-          ? new Date(item.realEnd).toLocaleDateString()
-          : "Pendiente",
+        item.realEnd || "Pendiente",
     },
     {
       header: "Duración (horas)",

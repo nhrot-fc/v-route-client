@@ -245,6 +245,10 @@ function getStatusLabel(status: VehicleStatusEnum): string {
     case VehicleStatusEnum.Driving: return "En Ruta";
     case VehicleStatusEnum.Maintenance: return "Mantenimiento";
     case VehicleStatusEnum.Incident: return "Averiado";
+    case VehicleStatusEnum.Idle: return "Inactivo";
+    case VehicleStatusEnum.Refueling: return "Abasteciendo";
+    case VehicleStatusEnum.Reloading: return "Recargando";
+    case VehicleStatusEnum.Serving: return "Servicio";
     default: return "Desconocido";
   }
 }
