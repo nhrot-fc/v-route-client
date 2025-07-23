@@ -16,6 +16,9 @@ Name | Type | Description | Notes
 **incidents** | [**Array&lt;Incident&gt;**](Incident.md) |  | [optional] [default to undefined]
 **serveRecords** | [**Array&lt;ServeRecord&gt;**](ServeRecord.md) |  | [optional] [default to undefined]
 **maintenances** | [**Array&lt;Maintenance&gt;**](Maintenance.md) |  | [optional] [default to undefined]
+**currentAction** | [**Action**](Action.md) |  | [optional] [default to undefined]
+**performingAction** | **boolean** |  | [optional] [default to undefined]
+**currentActionEndTime** | **string** |  | [optional] [default to undefined]
 **available** | **boolean** |  | [optional] [default to undefined]
 
 ## Example
@@ -35,6 +38,9 @@ const instance: Vehicle = {
     incidents,
     serveRecords,
     maintenances,
+    currentAction,
+    performingAction,
+    currentActionEndTime,
     available,
 };
 ```

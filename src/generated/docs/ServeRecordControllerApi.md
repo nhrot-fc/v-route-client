@@ -111,7 +111,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getById1**
-> ServeRecordDTO getById1()
+> ServeRecord getById1()
 
 
 ### Example
@@ -141,7 +141,7 @@ const { status, data } = await apiInstance.getById1(
 
 ### Return type
 
-**ServeRecordDTO**
+**ServeRecord**
 
 ### Authorization
 

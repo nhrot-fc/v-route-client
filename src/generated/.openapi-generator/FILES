@@ -5,6 +5,7 @@ api.ts
 base.ts
 common.ts
 configuration.ts
+docs/Action.md
 docs/ActionDTO.md
 docs/Blockage.md
 docs/BlockageControllerApi.md

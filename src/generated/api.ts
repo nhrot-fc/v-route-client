@@ -26,6 +26,97 @@ import { BASE_PATH, COLLECTION_FORMATS, BaseAPI, RequiredError, operationServerM
 /**
  * 
  * @export
+ * @interface Action
+ */
+export interface Action {
+    /**
+     * 
+     * @type {string}
+     * @memberof Action
+     */
+    'type'?: ActionTypeEnum;
+    /**
+     * 
+     * @type {string}
+     * @memberof Action
+     */
+    'startTime'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Action
+     */
+    'endTime'?: string;
+    /**
+     * 
+     * @type {Array<Position>}
+     * @memberof Action
+     */
+    'path'?: Array<Position>;
+    /**
+     * 
+     * @type {number}
+     * @memberof Action
+     */
+    'glpDelivered'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof Action
+     */
+    'glpLoaded'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof Action
+     */
+    'fuelConsumedGal'?: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof Action
+     */
+    'fuelRefueledGal'?: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof Action
+     */
+    'orderId'?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof Action
+     */
+    'depotId'?: string;
+    /**
+     * 
+     * @type {number}
+     * @memberof Action
+     */
+    'currentProgress'?: number;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof Action
+     */
+    'effectApplied'?: boolean;
+}
+
+export const ActionTypeEnum = {
+    Drive: 'DRIVE',
+    Refuel: 'REFUEL',
+    Reload: 'RELOAD',
+    Serve: 'SERVE',
+    Maintenance: 'MAINTENANCE',
+    Wait: 'WAIT'
+} as const;
+
+export type ActionTypeEnum = typeof ActionTypeEnum[keyof typeof ActionTypeEnum];
+
+/**
+ * 
+ * @export
  * @interface ActionDTO
  */
 export interface ActionDTO {
@@ -843,8 +934,7 @@ export const SimulationCreateDTOTypeEnum = {
     DailyOperations: 'DAILY_OPERATIONS',
     Weekly: 'WEEKLY',
     Infinite: 'INFINITE',
-    Custom: 'CUSTOM',
-    Benchmark: 'BENCHMARK'
+    Custom: 'CUSTOM'
 } as const;
 
 export type SimulationCreateDTOTypeEnum = typeof SimulationCreateDTOTypeEnum[keyof typeof SimulationCreateDTOTypeEnum];
@@ -909,8 +999,7 @@ export const SimulationDTOTypeEnum = {
     DailyOperations: 'DAILY_OPERATIONS',
     Weekly: 'WEEKLY',
     Infinite: 'INFINITE',
-    Custom: 'CUSTOM',
-    Benchmark: 'BENCHMARK'
+    Custom: 'CUSTOM'
 } as const;
 
 export type SimulationDTOTypeEnum = typeof SimulationDTOTypeEnum[keyof typeof SimulationDTOTypeEnum];
@@ -995,6 +1084,12 @@ export interface SimulationStateDTO {
      * @memberof SimulationStateDTO
      */
     'currentVehiclePlans'?: Array<VehiclePlanDTO>;
+    /**
+     * 
+     * @type {{ [key: string]: string; }}
+     * @memberof SimulationStateDTO
+     */
+    'maintenanceSchedule'?: { [key: string]: string; };
     /**
      * 
      * @type {number}
@@ -1102,6 +1197,24 @@ export interface Vehicle {
      * @memberof Vehicle
      */
     'maintenances'?: Array<Maintenance>;
+    /**
+     * 
+     * @type {Action}
+     * @memberof Vehicle
+     */
+    'currentAction'?: Action;
+    /**
+     * 
+     * @type {boolean}
+     * @memberof Vehicle
+     */
+    'performingAction'?: boolean;
+    /**
+     * 
+     * @type {string}
+     * @memberof Vehicle
+     */
+    'currentActionEndTime'?: string;
     /**
      * 
      * @type {boolean}
@@ -1923,7 +2036,7 @@ export const DashboardApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getUrgentOrders(hoursAhead?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Order>> {
+        async getUrgentOrders(hoursAhead?: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getUrgentOrders(hoursAhead, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DashboardApi.getUrgentOrders']?.[localVarOperationServerIndex]?.url;
@@ -1935,7 +2048,7 @@ export const DashboardApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getVehicleStatusBreakdown(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Vehicle>> {
+        async getVehicleStatusBreakdown(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getVehicleStatusBreakdown(options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['DashboardApi.getVehicleStatusBreakdown']?.[localVarOperationServerIndex]?.url;
@@ -1976,7 +2089,7 @@ export const DashboardApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getUrgentOrders(hoursAhead?: number, options?: RawAxiosRequestConfig): AxiosPromise<Order> {
+        getUrgentOrders(hoursAhead?: number, options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.getUrgentOrders(hoursAhead, options).then((request) => request(axios, basePath));
         },
         /**
@@ -1985,7 +2098,7 @@ export const DashboardApiFactory = function (configuration?: Configuration, base
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getVehicleStatusBreakdown(options?: RawAxiosRequestConfig): AxiosPromise<Vehicle> {
+        getVehicleStatusBreakdown(options?: RawAxiosRequestConfig): AxiosPromise<void> {
             return localVarFp.getVehicleStatusBreakdown(options).then((request) => request(axios, basePath));
         },
     };
@@ -2752,7 +2865,7 @@ export const IncidentControllerApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async resolveIncident(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<IncidentDTO>> {
+        async resolveIncident(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Incident>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.resolveIncident(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['IncidentControllerApi.resolveIncident']?.[localVarOperationServerIndex]?.url;
@@ -2811,7 +2924,7 @@ export const IncidentControllerApiFactory = function (configuration?: Configurat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        resolveIncident(id: string, options?: RawAxiosRequestConfig): AxiosPromise<IncidentDTO> {
+        resolveIncident(id: string, options?: RawAxiosRequestConfig): AxiosPromise<Incident> {
             return localVarFp.resolveIncident(id, options).then((request) => request(axios, basePath));
         },
     };
@@ -3135,7 +3248,7 @@ export const MaintenanceControllerApiFp = function(configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getMaintenanceById(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<MaintenanceDTO>> {
+        async getMaintenanceById(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Maintenance>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getMaintenanceById(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['MaintenanceControllerApi.getMaintenanceById']?.[localVarOperationServerIndex]?.url;
@@ -3202,7 +3315,7 @@ export const MaintenanceControllerApiFactory = function (configuration?: Configu
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getMaintenanceById(id: string, options?: RawAxiosRequestConfig): AxiosPromise<MaintenanceDTO> {
+        getMaintenanceById(id: string, options?: RawAxiosRequestConfig): AxiosPromise<Maintenance> {
             return localVarFp.getMaintenanceById(id, options).then((request) => request(axios, basePath));
         },
         /**
@@ -3649,7 +3762,7 @@ export const OrderControllerApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getById2(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<OrderDTO>> {
+        async getById2(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Order>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getById2(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['OrderControllerApi.getById2']?.[localVarOperationServerIndex]?.url;
@@ -3743,7 +3856,7 @@ export const OrderControllerApiFactory = function (configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getById2(id: string, options?: RawAxiosRequestConfig): AxiosPromise<OrderDTO> {
+        getById2(id: string, options?: RawAxiosRequestConfig): AxiosPromise<Order> {
             return localVarFp.getById2(id, options).then((request) => request(axios, basePath));
         },
         /**
@@ -4106,7 +4219,7 @@ export const ServeRecordControllerApiFp = function(configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getById1(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ServeRecordDTO>> {
+        async getById1(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ServeRecord>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getById1(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['ServeRecordControllerApi.getById1']?.[localVarOperationServerIndex]?.url;
@@ -4166,7 +4279,7 @@ export const ServeRecordControllerApiFactory = function (configuration?: Configu
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getById1(id: string, options?: RawAxiosRequestConfig): AxiosPromise<ServeRecordDTO> {
+        getById1(id: string, options?: RawAxiosRequestConfig): AxiosPromise<ServeRecord> {
             return localVarFp.getById1(id, options).then((request) => request(axios, basePath));
         },
         /**
@@ -4586,39 +4699,6 @@ export const SimulationApiAxiosParamCreator = function (configuration?: Configur
             };
         },
         /**
-         * 
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        replanSimulation: async (id: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
-            // verify required parameter 'id' is not null or undefined
-            assertParamExists('replanSimulation', 'id', id)
-            const localVarPath = `/api/simulation/{id}/replan`
-                .replace(`{${"id"}}`, encodeURIComponent(String(id)));
-            // use dummy base URL string because the URL constructor only accepts absolute URLs.
-            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
-            let baseOptions;
-            if (configuration) {
-                baseOptions = configuration.baseOptions;
-            }
-
-            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
-            const localVarHeaderParameter = {} as any;
-            const localVarQueryParameter = {} as any;
-
-
-    
-            setSearchParams(localVarUrlObj, localVarQueryParameter);
-            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
-            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
-
-            return {
-                url: toPathString(localVarUrlObj),
-                options: localVarRequestOptions,
-            };
-        },
-        /**
          * Starts or resumes a paused simulation
          * @summary Start a simulation
          * @param {string} id 
@@ -4808,18 +4888,6 @@ export const SimulationApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        async replanSimulation(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SimulationDTO>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.replanSimulation(id, options);
-            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['SimulationApi.replanSimulation']?.[localVarOperationServerIndex]?.url;
-            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
-        },
-        /**
          * Starts or resumes a paused simulation
          * @summary Start a simulation
          * @param {string} id 
@@ -4941,15 +5009,6 @@ export const SimulationApiFactory = function (configuration?: Configuration, bas
          */
         pauseSimulation(id: string, options?: RawAxiosRequestConfig): AxiosPromise<SimulationDTO> {
             return localVarFp.pauseSimulation(id, options).then((request) => request(axios, basePath));
-        },
-        /**
-         * 
-         * @param {string} id 
-         * @param {*} [options] Override http request option.
-         * @throws {RequiredError}
-         */
-        replanSimulation(id: string, options?: RawAxiosRequestConfig): AxiosPromise<SimulationDTO> {
-            return localVarFp.replanSimulation(id, options).then((request) => request(axios, basePath));
         },
         /**
          * Starts or resumes a paused simulation
@@ -5082,17 +5141,6 @@ export class SimulationApi extends BaseAPI {
      */
     public pauseSimulation(id: string, options?: RawAxiosRequestConfig) {
         return SimulationApiFp(this.configuration).pauseSimulation(id, options).then((request) => request(this.axios, this.basePath));
-    }
-
-    /**
-     * 
-     * @param {string} id 
-     * @param {*} [options] Override http request option.
-     * @throws {RequiredError}
-     * @memberof SimulationApi
-     */
-    public replanSimulation(id: string, options?: RawAxiosRequestConfig) {
-        return SimulationApiFp(this.configuration).replanSimulation(id, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
@@ -5541,7 +5589,7 @@ export const VehicleControllerApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getById(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<VehicleDTO>> {
+        async getById(id: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Vehicle>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.getById(id, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['VehicleControllerApi.getById']?.[localVarOperationServerIndex]?.url;
@@ -5666,7 +5714,7 @@ export const VehicleControllerApiFactory = function (configuration?: Configurati
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getById(id: string, options?: RawAxiosRequestConfig): AxiosPromise<VehicleDTO> {
+        getById(id: string, options?: RawAxiosRequestConfig): AxiosPromise<Vehicle> {
             return localVarFp.getById(id, options).then((request) => request(axios, basePath));
         },
         /**

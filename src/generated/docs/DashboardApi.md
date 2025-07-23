@@ -98,7 +98,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getUrgentOrders**
-> Order getUrgentOrders()
+> getUrgentOrders()
 
 Devuelve las órdenes que vencen dentro del plazo especificado
 
@@ -129,7 +129,7 @@ const { status, data } = await apiInstance.getUrgentOrders(
 
 ### Return type
 
-**Order**
+void (empty response body)
 
 ### Authorization
 
@@ -149,7 +149,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getVehicleStatusBreakdown**
-> Vehicle getVehicleStatusBreakdown()
+> getVehicleStatusBreakdown()
 
 Devuelve un desglose de vehículos agrupados por su estado operativo
 
@@ -173,7 +173,7 @@ This endpoint does not have any parameters.
 
 ### Return type
 
-**Vehicle**
+void (empty response body)
 
 ### Authorization
 

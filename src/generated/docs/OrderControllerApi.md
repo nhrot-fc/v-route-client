@@ -164,7 +164,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **getById2**
-> OrderDTO getById2()
+> Order getById2()
 
 
 ### Example
@@ -194,7 +194,7 @@ const { status, data } = await apiInstance.getById2(
 
 ### Return type
 
-**OrderDTO**
+**Order**
 
 ### Authorization
 

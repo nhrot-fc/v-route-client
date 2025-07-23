@@ -191,7 +191,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **resolveIncident**
-> IncidentDTO resolveIncident()
+> Incident resolveIncident()
 
 
 ### Example
@@ -221,7 +221,7 @@ const { status, data } = await apiInstance.resolveIncident(
 
 ### Return type
 
-**IncidentDTO**
+**Incident**
 
 ### Authorization
 

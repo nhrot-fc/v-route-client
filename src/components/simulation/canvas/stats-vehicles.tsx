@@ -25,6 +25,45 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatPercentageValue } from "./utils";
+import { Badge } from "@/components/ui/badge";
+
+// Función para formatear el estado del vehículo con estilos visuales
+const getStatusBadgeProps = (status: string | undefined) => {
+  const normalizedStatus = status?.toLowerCase() || "unknown";
+  
+  switch (normalizedStatus) {
+    case "active":
+      return {
+        label: "Activo",
+        variant: "green" as const,
+        className: "bg-green-100 text-green-800 border-green-200",
+      };
+    case "maintenance":
+      return {
+        label: "Mantenimiento",
+        variant: "amber" as const,
+        className: "bg-amber-100 text-amber-800 border-amber-200",
+      };
+    case "breakdown":
+      return {
+        label: "Avería",
+        variant: "red" as const,
+        className: "bg-red-100 text-red-800 border-red-200",
+      };
+    case "inactive":
+      return {
+        label: "Inactivo",
+        variant: "gray" as const, 
+        className: "bg-gray-100 text-gray-800 border-gray-200",
+      };
+    default:
+      return {
+        label: status || "Desconocido",
+        variant: "gray" as const,
+        className: "bg-gray-100 text-gray-800 border-gray-200",
+      };
+  }
+};
 
 interface StatsVehiclesProps {
   simulationState: SimulationStateDTO;
@@ -136,6 +175,9 @@ export const StatsVehicles: React.FC<StatsVehiclesProps> = ({
               vehicle.fuelCapacityGal || 25
             );
 
+            // Obtener propiedades para el badge de estado
+            const statusBadge = getStatusBadgeProps(vehicle.status);
+
             return (
               <tr
                 key={vehicle.id}
@@ -177,17 +219,12 @@ export const StatsVehicles: React.FC<StatsVehiclesProps> = ({
                     onVehicleSelect && onVehicleSelect(vehicle.id || null)
                   }
                 >
-                  <span
-                    className={`${
-                      vehicle.status?.toLowerCase() === "active"
-                        ? "text-green-500"
-                        : vehicle.status?.toLowerCase() === "maintenance"
-                        ? "text-amber-500"
-                        : "text-red-500"
-                    }`}
+                  <Badge 
+                    variant="outline"
+                    className={statusBadge.className}
                   >
-                    {vehicle.status || "Desconocido"}
-                  </span>
+                    {statusBadge.label}
+                  </Badge>
                 </td>
                 <td
                   className="py-2 px-3 cursor-pointer"

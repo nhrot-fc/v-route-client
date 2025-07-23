@@ -54,7 +54,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/VehicleDTO"
+                  "$ref": "#/components/schemas/Vehicle"
                 }
               }
             }
@@ -143,7 +143,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/OrderDTO"
+                  "$ref": "#/components/schemas/Order"
                 }
               }
             }
@@ -839,37 +839,6 @@
         "summary": "Start a simulation",
         "description": "Starts or resumes a paused simulation",
         "operationId": "startSimulation",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "format": "uuid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "*/*": {
-                "schema": {
-                  "$ref": "#/components/schemas/SimulationDTO"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/simulation/{id}/replan": {
-      "post": {
-        "tags": [
-          "Simulation"
-        ],
-        "operationId": "replanSimulation",
         "parameters": [
           {
             "name": "id",
@@ -1998,7 +1967,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/IncidentDTO"
+                  "$ref": "#/components/schemas/Incident"
                 }
               }
             }
@@ -2086,7 +2055,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/ServeRecordDTO"
+                  "$ref": "#/components/schemas/ServeRecord"
                 }
               }
             }
@@ -2139,7 +2108,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "$ref": "#/components/schemas/MaintenanceDTO"
+                  "$ref": "#/components/schemas/Maintenance"
                 }
               }
             }
@@ -2258,11 +2227,7 @@
           "200": {
             "description": "Estado de vehículos obtenido exitosamente",
             "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Vehicle"
-                }
-              }
+              "application/json": {}
             }
           }
         }
@@ -2294,11 +2259,7 @@
           "200": {
             "description": "Órdenes urgentes obtenidas exitosamente",
             "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Order"
-                }
-              }
+              "application/json": {}
             }
           }
         }
@@ -2550,8 +2511,7 @@
               "DAILY_OPERATIONS",
               "WEEKLY",
               "INFINITE",
-              "CUSTOM",
-              "BENCHMARK"
+              "CUSTOM"
             ]
           },
           "taVehicles": {
@@ -2761,8 +2721,7 @@
               "DAILY_OPERATIONS",
               "WEEKLY",
               "INFINITE",
-              "CUSTOM",
-              "BENCHMARK"
+              "CUSTOM"
             ]
           },
           "status": {
@@ -2841,6 +2800,13 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/VehiclePlanDTO"
+            }
+          },
+          "maintenanceSchedule": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string",
+              "format": "date-time"
             }
           },
           "pendingOrdersCount": {
@@ -2935,6 +2901,65 @@
             "items": {
               "$ref": "#/components/schemas/Position"
             }
+          }
+        }
+      },
+      "Action": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "DRIVE",
+              "REFUEL",
+              "RELOAD",
+              "SERVE",
+              "MAINTENANCE",
+              "WAIT"
+            ]
+          },
+          "startTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "endTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "path": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Position"
+            }
+          },
+          "glpDelivered": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "glpLoaded": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "fuelConsumedGal": {
+            "type": "number",
+            "format": "double"
+          },
+          "fuelRefueledGal": {
+            "type": "number",
+            "format": "double"
+          },
+          "orderId": {
+            "type": "string"
+          },
+          "depotId": {
+            "type": "string"
+          },
+          "currentProgress": {
+            "type": "number",
+            "format": "double"
+          },
+          "effectApplied": {
+            "type": "boolean"
           }
         }
       },
@@ -3131,6 +3156,16 @@
             "items": {
               "$ref": "#/components/schemas/Maintenance"
             }
+          },
+          "currentAction": {
+            "$ref": "#/components/schemas/Action"
+          },
+          "performingAction": {
+            "type": "boolean"
+          },
+          "currentActionEndTime": {
+            "type": "string",
+            "format": "date-time"
           },
           "available": {
             "type": "boolean"
