@@ -15,6 +15,7 @@ import {
   type SimulationStateDTO,
   type OrderDTO,
   type DepotDTO,
+  type ServeRecordDTO,
 } from "@/lib/api-client";
 import { StatsIncidents } from "./stats-incidents";
 import { StatsMaintenance } from "./stats-maintenance";
@@ -358,19 +359,35 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({
 };
 
 // Overview stats component
+const attendedOrdersSet = new Set<string>(); // GLOBAL (fuera del componente)
 const StatsOverview: React.FC<{ simulationState: SimulationStateDTO }> = ({
   simulationState,
 }) => {
-  // Calculate statistics
+  // Calcular pedidos atendidos usando serveRecords
+  const orders = [
+    ...(simulationState.pendingOrders || []),
+  ];
+  orders.forEach((order) => {
+    const serveRecords = (order as any).serveRecords as ServeRecordDTO[] | undefined;
+    if (!order.id || typeof order.glpRequestM3 !== "number" || !Array.isArray(serveRecords)) return;
+    const totalEntregado = serveRecords.reduce(
+      (acc: number, rec: ServeRecordDTO) => acc + (typeof rec.glpVolumeM3 === "number" ? rec.glpVolumeM3 : 0),
+      0
+    );
+    if (totalEntregado >= order.glpRequestM3) {
+      attendedOrdersSet.add(order.id);
+    }
+  });
+  const deliveredOrders = attendedOrdersSet.size;
   const pendingOrders = simulationState.pendingOrdersCount || 0;
-  const deliveredOrders = simulationState.deliveredOrdersCount || 0;
   const totalVehicles = simulationState.vehicles?.length || 0;
   const availableVehicles = simulationState.availableVehiclesCount || 0;
   const busyVehicles = totalVehicles - availableVehicles;
-
-  // Mock stock percentage (would come from real data in production)
-  const stockPercentage = 92;
-
+  // Calcular porcentaje de stock de GLP solo en depósitos auxiliares
+  const auxDepots = simulationState.auxDepots || [];
+  const totalAuxGlp = auxDepots.reduce((acc, depot) => acc + (depot.currentGlpM3 || 0), 0);
+  const totalAuxCapacity = auxDepots.reduce((acc, depot) => acc + (depot.glpCapacityM3 || 0), 0);
+  const stockPercentage = totalAuxCapacity > 0 ? Math.round((totalAuxGlp / totalAuxCapacity) * 100) : 0;
   return (
     <div className="flex justify-between p-3 border-b text-sm">
       <div className="text-center">
