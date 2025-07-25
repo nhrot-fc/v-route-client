@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useWebSocket } from "@/lib/websocket-context";
 import { useSimulation } from "@/hooks/use-simulation";
 import { Card } from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
 import { SimulationCanvas } from "./canvas/simulation-canvas";
 
 export function SimulationMap() {
@@ -31,6 +32,7 @@ export function SimulationMap() {
     pauseSimulation,
     stopSimulation,
     deleteSimulation,
+    setSimulationSpeed,
     isLoading,
     error: apiError,
   } = useSimulation();
@@ -39,6 +41,7 @@ export function SimulationMap() {
     Record<string, SimulationDTO>
   >({});
   const [error, setError] = useState<string | null>(null);
+  const [speedFactor, setSpeedFactor] = useState<number>(1);
 
   const fetchSimulations = useCallback(async () => {
     if (!isConnected) return;
@@ -138,6 +141,16 @@ export function SimulationMap() {
     }
   }, [currentSimulationId, deleteSimulation, fetchSimulations, unsubscribeFromSimulation]);
 
+  const handleSpeedChange = useCallback(async (value: number[]) => {
+    const factor = value[0];
+    setSpeedFactor(factor);
+    try {
+      await setSimulationSpeed(factor);
+    } catch (error) {
+      console.error("Error al ajustar velocidad de simulación:", error);
+    }
+  }, [setSimulationSpeed]);
+
   const simulationsArray = useMemo(
     () =>
       Object.entries(combinedSimulations || {}).map(([id, data]) => ({
@@ -157,7 +170,7 @@ export function SimulationMap() {
       return new Date(simulationState.currentTime) > new Date(order.deadlineTime);
     });
     if (hayVencidos) {
-      let pauseBtn: HTMLElement | null = document.getElementById('pause-simulation-btn');
+      const pauseBtn: HTMLElement | null = document.getElementById('pause-simulation-btn');
       if (pauseBtn) {
         console.log('Pedidos vencidos detectados. Click en Pausar.');
         pauseBtn.click();
@@ -376,6 +389,29 @@ export function SimulationMap() {
                   </div>
                 </>
               )}
+            </div>
+            <div className="flex items-center space-x-4 mt-2">
+              <div className="text-sm font-semibold w-40">
+                Velocidad de simulación:
+              </div>
+              <div className="w-40">
+                <Slider
+                  min={1}
+                  max={5}
+                  step={1}
+                  value={[speedFactor]}
+                  onValueChange={handleSpeedChange}
+                  disabled={
+                    !currentSimulationId ||
+                    isLoading ||
+                    simulationInfo?.status !== SimulationDTOStatusEnum.Running ||
+                    simulationInfo?.type === "DAILY_OPERATIONS"
+                  }
+                />
+              </div>
+              <div className="text-sm font-medium">
+                {speedFactor}x
+              </div>
             </div>
           </div>
         )}

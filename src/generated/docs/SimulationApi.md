@@ -12,6 +12,7 @@ All URIs are relative to *http://localhost:8080*
 |[**loadBlockages**](#loadblockages) | **POST** /api/simulation/{id}/load-blockages | Cargar bloqueos para una simulación|
 |[**loadOrders**](#loadorders) | **POST** /api/simulation/{id}/load-orders | Cargar órdenes para una simulación|
 |[**pauseSimulation**](#pausesimulation) | **POST** /api/simulation/{id}/pause | Pause a simulation|
+|[**setSimulationSpeed**](#setsimulationspeed) | **POST** /api/simulation/speed/{factor} | Configurar velocidad de simulación|
 |[**startSimulation**](#startsimulation) | **POST** /api/simulation/{id}/start | Start a simulation|
 |[**stopSimulation**](#stopsimulation) | **POST** /api/simulation/{id}/stop | Stop a simulation|
 
@@ -424,6 +425,57 @@ const { status, data } = await apiInstance.pauseSimulation(
 ### Return type
 
 **SimulationDTO**
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: */*
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** | OK |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **setSimulationSpeed**
+> { [key: string]: object; } setSimulationSpeed()
+
+Configura la velocidad de todas las simulaciones (1 = normal, 5 = 5x más rápido)
+
+### Example
+
+```typescript
+import {
+    SimulationApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new SimulationApi(configuration);
+
+let factor: number; // (default to undefined)
+
+const { status, data } = await apiInstance.setSimulationSpeed(
+    factor
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **factor** | [**number**] |  | defaults to undefined|
+
+
+### Return type
+
+**{ [key: string]: object; }**
 
 ### Authorization
 

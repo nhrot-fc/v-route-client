@@ -63,7 +63,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **createBulk1**
-> Array<Blockage> createBulk1(blockageDTO)
+> string createBulk1(blockageDTO)
 
 
 ### Example
@@ -93,7 +93,7 @@ const { status, data } = await apiInstance.createBulk1(
 
 ### Return type
 
-**Array<Blockage>**
+**string**
 
 ### Authorization
 

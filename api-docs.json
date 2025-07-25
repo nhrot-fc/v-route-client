@@ -1035,6 +1035,42 @@
         }
       }
     },
+    "/api/simulation/speed/{factor}": {
+      "post": {
+        "tags": [
+          "Simulation"
+        ],
+        "summary": "Configurar velocidad de simulación",
+        "description": "Configura la velocidad de todas las simulaciones (1 = normal, 5 = 5x más rápido)",
+        "operationId": "setSimulationSpeed",
+        "parameters": [
+          {
+            "name": "factor",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "object"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/serve-records": {
       "get": {
         "tags": [
@@ -1352,10 +1388,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/OrderDTO"
-                  }
+                  "type": "string"
                 }
               }
             }
@@ -1933,10 +1966,7 @@
             "content": {
               "*/*": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/Blockage"
-                  }
+                  "type": "string"
                 }
               }
             }

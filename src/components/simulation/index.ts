@@ -1,5 +1,4 @@
 export * from './simulation-config';
-export * from './simulation-controls';
 export * from './simulation-data-load';
 export * from './simulation-report';
 export * from './simulation-stats';

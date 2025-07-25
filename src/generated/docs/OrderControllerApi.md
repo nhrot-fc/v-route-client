@@ -64,7 +64,7 @@ No authorization required
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 
 # **createBulk**
-> Array<OrderDTO> createBulk(orderDTO)
+> string createBulk(orderDTO)
 
 
 ### Example
@@ -94,7 +94,7 @@ const { status, data } = await apiInstance.createBulk(
 
 ### Return type
 
-**Array<OrderDTO>**
+**string**
 
 ### Authorization
 

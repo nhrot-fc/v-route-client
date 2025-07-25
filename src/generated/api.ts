@@ -1643,7 +1643,7 @@ export const BlockageControllerApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async createBulk1(blockageDTO: Array<BlockageDTO>, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<Blockage>>> {
+        async createBulk1(blockageDTO: Array<BlockageDTO>, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.createBulk1(blockageDTO, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['BlockageControllerApi.createBulk1']?.[localVarOperationServerIndex]?.url;
@@ -1730,7 +1730,7 @@ export const BlockageControllerApiFactory = function (configuration?: Configurat
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createBulk1(blockageDTO: Array<BlockageDTO>, options?: RawAxiosRequestConfig): AxiosPromise<Array<Blockage>> {
+        createBulk1(blockageDTO: Array<BlockageDTO>, options?: RawAxiosRequestConfig): AxiosPromise<string> {
             return localVarFp.createBulk1(blockageDTO, options).then((request) => request(axios, basePath));
         },
         /**
@@ -3738,7 +3738,7 @@ export const OrderControllerApiFp = function(configuration?: Configuration) {
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async createBulk(orderDTO: Array<OrderDTO>, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<Array<OrderDTO>>> {
+        async createBulk(orderDTO: Array<OrderDTO>, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<string>> {
             const localVarAxiosArgs = await localVarAxiosParamCreator.createBulk(orderDTO, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['OrderControllerApi.createBulk']?.[localVarOperationServerIndex]?.url;
@@ -3838,7 +3838,7 @@ export const OrderControllerApiFactory = function (configuration?: Configuration
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        createBulk(orderDTO: Array<OrderDTO>, options?: RawAxiosRequestConfig): AxiosPromise<Array<OrderDTO>> {
+        createBulk(orderDTO: Array<OrderDTO>, options?: RawAxiosRequestConfig): AxiosPromise<string> {
             return localVarFp.createBulk(orderDTO, options).then((request) => request(axios, basePath));
         },
         /**
@@ -4699,6 +4699,40 @@ export const SimulationApiAxiosParamCreator = function (configuration?: Configur
             };
         },
         /**
+         * Configura la velocidad de todas las simulaciones (1 = normal, 5 = 5x más rápido)
+         * @summary Configurar velocidad de simulación
+         * @param {number} factor 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        setSimulationSpeed: async (factor: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'factor' is not null or undefined
+            assertParamExists('setSimulationSpeed', 'factor', factor)
+            const localVarPath = `/api/simulation/speed/{factor}`
+                .replace(`{${"factor"}}`, encodeURIComponent(String(factor)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Starts or resumes a paused simulation
          * @summary Start a simulation
          * @param {string} id 
@@ -4888,6 +4922,19 @@ export const SimulationApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
+         * Configura la velocidad de todas las simulaciones (1 = normal, 5 = 5x más rápido)
+         * @summary Configurar velocidad de simulación
+         * @param {number} factor 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async setSimulationSpeed(factor: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<{ [key: string]: object; }>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.setSimulationSpeed(factor, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['SimulationApi.setSimulationSpeed']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Starts or resumes a paused simulation
          * @summary Start a simulation
          * @param {string} id 
@@ -5009,6 +5056,16 @@ export const SimulationApiFactory = function (configuration?: Configuration, bas
          */
         pauseSimulation(id: string, options?: RawAxiosRequestConfig): AxiosPromise<SimulationDTO> {
             return localVarFp.pauseSimulation(id, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * Configura la velocidad de todas las simulaciones (1 = normal, 5 = 5x más rápido)
+         * @summary Configurar velocidad de simulación
+         * @param {number} factor 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        setSimulationSpeed(factor: number, options?: RawAxiosRequestConfig): AxiosPromise<{ [key: string]: object; }> {
+            return localVarFp.setSimulationSpeed(factor, options).then((request) => request(axios, basePath));
         },
         /**
          * Starts or resumes a paused simulation
@@ -5141,6 +5198,18 @@ export class SimulationApi extends BaseAPI {
      */
     public pauseSimulation(id: string, options?: RawAxiosRequestConfig) {
         return SimulationApiFp(this.configuration).pauseSimulation(id, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * Configura la velocidad de todas las simulaciones (1 = normal, 5 = 5x más rápido)
+     * @summary Configurar velocidad de simulación
+     * @param {number} factor 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     * @memberof SimulationApi
+     */
+    public setSimulationSpeed(factor: number, options?: RawAxiosRequestConfig) {
+        return SimulationApiFp(this.configuration).setSimulationSpeed(factor, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

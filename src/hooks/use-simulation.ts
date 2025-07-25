@@ -215,6 +215,22 @@ export function useSimulation() {
     }
   }, []);
 
+  const setSimulationSpeed = useCallback(async (factor: number) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await simulationApi.setSimulationSpeed(factor);
+      setIsLoading(false);
+      return response;
+    } catch (err) {
+      setIsLoading(false);
+      const axiosError = err as AxiosError;
+      setError(axiosError.message || "Error al ajustar la velocidad de simulación");
+      return null;
+    }
+  }, []);
+
   return {
     isLoading,
     error,
@@ -227,5 +243,6 @@ export function useSimulation() {
     loadBlockages,
     createVehicleBreakdown,
     deleteSimulation,
+    setSimulationSpeed,
   };
 }

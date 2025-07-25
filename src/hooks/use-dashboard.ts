@@ -2,50 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import { dashboardApi, type VehicleDTO, VehicleStatusEnum } from "@/lib/api-client";
 import { useToast } from "@/components/ui/use-toast";
 
-export function useVehicleStatusSummary() {
-  const [summary, setSummary] = useState<VehicleDTO[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
-
-  const fetchVehicleStatusSummary = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await dashboardApi.getVehicleStatusBreakdown();
-
-      const vehicles = Array.isArray(response.data)
-        ? response.data
-        : [response.data].filter(Boolean);
-      const mappedVehicles = vehicles.map((vehicle: VehicleDTO) => ({
-        ...vehicle,
-        currentGLP: vehicle.currentGlpM3,
-        currentFuel: vehicle.currentFuelGal,
-      }));
-
-      setSummary(mappedVehicles);
-    } catch (err) {
-      const errorMessage = err instanceof Error
-        ? err.message
-        : "Error al cargar estado de vehículos";
-      setError(errorMessage);
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [toast]);
-
-  useEffect(() => {
-    void fetchVehicleStatusSummary();
-  }, [fetchVehicleStatusSummary]);
-
-  return { summary, loading, error, refetch: fetchVehicleStatusSummary };
-}
-
 export interface DashboardMetrics {
   pendingOrders: {
     count: number;
