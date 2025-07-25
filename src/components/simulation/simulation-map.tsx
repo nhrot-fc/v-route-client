@@ -397,7 +397,7 @@ export function SimulationMap() {
               <div className="w-40">
                 <Slider
                   min={1}
-                  max={5}
+                  max={8}
                   step={1}
                   value={[speedFactor]}
                   onValueChange={handleSpeedChange}

@@ -15,7 +15,6 @@ import {
   type SimulationStateDTO,
   type OrderDTO,
   type DepotDTO,
-  type ServeRecordDTO,
 } from "@/lib/api-client";
 import { StatsIncidents } from "./stats-incidents";
 import { StatsMaintenance } from "./stats-maintenance";
@@ -359,26 +358,10 @@ export const StatsPanel: React.FC<StatsPanelProps> = ({
 };
 
 // Overview stats component
-const attendedOrdersSet = new Set<string>(); // GLOBAL (fuera del componente)
 const StatsOverview: React.FC<{ simulationState: SimulationStateDTO }> = ({
   simulationState,
 }) => {
-  // Calcular pedidos atendidos usando serveRecords
-  const orders = [
-    ...(simulationState.pendingOrders || []),
-  ];
-  orders.forEach((order) => {
-    const serveRecords = (order as any).serveRecords as ServeRecordDTO[] | undefined;
-    if (!order.id || typeof order.glpRequestM3 !== "number" || !Array.isArray(serveRecords)) return;
-    const totalEntregado = serveRecords.reduce(
-      (acc: number, rec: ServeRecordDTO) => acc + (typeof rec.glpVolumeM3 === "number" ? rec.glpVolumeM3 : 0),
-      0
-    );
-    if (totalEntregado >= order.glpRequestM3) {
-      attendedOrdersSet.add(order.id);
-    }
-  });
-  const deliveredOrders = attendedOrdersSet.size;
+  const deliveredOrders = simulationState.deliveredOrdersCount || 0;
   const pendingOrders = simulationState.pendingOrdersCount || 0;
   const totalVehicles = simulationState.vehicles?.length || 0;
   const availableVehicles = simulationState.availableVehiclesCount || 0;
