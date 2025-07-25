@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { AlertTriangle } from "lucide-react";
-import type {
-  SimulationStateDTO,
-  VehicleDTO,
-  IncidentCreateDTO,
+import {
+  type SimulationStateDTO,
+  type VehicleDTO,
+  type IncidentCreateDTO,
+  VehicleDTOStatusEnum,
 } from "@/lib/api-client";
 import { IncidentCreateDTOTypeEnum } from "@/lib/api-client";
 import { useSimulation } from "@/hooks/use-simulation";
@@ -28,29 +29,53 @@ import { formatPercentageValue } from "./utils";
 import { Badge } from "@/components/ui/badge";
 
 // Función para formatear el estado del vehículo con estilos visuales
-const getStatusBadgeProps = (status: string | undefined) => {
-  const normalizedStatus = status?.toLowerCase() || "unknown";
-  
-  switch (normalizedStatus) {
-    case "active":
+const getStatusBadgeProps = (status: VehicleDTOStatusEnum | undefined) => {
+  const statusBadge = status || VehicleDTOStatusEnum.Available;
+
+  switch (statusBadge) {
+    case VehicleDTOStatusEnum.Available:
       return {
         label: "Activo",
         variant: "green" as const,
-        className: "bg-green-100 text-green-800 border-green-200",
+        className: "bg-emerald-100 text-emerald-800 border-emerald-200",
       };
-    case "maintenance":
+    case VehicleDTOStatusEnum.Driving:
+      return {
+        label: "En ruta",
+        variant: "blue" as const,
+        className: "bg-blue-100 text-blue-800 border-blue-200",
+      };
+    case VehicleDTOStatusEnum.Refueling:
+      return {
+        label: "Repostando",
+        variant: "purple" as const,
+        className: "bg-purple-100 text-purple-800 border-purple-200",
+      };
+    case VehicleDTOStatusEnum.Reloading:
+      return {
+        label: "Cargando",
+        variant: "cyan" as const,
+        className: "bg-cyan-100 text-cyan-800 border-cyan-200",
+      };
+    case VehicleDTOStatusEnum.Serving:
+      return {
+        label: "Atendiendo",
+        variant: "teal" as const,
+        className: "bg-teal-100 text-teal-800 border-teal-200",
+      };
+    case VehicleDTOStatusEnum.Maintenance:
       return {
         label: "Mantenimiento",
         variant: "amber" as const,
         className: "bg-amber-100 text-amber-800 border-amber-200",
       };
-    case "breakdown":
+    case VehicleDTOStatusEnum.Incident:
       return {
         label: "Avería",
         variant: "red" as const,
         className: "bg-red-100 text-red-800 border-red-200",
       };
-    case "inactive":
+    case VehicleDTOStatusEnum.Idle:
       return {
         label: "Inactivo",
         variant: "gray" as const, 

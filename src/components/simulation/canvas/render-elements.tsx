@@ -282,7 +282,7 @@ export const renderElements = ({
       const iconSize = sizeMap[orderSize] * (zoom / 15);
 
       // Get volume text color
-      const volume = order.glpRequestM3 || 0;
+      const volume = order.remainingGlpM3 || 0;
       let volumeColor = "#3b82f6"; // Default blue
       if (volume <= 3)
         volumeColor = "#10b981"; // green - small
@@ -393,6 +393,66 @@ export const renderElements = ({
                           : "#1d4ed8"
                     }
                   />
+                </>
+              )}
+
+              {/* Time remaining progress bar */}
+              {!order.delivered && order.deadlineTime && simulationState?.currentTime && (
+                <>
+                  {/* Calculate time remaining percentage */}
+                  {(() => {
+                    const now = new Date(simulationState.currentTime || "").getTime();
+                    const deadline = new Date(order.deadlineTime || "").getTime();
+                    
+                    // Si ya pasó la fecha límite, el porcentaje es 0
+                    const isLate = now > deadline;
+                    
+                    // Si está atrasado, el porcentaje es 0. De lo contrario, calculamos cuánto tiempo queda
+                    // Consideramos que 3 horas es un buen punto de referencia (menos de 3h = urgente)
+                    const threeHoursInMs = 3 * 60 * 60 * 1000;
+                    const remainingTime = deadline - now;
+                    
+                    // Si queda más de 3 horas, considerarlo como 100%
+                    // Si queda menos, hacer un degradado desde 100% (3h) hasta 0% (0h)
+                    const timePercentage = isLate 
+                      ? 0 
+                      : Math.max(0, Math.min(100, (remainingTime / threeHoursInMs) * 100));
+                    
+                    // Color gradient from blue (100%) to red (0%)
+                    let progressColor = "#ef4444"; // Default red
+                    if (timePercentage > 75) {
+                      progressColor = "#3b82f6"; // Blue
+                    } else if (timePercentage > 50) {
+                      progressColor = "#10b981"; // Green
+                    } else if (timePercentage > 25) {
+                      progressColor = "#eab308"; // Yellow
+                    } else if (timePercentage > 0) {
+                      progressColor = "#f97316"; // Orange
+                    }
+                    
+                    return (
+                      <>
+                        {/* Background bar */}
+                        <Rect
+                          x={-15 * (zoom / 15)}
+                          y={iconSize + 2 * (zoom / 15) + 15 * (zoom / 15)}
+                          width={30 * (zoom / 15)}
+                          height={5 * (zoom / 15)}
+                          fill="#323232"
+                          cornerRadius={2}
+                        />
+                        {/* Progress bar */}
+                        <Rect
+                          x={-15 * (zoom / 15)}
+                          y={iconSize + 2 * (zoom / 15) + 15 * (zoom / 15)}
+                          width={(30 * timePercentage / 100) * (zoom / 15)}
+                          height={5 * (zoom / 15)}
+                          fill={progressColor}
+                          cornerRadius={2}
+                        />
+                      </>
+                    );
+                  })()}
                 </>
               )}
 
@@ -875,6 +935,32 @@ export const renderElements = ({
             x={0}
             y={0}
             size={style.iconSize * (zoom / 15)}
+          />
+          
+          {/* Vehicle ID with color based on type */}
+          <Rect
+            x={style.iconSize * (zoom / 15) * 0.6}
+            y={-style.iconSize * (zoom / 15) * 0.6}
+            width={vehicleId.length * 8 * (zoom / 20)}
+            height={16 * (zoom / 20)}
+            fill="rgba(255, 255, 255, 0.8)"
+            cornerRadius={3}
+          />
+          <ColoredText
+            x={style.iconSize * (zoom / 15) * 0.6 + 2}
+            y={-style.iconSize * (zoom / 15) * 0.6 + 2}
+            text={vehicleId}
+            fontSize={11 * (zoom / 20)}
+            color={
+              vehicle.type === "TA"
+                ? "#ef4444"  // red
+                : vehicle.type === "TB"
+                ? "#3b82f6"  // blue
+                : vehicle.type === "TC"
+                ? "#f59e0b"  // amber
+                : "#9333ea"  // purple
+            }
+            fontStyle="bold"
           />
         </Group>
       );

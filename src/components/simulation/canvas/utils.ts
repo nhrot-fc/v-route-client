@@ -59,10 +59,10 @@ export const formatDate = (dateString: string) => {
  */
 export const getGlpColorLevel = (current: number, capacity: number): string => {
   const percentage = (current / capacity) * 100;
-  if (percentage <= 20) return "red";
-  if (percentage <= 40) return "orange";
-  if (percentage <= 60) return "yellow";
-  if (percentage <= 80) return "green";
+  if (percentage <= 0) return "red";
+  if (percentage <= 25) return "orange";
+  if (percentage <= 50) return "yellow";
+  if (percentage <= 75) return "green";
   return "blue";
 };
 
@@ -238,11 +238,12 @@ export const prepareVehicleForRendering = (
   // Get vehicle position
   const position = vehicle.currentPosition || { x: 0, y: 0 };
   
-  // Get GLP color based on current level
-  const glpColor = getGlpColorLevel(
-    vehicle.currentGlpM3 || 0,
-    vehicle.glpCapacityM3 || 1
-  );
+  // Get GLP color based on current level - simplified to just red at 0%
+  const currentGlp = vehicle.currentGlpM3 || 0;
+  const capacity = vehicle.glpCapacityM3 || 1;
+  
+  // Color is red when GLP is 0, otherwise use the normal level gradient
+  const glpColor = currentGlp <= 0 ? "red" : getGlpColorLevel(currentGlp, capacity);
   
   // Get vehicle direction
   let direction: "north" | "south" | "east" | "west" = "east"; // Default direction
