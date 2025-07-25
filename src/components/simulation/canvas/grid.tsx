@@ -73,7 +73,7 @@ export const Grid = ({
           key={`h-text-${i}`}
           x={5}
           y={y - 5}
-          text={`${MAP_Y_MIN - i}`} // Show Y values in reverse to match 0 at bottom
+          text={`${i}`}
           fontSize={10}
           fill="#6b7280"
         />
