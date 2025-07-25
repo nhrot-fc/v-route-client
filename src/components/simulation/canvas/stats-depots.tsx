@@ -80,16 +80,17 @@ export const StatsDepots: React.FC<StatsDepotsProps> = ({
             const stockPercentage =
               capacity > 0 ? (currentStock / capacity) * 100 : 0;
 
-            // Get color based on stock level
-            const getStockColor = (percentage: number) => {
-              if (percentage <= 20) return "#ef4444"; // red
-              if (percentage <= 40) return "#f97316"; // orange
-              if (percentage <= 60) return "#eab308"; // yellow
-              if (percentage <= 80) return "#10b981"; // green
-              return "#3b82f6"; // blue
-            };
+            // Get color and icon path based on stock level
+            let color: string;
+            if (stockPercentage <= 20) color = "red";
+            else if (stockPercentage <= 40) color = "orange";
+            else if (stockPercentage <= 60) color = "yellow";
+            else if (stockPercentage <= 80) color = "green";
+            else color = "blue";
 
-            const stockColor = getStockColor(stockPercentage);
+            // Seleccionar ícono según si es principal o auxiliar
+            const iconName = depot.isMain ? "main-warehouse.svg" : "warehouse.svg";
+            const iconPath = `/icons/colored/${color}/${iconName}`;
 
             return (
               <tr
@@ -106,7 +107,10 @@ export const StatsDepots: React.FC<StatsDepotsProps> = ({
                   )
                 }
               >
-                <td className="py-2 px-3">{depot.depot.id}</td>
+                <td className="py-2 px-3 flex items-center gap-2">
+                  <img src={iconPath} alt="icono depósito" className="w-6 h-6" />
+                  {depot.depot.id}
+                </td>
                 <td className="py-2 px-3">
                   <span
                     className={`px-2 py-1 rounded-full text-xs text-white ${
@@ -123,11 +127,11 @@ export const StatsDepots: React.FC<StatsDepotsProps> = ({
                         className="h-1.5 rounded-full"
                         style={{
                           width: `${stockPercentage}%`,
-                          backgroundColor: stockColor,
+                          backgroundColor: color,
                         }}
                       ></div>
                     </div>
-                    <span className="text-xs" style={{ color: stockColor }}>
+                    <span className="text-xs">
                       {Math.round(stockPercentage)}%
                     </span>
                   </div>

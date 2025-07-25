@@ -430,6 +430,18 @@ export const renderElements = ({
     const { x: screenX, y: screenY } = mapToScreenCoords(x, y);
     const depotSize = 25 * (zoom / 15);
 
+    // Calcular porcentaje y color
+    const capacity = simulationState.mainDepot.glpCapacityM3 ?? 0;
+    const currentStock = simulationState.mainDepot.currentGlpM3 ?? 0;
+    const stockPercentage = capacity > 0 ? (currentStock / capacity) * 100 : 0;
+    let color: string;
+    if (stockPercentage <= 20) color = "red";
+    else if (stockPercentage <= 40) color = "orange";
+    else if (stockPercentage <= 60) color = "yellow";
+    else if (stockPercentage <= 80) color = "green";
+    else color = "blue";
+    const iconPath = `/icons/colored/${color}/main-warehouse.svg`;
+
     elements.push(
       <Group
         key="main-depot"
@@ -468,7 +480,7 @@ export const renderElements = ({
         }}
       >
         <MapIcon
-          src="/icons/colored/blue/main-warehouse.svg"
+          src={iconPath}
           x={0}
           y={0}
           size={depotSize}
@@ -543,6 +555,18 @@ export const renderElements = ({
       const { x: screenX, y: screenY } = mapToScreenCoords(x, y);
       const depotSize = 20 * (zoom / 15);
 
+      // Calcular porcentaje y color
+      const capacity = depot.glpCapacityM3 ?? 0;
+      const currentStock = depot.currentGlpM3 ?? 0;
+      const stockPercentage = capacity > 0 ? (currentStock / capacity) * 100 : 0;
+      let color: string;
+      if (stockPercentage <= 20) color = "red";
+      else if (stockPercentage <= 40) color = "orange";
+      else if (stockPercentage <= 60) color = "yellow";
+      else if (stockPercentage <= 80) color = "green";
+      else color = "blue";
+      const iconPath = `/icons/colored/${color}/warehouse.svg`;
+
       elements.push(
         <Group
           key={`aux-depot-${index}`}
@@ -585,7 +609,7 @@ export const renderElements = ({
           }}
         >
           <MapIcon
-            src="/icons/colored/blue/warehouse.svg"
+            src={iconPath}
             x={0}
             y={0}
             size={depotSize}
