@@ -151,6 +151,30 @@ export function SimulationMap() {
     void fetchSimulations();
   }, [fetchSimulations]);
 
+  useEffect(() => {
+    const hayVencidos = simulationState?.pendingOrders?.some(order => {
+      if (!order.deadlineTime || !simulationState.currentTime) return false;
+      return new Date(simulationState.currentTime) > new Date(order.deadlineTime);
+    });
+    if (hayVencidos) {
+      let pauseBtn: HTMLElement | null = document.getElementById('pause-simulation-btn');
+      if (pauseBtn) {
+        console.log('Pedidos vencidos detectados. Click en Pausar.');
+        pauseBtn.click();
+      } else {
+        // Buscar por el texto del botón
+        const buttons = Array.from(document.getElementsByTagName('button'));
+        const btnByText = buttons.find(btn => btn.textContent?.trim() === 'Pausar') || null;
+        if (btnByText) {
+          console.log('Pedidos vencidos detectados. Click en Pausar (por texto).');
+          btnByText.click();
+        } else {
+          console.log('Pedidos vencidos detectados, pero NO se encontró el botón Pausar.');
+        }
+      }
+    }
+  }, [simulationState]);
+
   return (
     <Card className="p-4">
       <div className="mb-4 h-screen flex flex-col space-y-4">

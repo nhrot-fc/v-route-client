@@ -33,7 +33,11 @@ export function SimulationControls({
             Iniciar
           </Button>
         ) : (
-          <Button onClick={onPause}>
+          <Button
+            onClick={onPause}
+            id="pause-simulation-btn"
+            disabled={!isRunning}
+          >
             <Pause className="w-4 h-4 mr-2" />
             Pausar
           </Button>
