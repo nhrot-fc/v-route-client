@@ -162,6 +162,14 @@ export const StatsVehicleActions: React.FC<StatsVehicleActionsProps> = ({
                     </span>
                   </div>
 
+                  {/* Mostrar cantidad entregada si es acción SERVE */}
+                  {action.type === "SERVE" && action.glpDelivered !== undefined && (
+                    <div className="mb-1 ml-1 text-xs text-green-700 font-semibold flex items-center gap-1">
+                      <span>Entregando:</span>
+                      <span>{action.glpDelivered} m³</span>
+                    </div>
+                  )}
+
                   {/* Progress bar for current action */}
                   {action.isCurrent && action.progress !== undefined && (
                     <div className="my-2 mb-3">
